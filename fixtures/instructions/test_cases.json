@@ -1,0 +1,174 @@
+{
+  "cases": [
+    {
+      "case_id": "instr_t01_unchanged_respected",
+      "input": {
+        "instructions": [
+          "Do not modify config/prod.toml"
+        ],
+        "before": {
+          "config/prod.toml": "retries = 3\n"
+        },
+        "after": {
+          "config/prod.toml": "retries = 3\n",
+          "src/app.py": "x = 1\n"
+        }
+      },
+      "expected": {
+        "violated": 0,
+        "passed": 1,
+        "verdict": "passed"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The protected file was not modified. The control case.",
+      "tags": [
+        "control",
+        "happy_path"
+      ]
+    },
+    {
+      "case_id": "instr_t02_unchanged_violated",
+      "input": {
+        "instructions": [
+          "Do not modify config/prod.toml"
+        ],
+        "before": {
+          "config/prod.toml": "retries = 3\n"
+        },
+        "after": {
+          "config/prod.toml": "retries = 9\n"
+        }
+      },
+      "expected": {
+        "violated": 1,
+        "must_violate_containing": [
+          "prod.toml"
+        ],
+        "verdict": "violated"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The protected file was modified.",
+      "tags": [
+        "violation",
+        "positive"
+      ]
+    },
+    {
+      "case_id": "instr_t03_command_run",
+      "input": {
+        "instructions": [
+          "Run the tests before finishing."
+        ],
+        "before": {
+          "src/app.py": "x = 1\n"
+        },
+        "after": {
+          "src/app.py": "x = 1\n"
+        },
+        "trace": [
+          "python -m pytest -q"
+        ]
+      },
+      "expected": {
+        "violated": 0,
+        "passed": 1,
+        "verdict": "passed"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The trace shows the tests ran.",
+      "tags": [
+        "trace",
+        "happy_path"
+      ]
+    },
+    {
+      "case_id": "instr_t04_command_not_run",
+      "input": {
+        "instructions": [
+          "Run the tests before finishing."
+        ],
+        "before": {
+          "src/app.py": "x = 1\n"
+        },
+        "after": {
+          "src/app.py": "x = 1\n"
+        },
+        "trace": [
+          "ruff check ."
+        ]
+      },
+      "expected": {
+        "violated": 1,
+        "verdict": "violated"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "Only the linter ran, not the tests. The instruction named the tests specifically.",
+      "tags": [
+        "trace",
+        "violation",
+        "hard_negative"
+      ]
+    },
+    {
+      "case_id": "instr_t05_ambiguous_instruction",
+      "input": {
+        "instructions": [
+          "Handle the edge cases thoughtfully."
+        ],
+        "before": {
+          "src/app.py": "x = 1\n"
+        },
+        "after": {
+          "src/app.py": "x = 2\n"
+        }
+      },
+      "expected": {
+        "inconclusive_instructions": 1,
+        "verdict": "inconclusive"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "An instruction that cannot be turned into a predicate must be reported as inconclusive, never as a pass.",
+      "tags": [
+        "ambiguous",
+        "abstain"
+      ]
+    },
+    {
+      "case_id": "instr_t06_mixed_all_satisfied",
+      "input": {
+        "instructions": [
+          "Do not modify config/prod.toml",
+          "Add a test for tests/test_new.py",
+          "Run the linter"
+        ],
+        "before": {
+          "config/prod.toml": "retries = 3\n"
+        },
+        "after": {
+          "config/prod.toml": "retries = 3\n",
+          "tests/test_new.py": "def test_new():\n    assert True\n"
+        },
+        "trace": [
+          "ruff check ."
+        ]
+      },
+      "expected": {
+        "violated": 0,
+        "passed": 3,
+        "verdict": "passed"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "Three predicates of three different kinds, all satisfied.",
+      "tags": [
+        "multi_predicate",
+        "happy_path"
+      ]
+    }
+  ]
+}

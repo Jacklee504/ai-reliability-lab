@@ -268,3 +268,259 @@ def _parse_number(token: str) -> int | None:
     if token.isdigit():
         return int(token)
     return _NUMBER_WORDS.get(token)
+
+
+def _sentences(text: str) -> list[str]:
+    from ..core.spans import sentence_spans
+
+    return [fragment for _s, _e, fragment in sentence_spans(text)]
+
+
+def extract_requirements(request: str) -> list[Requirement]:
+    """Turn a user request into explicit requirement records.
+
+    Every requirement keeps the exact quote it came from, so a user can
+    check that nothing was invented. When no requirement can be found the
+    result is empty, and the caller reports that as "cannot verify" rather
+    than passing the deliverable.
+    """
+    requirements: list[Requirement] = []
+    counter = 0
+
+    def add(**kwargs: Any) -> None:
+        nonlocal counter
+        counter += 1
+        kwargs["requirement_id"] = f"req_{counter:02d}"
+        requirements.append(Requirement(**kwargs))
+
+    for sentence in _sentences(request):
+        lowered = sentence.lower()
+        if not any(verb in lowered for verb in _REQUIREMENT_VERBS):
+            continue
+
+        matched_count = False
+        for pattern, canonical_unit in zip(_COUNT_PATTERNS, _UNIT_NAMES):
+            for match in pattern.finditer(sentence):
+                number = _parse_number(match.group(1))
+                if number is None:
+                    continue
+                prefix = sentence[max(0, match.start() - 24):match.start()].lower()
+                if re.search(r"(?:at least|no fewer than|minimum of)\s*$", prefix):
+                    comparator = "at_least"
+                elif re.search(r"(?:at most|no more than|up to)\s*$", prefix):
+                    comparator = "at_most"
+                else:
+                    comparator = "exactly"
+                add(
+                    text=f"must contain {number} {canonical_unit}",
+                    kind="count",
+                    check="deterministic",
+                    count=number,
+                    unit=canonical_unit,
+                    comparator=comparator,
+                    source_quote=sentence,
+                )
+                matched_count = True
+
+        for match in _NAMED_SECTION.finditer(sentence):
+            name = match.group(1).strip(" .,")
+            if not name or len(name) < 2:
+                continue
+            add(
+                text=f"must contain a section named {name!r}",
+                kind="section",
+                check="deterministic",
+                target=name,
+                source_quote=sentence,
+            )
+
+        format_match = _FORMAT_PHRASE.search(sentence)
+        if format_match:
+            fmt = format_match.group(1).lower()
+            add(
+                text=f"must be delivered in {fmt}",
+                kind="format",
+                check="deterministic",
+                target=fmt,
+                source_quote=sentence,
+            )
+
+        if _ANSWER_KEY.search(sentence):
+            add(
+                text="must include an answer key",
+                kind="content",
+                check="deterministic",
+                target="answer_key",
+                source_quote=sentence,
+            )
+            if _PER_ITEM.search(sentence):
+                add(
+                    text="must include an explanation for every answer",
+                    kind="content",
+                    check="semantic",
+                    target="explanation_per_answer",
+                    source_quote=sentence,
+                    note="an explanation per item needs judgement, not counting",
+                )
+
+        if _EXPLANATION.search(sentence) and not _ANSWER_KEY.search(sentence):
+            add(
+                text="must include explanations",
+                kind="content",
+                check="semantic",
+                target="explanations",
+                source_quote=sentence,
+            )
+
+        if not matched_count and not format_match and not _ANSWER_KEY.search(sentence):
+            # A request verb with no countable or named target: this is a
+            # coverage requirement, which needs semantic judgement.
+            add(
+                text=sentence.strip(),
+                kind="coverage",
+                check="semantic",
+                source_quote=sentence,
+            )
+
+    return requirements
+
+
+# ---------------------------------------------------------------------------
+# Deterministic checks
+# ---------------------------------------------------------------------------
+
+
+#: Headings that introduce a section which is not part of the question
+#: list. An answer key repeats the question numbers, so counting it
+#: would inflate the question count and hide a missing question.
+_NON_QUESTION_SECTIONS = re.compile(
+    r"^\s*(?:answer\s*key|answers?|key|solutions?|marking\s*scheme|"
+    r"explanations?|rationale|notes?|scoring)\b",
+    re.IGNORECASE,
+)
+
+
+def _count_questions(deliverable: str) -> int:
+    """Count questions in a deliverable.
+
+    Recognises the common shapes: numbered items, ``Q1:``/``Q. 1``/``Q1)``
+    prefixes, and lines ending in a question mark.
+
+    Sections that list answers rather than questions are skipped. An
+    answer key repeats the question numbers, so counting it as well
+    would make a deliverable with missing questions look complete.
+    """
+    count = 0
+    seen: set[str] = set()
+    patterns = [
+        re.compile(r"^\s*(?:Q(?:uestion)?\.?\s*)?(\d+)\s*[.):]\s+\S", re.IGNORECASE),
+        re.compile(r"^\s*Q(?:uestion)?\.?\s*(\d+)\s*[.):]?\s+\S", re.IGNORECASE),
+    ]
+    in_non_question_section = False
+    for line in deliverable.splitlines():
+        if _NON_QUESTION_SECTIONS.match(line):
+            in_non_question_section = True
+            continue
+        if in_non_question_section:
+            # A new heading ends the answer-key section.
+            if line.strip() and re.match(r"^\s*[A-Z][A-Za-z0-9 \-/&()']{2,80}\s*$", line):
+                in_non_question_section = False
+            else:
+                continue
+        for pattern in patterns:
+            match = pattern.match(line)
+            if match:
+                number = match.group(1)
+                if number not in seen:
+                    seen.add(number)
+                    count += 1
+                break
+        else:
+            if line.strip().endswith("?") and len(line.strip()) > 3:
+                count += 1
+    return count
+
+
+def _count_options(deliverable: str) -> int:
+    """Return the fewest distinct options attached to any question."""
+    option_re = re.compile(r"^\s*\(?([A-Za-z])\)?[.):]\s+\S")
+    question_re = re.compile(
+        r"^\s*(?:Q(?:uestion)?\.?\s*\d+\s*[.):]?\s+\S|\d+\s*[.):]\s+.*\?)",
+        re.IGNORECASE,
+    )
+    counts: list[int] = []
+    current: set[str] = set()
+    active = False
+    for line in deliverable.splitlines():
+        if question_re.match(line):
+            if active:
+                counts.append(len(current))
+            current = set()
+            active = True
+        elif active and (match := option_re.match(line)):
+            current.add(match.group(1).upper())
+    if active:
+        counts.append(len(current))
+    return min(counts, default=0)
+
+
+def _chapters_present(deliverable: str, count: int) -> tuple[int, list[str]]:
+    """Count distinct numbered chapters or sections in the deliverable."""
+    found: set[str] = set()
+    pattern = re.compile(
+        r"^\s*(?:#{1,6}\s*)?(?:chapter|section|part|unit|module)\s+([0-9]+|[IVXLC]+)\b",
+        re.IGNORECASE,
+    )
+    markdown = re.compile(r"^\s*#{1,6}\s+(.+?)\s*$")
+    for line in deliverable.splitlines():
+        match = pattern.match(line)
+        if match:
+            found.add(match.group(1).upper())
+            continue
+        heading = markdown.match(line)
+        if heading:
+            found.add(heading.group(1).strip().upper())
+    return len(found), sorted(found)
+
+
+def _named_section_present(deliverable: str, name: str) -> bool:
+    """True when the deliverable contains a heading matching the name."""
+    target = re.sub(r"\s+", " ", name.strip().lower())
+    for line in deliverable.splitlines():
+        stripped = line.strip()
+        stripped = re.sub(r"^#{1,6}\s*", "", stripped)
+        stripped = stripped.rstrip(":").strip()
+        if stripped.lower() == target:
+            return True
+        if target and target in stripped.lower():
+            return True
+    return False
+
+
+def _format_present(deliverable: str, fmt: str) -> bool:
+    """Check the requested output format."""
+    fmt = fmt.lower()
+    if "markdown" in fmt:
+        return bool(re.search(r"^\s*#{1,6}\s+\S", deliverable, re.MULTILINE)) or "```" in deliverable
+    if "json" in fmt:
+        return deliverable.strip().startswith(("{", "["))
+    if "csv" in fmt:
+        lines = [ln for ln in deliverable.splitlines() if ln.strip()]
+        if len(lines) < 2:
+            return False
+        return lines[0].count(",") == lines[1].count(",")
+    if "yaml" in fmt:
+        return bool(re.search(r"^\s*[\w.-]+:\s*\S", deliverable, re.MULTILINE))
+    if "html" in fmt:
+        return "<" in deliverable and ">" in deliverable
+    if "table" in fmt:
+        return "|" in deliverable
+    if "list" in fmt:
+        return bool(re.search(r"^\s*[-*•]\s+\S", deliverable, re.MULTILINE))
+    if "plain text" in fmt:
+        return not re.search(r"^\s*#{1,6}\s+\S", deliverable, re.MULTILINE)
+    return False
+
+
+def _answer_key_present(deliverable: str) -> bool:
+    return bool(re.search(r"answer\s*key", deliverable, re.IGNORECASE))

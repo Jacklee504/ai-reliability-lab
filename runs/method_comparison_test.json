@@ -1,0 +1,32 @@
+{
+  "split": "test",
+  "projects": [
+    "claims",
+    "citations"
+  ],
+  "model": "minimax-m3.1-flash:cloud",
+  "note": "The careful tool and the naive judges answer the same 25 held-out cases with the same model and are scored with the same fixture scorer. accused_when_it_should_abstain counts cases whose expected outcome is an abstention but where the method answered contradicted.",
+  "results": [
+    {
+      "method": "careful",
+      "scored_cases": 25,
+      "accepted": 23,
+      "accused_when_it_should_abstain": 0,
+      "abstained": 9
+    },
+    {
+      "method": "naive_binary",
+      "scored_cases": 25,
+      "accepted": 14,
+      "accused_when_it_should_abstain": 8,
+      "abstained": 0
+    },
+    {
+      "method": "naive_verdict",
+      "scored_cases": 25,
+      "accepted": 22,
+      "accused_when_it_should_abstain": 0,
+      "abstained": 8
+    }
+  ]
+}

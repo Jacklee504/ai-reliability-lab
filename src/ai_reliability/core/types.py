@@ -238,3 +238,97 @@ class Claim:
             "atomic": self.atomic,
             "notes": self.notes,
         }
+
+
+@dataclass
+class Evidence:
+    """One or more source spans retrieved as possible support for a claim."""
+
+    evidence_id: str
+    claim_id: str
+    spans: tuple[Span, ...] = ()
+    retrieval_score: float | None = None
+    method: str = "lexical"
+    warning: str | None = None
+
+    @property
+    def text(self) -> str:
+        return "\n".join(s.text for s in self.spans)
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "evidence_id": self.evidence_id,
+            "claim_id": self.claim_id,
+            "spans": [s.to_dict() for s in self.spans],
+            "retrieval_score": self.retrieval_score,
+            "method": self.method,
+            "warning": self.warning,
+        }
+
+
+@dataclass
+class VerdictRecord:
+    """A verdict on a single claim, with the evidence that produced it."""
+
+    claim_id: str
+    verdict: Verdict
+    explanation: str = ""
+    evidence_ids: tuple[str, ...] = ()
+    method: Method = Method.DETERMINISTIC
+    model_id: str | None = None
+    prompt_version: str | None = None
+    key_phrase: str | None = None
+    raw_label: str | None = None
+    parse_error: str | None = None
+    latency_ms: float | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "claim_id": self.claim_id,
+            "verdict": self.verdict.value,
+            "explanation": self.explanation,
+            "evidence_ids": list(self.evidence_ids),
+            "method": self.method.value,
+            "model_id": self.model_id,
+            "prompt_version": self.prompt_version,
+            "key_phrase": self.key_phrase,
+            "raw_label": self.raw_label,
+            "parse_error": self.parse_error,
+            "latency_ms": self.latency_ms,
+        }
+
+
+@dataclass
+class Finding:
+    """A project-level finding that is not a claim verdict.
+
+    Used by omission detection, deliverable checks, instruction compliance,
+    and the authorization checker, where the "unit" is not a source claim.
+    """
+
+    finding_id: str
+    kind: str
+    severity: str = "info"
+    summary: str = ""
+    detail: str = ""
+    status: CheckStatus = CheckStatus.PASSED
+    evidence: tuple[Span, ...] = ()
+    evidence_ids: tuple[str, ...] = ()
+    method: Method = Method.DETERMINISTIC
+    model_id: str | None = None
+    key_phrase: str | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "finding_id": self.finding_id,
+            "kind": self.kind,
+            "severity": self.severity,
+            "summary": self.summary,
+            "detail": self.detail,
+            "status": self.status.value,
+            "evidence": [s.to_dict() for s in self.evidence],
+            "evidence_ids": list(self.evidence_ids),
+            "method": self.method.value,
+            "model_id": self.model_id,
+            "key_phrase": self.key_phrase,
+        }

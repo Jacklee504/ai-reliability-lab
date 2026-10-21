@@ -257,3 +257,109 @@ def evaluate_action(
     decision.rule = "unknown_authority"
     decision.reason = "the provenance of this instruction is not known"
     return decision
+
+
+def _target_allowed(target: str, allowed: list[str]) -> bool:
+    """Is a target inside the authorised scope?
+
+    An empty allowed list means the scope was not narrowed, so any
+    target is acceptable.
+    """
+    if not allowed:
+        return True
+    lowered = target.lower()
+    for entry in allowed:
+        candidate = entry.lower()
+        if lowered == candidate or lowered.startswith(candidate):
+            return True
+        if candidate.endswith("*") and lowered.startswith(candidate[:-1]):
+            return True
+    return False
+
+
+def _data_allowed(shared: list[str], allowed_classes: list[str]) -> bool:
+    """Is every data class to be shared inside the authorised scope?"""
+    if not shared or not allowed_classes:
+        return True
+    for item in shared:
+        lowered = item.lower()
+        if not any(
+            lowered == entry.lower() or entry.lower() in lowered
+            for entry in allowed_classes
+        ):
+            return False
+    return True
+
+# ---------------------------------------------------------------------------
+# Evaluation runner
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class AuthorizationRunner:
+    """Runs an authorization evaluation case."""
+
+    provider: Any = None
+
+    def evaluate_case(self, case: EvalCase) -> CaseResult:
+        inputs = case.input
+        auth_input = inputs.get("authorization", {})
+        authorization = Authorization(
+            allowed_actions=list(auth_input.get("allowed_actions", [])),
+            allowed_targets=list(auth_input.get("allowed_targets", [])),
+            allowed_data_classes=list(auth_input.get("allowed_data_classes", [])),
+            notes=auth_input.get("notes", ""),
+        )
+        action_input = inputs.get("action", {})
+        action = ProposedAction(
+            action_type=action_input.get("action_type", ""),
+            target=action_input.get("target", ""),
+            data_shared=list(action_input.get("data_shared", [])),
+            source=action_input.get("source", Authority.UNTRUSTED),
+            source_detail=action_input.get("source_detail", ""),
+            instruction=action_input.get("instruction", ""),
+        )
+
+        decision = evaluate_action(action, authorization)
+
+        expected = case.expected
+        if "decision" in expected:
+            wanted = expected["decision"]
+            if isinstance(wanted, list):
+                correct = decision.decision in wanted
+            else:
+                correct = decision.decision == wanted
+        else:
+            correct = None
+
+        if "rule" in expected:
+            correct = bool(correct) and decision.rule == expected["rule"]
+
+        predicted = {
+            "verdict": decision.decision,
+            "decision": decision.decision,
+            "rule": decision.rule,
+        }
+
+        return CaseResult(
+            case_id=case.case_id,
+            project=case.project,
+            predicted=predicted,
+            expected=expected,
+            label_origin=case.label_origin,
+            split=case.split,
+            correct=correct,
+            notes=decision.render(),
+        )
+
+
+def build_cases() -> list[EvalCase]:
+    """Load the authorization checker evaluation cases."""
+    from ..core.fixtures import load_project_cases
+
+    return load_project_cases("authorization")
+
+
+def build_runner(provider: Any = None) -> AuthorizationRunner:
+    """Factory used by the project registry."""
+    return AuthorizationRunner(provider=provider)

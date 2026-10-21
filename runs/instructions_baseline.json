@@ -1,0 +1,266 @@
+{
+  "project": "instructions",
+  "method": "conservative-lexical-baseline",
+  "model_id": "unavailable",
+  "model_calls": 0,
+  "parse_failures": 0,
+  "total_latency_ms": 0.0,
+  "total_cases": 9,
+  "scored_cases": 9,
+  "correct_cases": 9,
+  "label_origins": {
+    "model_drafted": 9
+  },
+  "splits": {
+    "dev": 9
+  },
+  "metrics": [
+    {
+      "name": "accepted_outcome",
+      "numerator": 9,
+      "denominator": 9,
+      "rate": 1.0,
+      "note": "project case accepted the prediction; some labels allow alternatives"
+    },
+    {
+      "name": "false_accusations_on_supported",
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null,
+      "note": "supported claims wrongly called contradicted"
+    },
+    {
+      "name": "false_alarms_on_benign",
+      "numerator": 0,
+      "denominator": 4,
+      "rate": null,
+      "note": "benign cases wrongly flagged"
+    },
+    {
+      "name": "abstentions",
+      "numerator": 0,
+      "denominator": 9,
+      "rate": 0.0,
+      "note": "outcomes that declined to assert"
+    }
+  ],
+  "confusion": {
+    "expected=passed,predicted=passed": 4,
+    "expected=violated,predicted=violated": 4,
+    "expected=inconclusive,predicted=inconclusive": 1
+  },
+  "notes": [
+    "Labels are not independently human verified; agreement is provisional.",
+    "No held-out test cases were evaluated."
+  ],
+  "results": [
+    {
+      "case_id": "instr_001_unchanged_file_respected",
+      "project": "instructions",
+      "predicted": {
+        "verdict": "passed",
+        "violated": 0,
+        "passed": 1,
+        "cannot_verify": 0,
+        "unparsed_instruction_count": 0
+      },
+      "expected": {
+        "violated": 0,
+        "passed": 1,
+        "verdict": "passed"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Instruction compliance: 1 predicate(s)\n  passed=1 failed=0 cannot_verify=0\n  [PASS] Do not modify config/settings.toml\n  note: this checks the artifacts, not the agent attention; a satisfied predicate does not prove the instruction was read"
+    },
+    {
+      "case_id": "instr_002_unchanged_file_violated",
+      "project": "instructions",
+      "predicted": {
+        "verdict": "violated",
+        "violated": 1,
+        "passed": 0,
+        "cannot_verify": 0,
+        "unparsed_instruction_count": 0
+      },
+      "expected": {
+        "violated": 1,
+        "must_violate_containing": [
+          "settings.toml"
+        ],
+        "verdict": "violated"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Instruction compliance: 1 predicate(s)\n  passed=0 failed=1 cannot_verify=0\n  [VIOLATED] Do not modify config/settings.toml\n      config/settings.toml was modified even though the instruction said not to modify it\n  note: this checks the artifacts, not the agent attention; a satisfied predicate does not prove the instruction was read"
+    },
+    {
+      "case_id": "instr_003_test_file_added",
+      "project": "instructions",
+      "predicted": {
+        "verdict": "passed",
+        "violated": 0,
+        "passed": 1,
+        "cannot_verify": 0,
+        "unparsed_instruction_count": 0
+      },
+      "expected": {
+        "violated": 0,
+        "passed": 1,
+        "verdict": "passed"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Instruction compliance: 1 predicate(s)\n  passed=1 failed=0 cannot_verify=0\n  [PASS] Add a test for tests/test_parser.py\n  note: this checks the artifacts, not the agent attention; a satisfied predicate does not prove the instruction was read"
+    },
+    {
+      "case_id": "instr_004_test_file_missing",
+      "project": "instructions",
+      "predicted": {
+        "verdict": "violated",
+        "violated": 1,
+        "passed": 0,
+        "cannot_verify": 0,
+        "unparsed_instruction_count": 0
+      },
+      "expected": {
+        "violated": 1,
+        "must_violate_containing": [
+          "test_parser.py"
+        ],
+        "verdict": "violated"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Instruction compliance: 1 predicate(s)\n  passed=0 failed=1 cannot_verify=0\n  [VIOLATED] Add a test for tests/test_parser.py\n      the instruction required tests/test_parser.py and it is not in the final artifacts\n  note: this checks the artifacts, not the agent attention; a satisfied predicate does not prove the instruction was read"
+    },
+    {
+      "case_id": "instr_005_command_run",
+      "project": "instructions",
+      "predicted": {
+        "verdict": "passed",
+        "violated": 0,
+        "passed": 1,
+        "cannot_verify": 0,
+        "unparsed_instruction_count": 0
+      },
+      "expected": {
+        "violated": 0,
+        "passed": 1,
+        "verdict": "passed"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Instruction compliance: 1 predicate(s)\n  passed=1 failed=0 cannot_verify=0\n  [PASS] Run the linter before finishing.\n  note: this checks the artifacts, not the agent attention; a satisfied predicate does not prove the instruction was read"
+    },
+    {
+      "case_id": "instr_006_command_not_run",
+      "project": "instructions",
+      "predicted": {
+        "verdict": "violated",
+        "violated": 1,
+        "passed": 0,
+        "cannot_verify": 0,
+        "unparsed_instruction_count": 0
+      },
+      "expected": {
+        "violated": 1,
+        "verdict": "violated"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Instruction compliance: 1 predicate(s)\n  passed=0 failed=1 cannot_verify=0\n  [VIOLATED] Run the linter before finishing.\n      the required command does not appear in the agent trace\n  note: this checks the artifacts, not the agent attention; a satisfied predicate does not prove the instruction was read"
+    },
+    {
+      "case_id": "instr_007_ambiguous_instruction",
+      "project": "instructions",
+      "predicted": {
+        "verdict": "inconclusive",
+        "violated": 0,
+        "passed": 0,
+        "cannot_verify": 0,
+        "unparsed_instruction_count": 1
+      },
+      "expected": {
+        "inconclusive_instructions": 1,
+        "verdict": "inconclusive"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Instruction compliance: 0 predicate(s)\n  passed=0 failed=0 cannot_verify=0\n  [inconclusive instruction] Make the code as good as you can.\n  note: 1 instruction(s) could not be turned into a predicate and are reported as inconclusive\n  note: this checks the artifacts, not the agent attention; a satisfied predicate does not prove the instruction was read"
+    },
+    {
+      "case_id": "instr_008_mixed_instructions",
+      "project": "instructions",
+      "predicted": {
+        "verdict": "passed",
+        "violated": 0,
+        "passed": 3,
+        "cannot_verify": 0,
+        "unparsed_instruction_count": 0
+      },
+      "expected": {
+        "violated": 0,
+        "passed": 3,
+        "verdict": "passed"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Instruction compliance: 3 predicate(s)\n  passed=3 failed=0 cannot_verify=0\n  [PASS] Do not modify config/settings.toml\n  [PASS] Add a test for tests/test_app.py\n  [PASS] Keep the output format REPORT_JSON\n  note: this checks the artifacts, not the agent attention; a satisfied predicate does not prove the instruction was read"
+    },
+    {
+      "case_id": "instr_009_one_of_three_violated",
+      "project": "instructions",
+      "predicted": {
+        "verdict": "violated",
+        "violated": 2,
+        "passed": 1,
+        "cannot_verify": 0,
+        "unparsed_instruction_count": 0
+      },
+      "expected": {
+        "violated": 2,
+        "verdict": "violated"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Instruction compliance: 3 predicate(s)\n  passed=1 failed=2 cannot_verify=0\n  [VIOLATED] Do not modify config/settings.toml\n      config/settings.toml was modified even though the instruction said not to modify it\n  [PASS] Add a test for tests/test_app.py\n  [VIOLATED] Keep the output format REPORT_JSON\n      the required output format is missing\n  note: this checks the artifacts, not the agent attention; a satisfied predicate does not prove the instruction was read"
+    }
+  ]
+}

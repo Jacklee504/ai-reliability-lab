@@ -240,3 +240,186 @@ def _subject_phrases(text: str) -> list[str]:
         if content:
             phrases.append(" ".join(content))
     return phrases
+
+
+def _entity_mismatch(claim: str, passages: list[str]) -> bool:
+    """True when the claim and the passages are about different subjects.
+
+    A citation that talks about a different programme, organisation, or
+    product does not support the claim, however the reading is framed.
+    A model will often bridge the gap by asserting that two differently
+    named things are the same thing, and that assertion is not in the
+    source, so the citation cannot carry the verdict.
+
+    The check is deliberately narrow. It only fires when both texts
+    name a subject, the subjects share no content word, and the shared
+    content of the claim is more than a single generic word. Anything
+    less certain is left to the model.
+    """
+    claim_subjects = _subject_phrases(claim)
+    if not claim_subjects:
+        return False
+    passage_subjects: list[str] = []
+    for passage in passages:
+        passage_subjects.extend(_subject_phrases(passage))
+    if not passage_subjects:
+        return False
+
+    for claim_subject in claim_subjects:
+        claim_words = set(claim_subject.split())
+        for passage_subject in passage_subjects:
+            passage_words = set(passage_subject.split())
+            if claim_words & passage_words:
+                # They share a content word, so this pair is not a
+                # mismatch. A mismatch needs a *complete* difference.
+                return False
+    return True
+
+
+def _evidence_for(citation: Citation, index: int) -> list[Evidence]:
+    """Turn the cited passages into evidence records.
+
+    A citation is judged against the passages it is attached to, so those
+    passages are the evidence. Recording them keeps the report honest: a
+    verdict can be traced to the exact text it was based on.
+    """
+    evidence: list[Evidence] = []
+    for position, passage in enumerate(citation.passages, start=1):
+        span = Span(
+            span_id=short_id("sp", "cite", str(index), str(position)),
+            source_id=citation.labels[position - 1] if position <= len(citation.labels) else "cited",
+            text=passage,
+            start=0,
+            end=len(passage),
+            kind="cited_passage",
+        )
+        evidence.append(
+            Evidence(
+                evidence_id=short_id("ev", "cite", str(index), str(position)),
+                claim_id=f"cite_{index:03d}",
+                spans=(span,),
+                retrieval_score=None,
+                method="citation",
+            )
+        )
+    return evidence
+
+
+def audit_citations(
+    citations: list[Citation],
+    provider: Provider | None = None,
+) -> CitationReport:
+    """Audit a list of citations."""
+    report = CitationReport(model_id=getattr(provider, "model_id", None))
+
+    for index, citation in enumerate(citations):
+        scores = [topical_overlap(citation.claim, passage) for passage in citation.passages]
+        citation_id = f"cite_{index + 1:03d}"
+        evidence = _evidence_for(citation, index + 1)
+
+        parsed = None
+        error = None
+        latency = 0.0
+        if provider is not None:
+            parsed, error, latency = _classify(provider, citation.claim, citation.passages)
+            if parsed is not None:
+                report.model_calls += 1
+            elif error and not error.startswith("provider error:"):
+                report.parse_failures += 1
+
+        if parsed is None:
+            verdict, explanation = _deterministic_verdict(citation.claim, citation.passages)
+            if error:
+                explanation = f"{explanation} (model unavailable: {error})"
+            record = make_verdict(
+                citation_id,
+                verdict,
+                explanation=explanation,
+                evidence_ids=tuple(e.evidence_id for e in evidence),
+                method=Method.LEXICAL,
+            )
+            report.findings.append(
+                CitationFinding(
+                    citation=citation,
+                    verdict=record,
+                    topical_scores=scores,
+                    evidence=evidence,
+                )
+            )
+            continue
+
+        label = str(parsed.get("verdict", "")).strip().lower()
+        if label not in VALID_VERDICTS:
+            report.parse_failures += 1
+            verdict, explanation = _deterministic_verdict(citation.claim, citation.passages)
+            record = make_verdict(
+                citation_id,
+                verdict,
+                explanation=f"model returned an unusable label; {explanation}",
+                evidence_ids=tuple(e.evidence_id for e in evidence),
+                method=Method.LEXICAL,
+                raw_label=label,
+                parse_error=f"invalid verdict label: {label!r}",
+            )
+            report.findings.append(
+                CitationFinding(
+                    citation=citation,
+                    verdict=record,
+                    topical_scores=scores,
+                    evidence=evidence,
+                )
+            )
+            continue
+
+        explanation = str(parsed.get("explanation", "")).strip()
+        key_phrase = parsed.get("key_phrase")
+        key_phrase = str(key_phrase) if key_phrase else None
+
+        if label in ("supported", "contradicted") and _entity_mismatch(
+            citation.claim, citation.passages
+        ):
+            # The passage is about a different entity. A model will
+            # sometimes bridge the gap by asserting that two named
+            # things are the same thing, but that assertion is not in
+            # the source, so the citation cannot carry the verdict.
+            explanation = (
+                "the cited passage names a different entity than the claim, "
+                "so it cannot support or contradict it"
+            )
+            label = "insufficient_evidence"
+            key_phrase = None
+
+        adjusted, note = apply_abstention_rules(
+            Verdict(label),
+            claim_is_universal=" all " in f" {citation.claim.lower()} ",
+            evidence_text="\n".join(citation.passages),
+            claim_text=citation.claim,
+        )
+        if note:
+            explanation = f"{explanation} ({note})".strip()
+
+        record = make_verdict(
+            citation_id,
+            adjusted,
+            explanation=explanation,
+            evidence_ids=tuple(e.evidence_id for e in evidence),
+            method=Method.MODEL,
+            model_id=getattr(provider, "model_id", None),
+            prompt_version=PROMPT_VERSION,
+            key_phrase=key_phrase,
+            raw_label=label,
+            latency_ms=latency,
+        )
+        report.findings.append(
+            CitationFinding(
+                citation=citation,
+                verdict=record,
+                topical_scores=scores,
+                key_phrase=key_phrase,
+                evidence=evidence,
+            )
+        )
+
+    if provider is None:
+        report.notes.append("no model was used; verdicts came from the deterministic fallback")
+    return report

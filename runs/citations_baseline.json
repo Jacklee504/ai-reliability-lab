@@ -1,0 +1,218 @@
+{
+  "project": "citations",
+  "method": "conservative-lexical-baseline",
+  "model_id": "unavailable",
+  "model_calls": 0,
+  "parse_failures": 0,
+  "total_latency_ms": 0.0,
+  "total_cases": 7,
+  "scored_cases": 7,
+  "correct_cases": 5,
+  "label_origins": {
+    "model_drafted": 7
+  },
+  "splits": {
+    "dev": 7
+  },
+  "metrics": [
+    {
+      "name": "accepted_outcome",
+      "numerator": 5,
+      "denominator": 7,
+      "rate": 0.7143,
+      "note": "project case accepted the prediction; some labels allow alternatives"
+    },
+    {
+      "name": "false_accusations_on_supported",
+      "numerator": 0,
+      "denominator": 2,
+      "rate": null,
+      "note": "supported claims wrongly called contradicted"
+    },
+    {
+      "name": "false_alarms_on_benign",
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null,
+      "note": "benign cases wrongly flagged"
+    },
+    {
+      "name": "abstentions",
+      "numerator": 6,
+      "denominator": 7,
+      "rate": 0.8571,
+      "note": "outcomes that declined to assert"
+    }
+  ],
+  "confusion": {
+    "expected=supported,predicted=supported": 1,
+    "expected=contradicted,predicted=insufficient_evidence": 1,
+    "expected=['insufficient_evidence', 'uncertain'],predicted=insufficient_evidence": 4,
+    "expected=supported,predicted=insufficient_evidence": 1
+  },
+  "notes": [
+    "Labels are not independently human verified; agreement is provisional.",
+    "No held-out test cases were evaluated."
+  ],
+  "results": [
+    {
+      "case_id": "cit_001_direct_support",
+      "project": "citations",
+      "predicted": {
+        "verdict": "supported",
+        "verdicts": [
+          "supported"
+        ],
+        "max_topical_overlap": 1.0
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Citation audit: 1 citation(s)\n  [supported] The monthly service fee is 2,400 EUR.\n      topical overlap: 1.00\n      the cited passages contain all claim terms and logical qualifiers (model unavailable: provider error: offline mode requested)"
+    },
+    {
+      "case_id": "cit_002_keyword_match_wrong_year",
+      "project": "citations",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "max_topical_overlap": 0.6667
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": false,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Citation audit: 1 citation(s)\n  [insufficient_evidence] The refund deadline is 2025-06-01.\n      topical overlap: 0.67\n      cited passage overlap was 67%; the citation is on topic but was not judged to support the claim (model unavailable: provider error: offline mode requested)"
+    },
+    {
+      "case_id": "cit_003_topical_but_insufficient",
+      "project": "citations",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "max_topical_overlap": 0.25
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Citation audit: 1 citation(s)\n  [insufficient_evidence] The monthly service fee is 2,400 EUR per calendar month.\n      topical overlap: 0.25\n      cited passage overlap was 25%; the citation is on topic but was not judged to support the claim (model unavailable: provider error: offline mode requested)"
+    },
+    {
+      "case_id": "cit_004_partial_support",
+      "project": "citations",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "max_topical_overlap": 0.4286
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Citation audit: 1 citation(s)\n  [insufficient_evidence] The notice period is 90 days and the fee is 2,400 EUR.\n      topical overlap: 0.43\n      cited passage overlap was 43%; the citation is on topic but was not judged to support the claim (model unavailable: provider error: offline mode requested)"
+    },
+    {
+      "case_id": "cit_005_two_passages_together",
+      "project": "citations",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "max_topical_overlap": 0.4444
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": false,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Citation audit: 1 citation(s)\n  [insufficient_evidence] The agreement has a 24 month initial term and a 90 day notice period.\n      topical overlap: 0.44\n      cited passage overlap was 44%; the citation is on topic but was not judged to support the claim (model unavailable: provider error: offline mode requested)"
+    },
+    {
+      "case_id": "cit_006_same_topic_different_entity",
+      "project": "citations",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "max_topical_overlap": 0.7143
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Citation audit: 1 citation(s)\n  [insufficient_evidence] Acme Corp reported revenue of 4.2 million EUR in 2024.\n      topical overlap: 0.71\n      cited passage overlap was 71%; the citation is on topic but was not judged to support the claim (model unavailable: provider error: offline mode requested)"
+    },
+    {
+      "case_id": "cit_007_no_citation",
+      "project": "citations",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "max_topical_overlap": 0.0
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Citation audit: 1 citation(s)\n  [insufficient_evidence] The processor must notify the controller within 48 hours.\n      topical overlap: 0.00\n      no passage was cited (model unavailable: provider error: offline mode requested)"
+    }
+  ]
+}

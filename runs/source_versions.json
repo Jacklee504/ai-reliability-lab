@@ -1,0 +1,256 @@
+{
+  "project": "source_versions",
+  "method": "deterministic",
+  "model_id": "unavailable",
+  "model_calls": 0,
+  "parse_failures": 0,
+  "total_latency_ms": 0.0,
+  "total_cases": 6,
+  "scored_cases": 6,
+  "correct_cases": 6,
+  "label_origins": {
+    "synthetic_transform": 6
+  },
+  "splits": {
+    "dev": 6
+  },
+  "metrics": [
+    {
+      "name": "accepted_outcome",
+      "numerator": 6,
+      "denominator": 6,
+      "rate": 1.0,
+      "note": "project case accepted the prediction; some labels allow alternatives"
+    },
+    {
+      "name": "false_accusations_on_supported",
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null,
+      "note": "supported claims wrongly called contradicted"
+    },
+    {
+      "name": "false_alarms_on_benign",
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null,
+      "note": "benign cases wrongly flagged"
+    },
+    {
+      "name": "abstentions",
+      "numerator": 0,
+      "denominator": 6,
+      "rate": 0.0,
+      "note": "outcomes that declined to assert"
+    }
+  ],
+  "confusion": {
+    "expected=None,predicted=None": 6
+  },
+  "notes": [
+    "Labels are not independently human verified; agreement is provisional.",
+    "No held-out test cases were evaluated."
+  ],
+  "results": [
+    {
+      "case_id": "sv_001_changed_fee",
+      "project": "source_versions",
+      "predicted": {
+        "before_hash": "183f2b90fa93349e05ebb1c6d788d442431decb5d7962d94cbec43208e3740bd",
+        "after_hash": "59af2150ca75fae6e096daa374bb3ec5d7708fdad3742bec7bf52bc30e5acbd3",
+        "changed_regions": [
+          {
+            "change": "replace",
+            "old_start": 0,
+            "old_end": 8,
+            "new_start": 0,
+            "new_end": 8,
+            "old_text": "Fee: 10\n",
+            "new_text": "Fee: 20\n"
+          }
+        ],
+        "revisit_claim_ids": [
+          "fee"
+        ],
+        "warnings": [],
+        "conclusion": "changed evidence requires review; no verdict was changed"
+      },
+      "expected": {
+        "revisit_claim_ids": [
+          "fee"
+        ]
+      },
+      "label_origin": "synthetic_transform",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": null
+    },
+    {
+      "case_id": "sv_002_unchanged",
+      "project": "source_versions",
+      "predicted": {
+        "before_hash": "976db021ec037630aedc36cb33f5f84d7fc43a39feefbdd936a6951263dc9f47",
+        "after_hash": "976db021ec037630aedc36cb33f5f84d7fc43a39feefbdd936a6951263dc9f47",
+        "changed_regions": [],
+        "revisit_claim_ids": [],
+        "warnings": [],
+        "conclusion": "changed evidence requires review; no verdict was changed"
+      },
+      "expected": {
+        "revisit_claim_ids": []
+      },
+      "label_origin": "synthetic_transform",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": null
+    },
+    {
+      "case_id": "sv_003_unrelated_edit",
+      "project": "source_versions",
+      "predicted": {
+        "before_hash": "183f2b90fa93349e05ebb1c6d788d442431decb5d7962d94cbec43208e3740bd",
+        "after_hash": "2f4abc26dd8cc5e4b17bd4079174c98f7082cb03ca6fe6e79d6265db0df707bd",
+        "changed_regions": [
+          {
+            "change": "replace",
+            "old_start": 8,
+            "old_end": 19,
+            "new_start": 8,
+            "new_end": 19,
+            "old_text": "Notice: 30\n",
+            "new_text": "Notice: 60\n"
+          }
+        ],
+        "revisit_claim_ids": [],
+        "warnings": [],
+        "conclusion": "changed evidence requires review; no verdict was changed"
+      },
+      "expected": {
+        "revisit_claim_ids": []
+      },
+      "label_origin": "synthetic_transform",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": null
+    },
+    {
+      "case_id": "sv_004_deleted_evidence",
+      "project": "source_versions",
+      "predicted": {
+        "before_hash": "daee1cd25194ae952d046ad9b9c81d3c07dc5332440b58d6d7461b248be56712",
+        "after_hash": "06f961b802bc46ee168555f066d28f4f0e9afdf3f88174c1ee6f9de004fc30a0",
+        "changed_regions": [
+          {
+            "change": "delete",
+            "old_start": 2,
+            "old_end": 4,
+            "new_start": 2,
+            "new_end": 2,
+            "old_text": "B\n",
+            "new_text": ""
+          }
+        ],
+        "revisit_claim_ids": [
+          "b"
+        ],
+        "warnings": [],
+        "conclusion": "changed evidence requires review; no verdict was changed"
+      },
+      "expected": {
+        "revisit_claim_ids": [
+          "b"
+        ]
+      },
+      "label_origin": "synthetic_transform",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": null
+    },
+    {
+      "case_id": "sv_005_insert_at_span",
+      "project": "source_versions",
+      "predicted": {
+        "before_hash": "daee1cd25194ae952d046ad9b9c81d3c07dc5332440b58d6d7461b248be56712",
+        "after_hash": "4d90a81e2404054806c3996a02755d6d9522fe997e8dccda5d38f0fd3b1cca78",
+        "changed_regions": [
+          {
+            "change": "insert",
+            "old_start": 2,
+            "old_end": 2,
+            "new_start": 2,
+            "new_end": 4,
+            "old_text": "",
+            "new_text": "X\n"
+          }
+        ],
+        "revisit_claim_ids": [
+          "b"
+        ],
+        "warnings": [],
+        "conclusion": "changed evidence requires review; no verdict was changed"
+      },
+      "expected": {
+        "revisit_claim_ids": [
+          "b"
+        ]
+      },
+      "label_origin": "synthetic_transform",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": null
+    },
+    {
+      "case_id": "sv_006_wrong_source_hash",
+      "project": "source_versions",
+      "predicted": {
+        "before_hash": "976db021ec037630aedc36cb33f5f84d7fc43a39feefbdd936a6951263dc9f47",
+        "after_hash": "66ae1b7e0ab5e2a5b06ba8df7e28d919970eb5938c818bdb672dcd4e17ba228f",
+        "changed_regions": [
+          {
+            "change": "replace",
+            "old_start": 0,
+            "old_end": 8,
+            "new_start": 0,
+            "new_end": 8,
+            "old_text": "Fee: 10\n",
+            "new_text": "Fee: 20\n"
+          }
+        ],
+        "revisit_claim_ids": [
+          "fee"
+        ],
+        "warnings": [
+          "fee: evidence hash does not match the old source"
+        ],
+        "conclusion": "changed evidence requires review; no verdict was changed"
+      },
+      "expected": {
+        "revisit_claim_ids": [
+          "fee"
+        ]
+      },
+      "label_origin": "synthetic_transform",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": null
+    }
+  ]
+}

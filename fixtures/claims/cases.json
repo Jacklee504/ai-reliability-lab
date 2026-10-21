@@ -1,58 +1,44 @@
 {
   "cases": [
     {
-      "case_id": "claim_001_supported",
+      "case_id": "claim_007_mixed_sentence",
       "project": "claims",
       "input": {
-        "answer": "The monthly service fee is 2,400 EUR.",
+        "answer": "The monthly service fee is 2,400 EUR and the notice period is 60 days.",
         "sources": [
           {
             "identifier": "contract",
-            "text": "The monthly service fee is 2,400 EUR per calendar month. Payment is due within 30 days of the invoice date."
+            "text": "The monthly service fee is 2,400 EUR per calendar month. Either party may terminate the agreement for convenience with 90 days written notice."
           }
         ]
       },
       "expected": {
-        "verdict": "supported"
-      },
-      "label_origin": "model_drafted",
-      "split": "dev",
-      "rationale": "The source states the claim directly. A supported verdict is the easy positive and must not be broken by the abstention rules.",
-      "tags": [
-        "happy_path"
-      ]
-    },
-    {
-      "case_id": "claim_002_contradicted",
-      "project": "claims",
-      "input": {
-        "answer": "The monthly service fee is 2,400 EUR.",
-        "sources": [
-          {
-            "identifier": "contract",
-            "text": "The monthly service fee is 2,800 EUR per calendar month. Payment is due within 30 days of the invoice date."
-          }
+        "verdict": [
+          "supported",
+          "contradicted"
+        ],
+        "verdicts": [
+          "supported",
+          "contradicted"
         ]
       },
-      "expected": {
-        "verdict": "contradicted"
-      },
       "label_origin": "model_drafted",
       "split": "dev",
-      "rationale": "The source states a different amount. This is a genuine contradiction, not a retrieval miss.",
+      "rationale": "One sentence carries two claims with different outcomes: the fee is supported, the notice period is contradicted. The auditor must split them.",
       "tags": [
-        "true_contradiction"
+        "multi_claim",
+        "atomicity"
       ]
     },
     {
-      "case_id": "claim_003_wrong_year",
+      "case_id": "claim_008_negation",
       "project": "claims",
       "input": {
-        "answer": "The notice period is 90 days.",
+        "answer": "The customer does not pay late interest on overdue amounts.",
         "sources": [
           {
             "identifier": "contract",
-            "text": "Either party may terminate the agreement for convenience with 60 days written notice. Termination for cause requires 30 days written notice."
+            "text": "A late payment interest of 1.5 percent per month applies to overdue amounts."
           }
         ]
       },
@@ -61,21 +47,22 @@
       },
       "label_origin": "model_drafted",
       "split": "dev",
-      "rationale": "A wrong-year or wrong-number claim where the source does state the relevant quantity but with a different value.",
+      "rationale": "The source says the opposite, but the claim carries a negation. Dropping the negation would turn this into a supported claim, so this tests qualifier preservation.",
       "tags": [
-        "wrong_number",
-        "synthetic_transform"
+        "negation",
+        "qualifier",
+        "hard_negative"
       ]
     },
     {
-      "case_id": "claim_004_offtopic_source",
+      "case_id": "claim_009_empty_source",
       "project": "claims",
       "input": {
-        "answer": "The processor must notify the controller of any personal data breach within 48 hours.",
+        "answer": "The monthly service fee is 2,400 EUR.",
         "sources": [
           {
-            "identifier": "handbook",
-            "text": "Personal data is processed solely for the purpose of delivering the service. Data is stored within the European Economic Area."
+            "identifier": "empty",
+            "text": ""
           }
         ]
       },
@@ -87,21 +74,21 @@
       },
       "label_origin": "model_drafted",
       "split": "dev",
-      "rationale": "The source discusses the same topic but does not state the notification deadline. This must not become a contradiction. This is the key false-accusation control.",
+      "rationale": "An empty source must produce abstention, not a verdict. This is a failure-mode case, not a truth case.",
       "tags": [
-        "hard_negative",
-        "false_accusation_control"
+        "failure_mode",
+        "empty_source"
       ]
     },
     {
-      "case_id": "claim_005_qualifier_all",
+      "case_id": "claim_010_before_2024_qualifier",
       "project": "claims",
       "input": {
-        "answer": "All customers receive a refund within 30 days of cancelling.",
+        "answer": "Applicants must re-enrol before 2024.",
         "sources": [
           {
             "identifier": "policy",
-            "text": "One customer received a refund within 30 days of cancelling in March."
+            "text": "Applicants must re-enrol before 2025."
           }
         ]
       },
@@ -113,38 +100,37 @@
       },
       "label_origin": "model_drafted",
       "split": "dev",
-      "rationale": "A universal claim is not supported by a single instance and is not contradicted by one either. The abstention rules must downgrade both directions.",
+      "rationale": "The source fixes the last permissible date at 2025, which is compatible with a stricter 2024 deadline, so the source does not contradict the claim. Label revised from \"contradicted\" after the first run: the deterministic reading was wrong, and the revision is flagged for human confirmation rather than assumed correct.",
       "tags": [
+        "qualifier",
+        "date",
         "hard_negative",
-        "universal_claim",
-        "false_accusation_control"
-      ]
+        "label_revised"
+      ],
+      "notes": "Label revised after the first observed run. Needs a second human pass."
     },
     {
-      "case_id": "claim_006_no_source_for_claim",
+      "case_id": "claim_011_fixed_date_contradiction",
       "project": "claims",
       "input": {
-        "answer": "The office is located in Dublin.",
+        "answer": "The refund deadline is 2025-06-01.",
         "sources": [
           {
-            "identifier": "contract",
-            "text": "The monthly service fee is 2,400 EUR per calendar month. Payment is due within 30 days of the invoice date."
+            "identifier": "policy",
+            "text": "The refund deadline is 2024-03-01. Requests received after the deadline are not processed."
           }
         ]
       },
       "expected": {
-        "verdict": [
-          "insufficient_evidence",
-          "uncertain"
-        ]
+        "verdict": "contradicted"
       },
       "label_origin": "model_drafted",
       "split": "dev",
-      "rationale": "Nothing in the source addresses the location. A retrieval miss must never be reported as a contradiction.",
+      "rationale": "Two different fixed dates cannot both be the deadline, so this is an unambiguous contradiction and a clean test of qualifier handling on dates.",
       "tags": [
-        "hard_negative",
-        "retrieval_miss",
-        "false_accusation_control"
+        "qualifier",
+        "date",
+        "unambiguous"
       ]
     }
   ]

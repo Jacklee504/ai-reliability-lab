@@ -414,3 +414,62 @@ class FakeProvider:
 
     def call_records(self) -> list[dict[str, Any]]:
         return [c.to_dict() for c in self.calls]
+
+
+class UnavailableProvider:
+    """Stand-in used when no model endpoint is reachable.
+
+    Every call raises :class:`ProviderError`, and the project code is
+    expected to degrade to a deterministic path and record that it did.
+    """
+
+    model_id = "unavailable"
+
+    def __init__(self, reason: str = "no model endpoint configured"):
+        self.reason = reason
+        self.calls: list[ModelCall] = []
+
+    def generate(self, prompt: str, **kwargs: Any) -> ModelResult:
+        started = time.perf_counter()
+        call = ModelCall(
+            call_id=f"unavailable_{len(self.calls)}",
+            model_id=self.model_id,
+            prompt_version=str(kwargs.get("prompt_version", "v1")),
+            purpose=str(kwargs.get("purpose", "generic")),
+            latency_ms=(time.perf_counter() - started) * 1000,
+            ok=False,
+            error=self.reason,
+        )
+        self.calls.append(call)
+        raise ProviderError(self.reason)
+
+    def call_records(self) -> list[dict[str, Any]]:
+        return [c.to_dict() for c in self.calls]
+
+
+def build_provider(
+    model_id: str | None = None,
+    url: str | None = None,
+    *,
+    offline: bool = False,
+) -> Provider:
+    """Create the provider selected by CLI flags or environment."""
+    if offline:
+        return UnavailableProvider("offline mode requested")
+    return OllamaProvider(model_id=model_id, url=url)
+
+
+def provider_available(provider: Provider) -> tuple[bool, str]:
+    """Check whether the provider's endpoint responds. Returns (ok, detail)."""
+    if isinstance(provider, OllamaProvider):
+        if provider.cache_only:
+            return True, f"cache replay configured with {len(provider.cache)} responses; endpoint not checked"
+        try:
+            with urllib.request.urlopen(provider._endpoint("/api/tags"), timeout=5) as response:
+                response.read()
+            return True, f"endpoint reachable at {provider.url}"
+        except Exception as exc:
+            return False, f"endpoint not reachable at {provider.url}: {exc}"
+    if isinstance(provider, (FakeProvider,)):
+        return True, "fake provider (deterministic)"
+    return False, getattr(provider, "reason", "provider unavailable")

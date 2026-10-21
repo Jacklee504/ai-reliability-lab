@@ -524,3 +524,238 @@ def _format_present(deliverable: str, fmt: str) -> bool:
 
 def _answer_key_present(deliverable: str) -> bool:
     return bool(re.search(r"answer\s*key", deliverable, re.IGNORECASE))
+
+
+def check_requirement(requirement: Requirement, deliverable: str) -> RequirementCheck:
+    """Check one requirement against the deliverable, deterministically."""
+    def count_passes(observed_count: int) -> bool:
+        if requirement.comparator == "at_least":
+            return observed_count >= (requirement.count or 0)
+        if requirement.comparator == "at_most":
+            return observed_count <= (requirement.count or 0)
+        return observed_count == (requirement.count or 0)
+
+    if requirement.kind == "count":
+        unit = requirement.unit
+        if "question" in unit:
+            observed = str(_count_questions(deliverable))
+            expected = str(requirement.count)
+        elif "option" in unit:
+            observed = str(_count_options(deliverable))
+            expected = str(requirement.count)
+        elif unit.startswith("chapter") or unit.startswith("section") or unit.startswith("part"):
+            observed_count, names = _chapters_present(deliverable, requirement.count or 0)
+            observed = str(observed_count)
+            expected = str(requirement.count)
+            status = (
+                CheckStatus.PASSED
+                if count_passes(observed_count)
+                else CheckStatus.FAILED
+            )
+            return RequirementCheck(
+                requirement=requirement,
+                status=status,
+                observed=observed,
+                expected=expected,
+                detail=f"found headings: {', '.join(names) if names else '(none)'}",
+            )
+        else:
+            observed = "unknown"
+            expected = str(requirement.count)
+        status = (
+            CheckStatus.PASSED
+            if observed != "unknown" and count_passes(int(observed))
+            else CheckStatus.FAILED
+        )
+        return RequirementCheck(
+            requirement=requirement,
+            status=status,
+            observed=observed,
+            expected=expected,
+            detail=f"counted {observed} {unit} in the deliverable",
+        )
+
+    if requirement.kind == "section":
+        present = _named_section_present(deliverable, requirement.target)
+        return RequirementCheck(
+            requirement=requirement,
+            status=CheckStatus.PASSED if present else CheckStatus.FAILED,
+            observed="present" if present else "absent",
+            expected="present",
+            detail=f"looked for a heading matching {requirement.target!r}",
+        )
+
+    if requirement.kind == "format":
+        present = _format_present(deliverable, requirement.target)
+        return RequirementCheck(
+            requirement=requirement,
+            status=CheckStatus.PASSED if present else CheckStatus.FAILED,
+            observed="present" if present else "absent",
+            expected="present",
+            detail=f"looked for {requirement.target} formatting",
+        )
+
+    if requirement.kind == "content" and requirement.target == "answer_key":
+        present = _answer_key_present(deliverable)
+        return RequirementCheck(
+            requirement=requirement,
+            status=CheckStatus.PASSED if present else CheckStatus.FAILED,
+            observed="present" if present else "absent",
+            expected="present",
+            detail="looked for an answer key section",
+        )
+
+    # Semantic requirements: counted as a separate, clearly labelled band.
+    return RequirementCheck(
+        requirement=requirement,
+        status=CheckStatus.CANNOT_VERIFY,
+        observed="not checked deterministically",
+        expected="judged by a model or a human",
+        detail="this requirement needs semantic judgement",
+        method=Method.SEMANTIC,
+    )
+
+
+# ---------------------------------------------------------------------------
+# Public API
+# ---------------------------------------------------------------------------
+
+
+def check_deliverable(
+    request: str, deliverable: str, requirements: list[Requirement] | None = None,
+) -> DeliverableReport:
+    """Check extracted requirements, or a user-edited requirement list."""
+    requirements = list(requirements) if requirements is not None else extract_requirements(request)
+    ids = [item.requirement_id for item in requirements]
+    if len(ids) != len(set(ids)):
+        raise ValueError("requirement IDs must be unique")
+    checks = [check_requirement(r, deliverable) for r in requirements]
+
+    notes: list[str] = []
+    if not requirements:
+        notes.append(
+            "no explicit requirements could be extracted from the request;"
+            " nothing was checked"
+        )
+    semantic = [c for c in checks if c.requirement.check == "semantic"]
+    if semantic:
+        notes.append(
+            f"{len(semantic)} requirement(s) need semantic judgement and are"
+            " reported as cannot_verify without a model"
+        )
+
+    return DeliverableReport(
+        request=request,
+        deliverable=deliverable,
+        requirements=requirements,
+        checks=checks,
+        notes=notes,
+    )
+
+
+def summarize(report: DeliverableReport) -> dict[str, Any]:
+    """Compact summary suitable for the evaluation layer."""
+    return {
+        "verdict": report.verdict,
+        "requirement_count": len(report.requirements),
+        "passed": len(report.passed),
+        "failed": len(report.failed),
+        "cannot_verify": len(report.cannot_verify),
+        "failures": [
+            {
+                "text": c.requirement.text,
+                "expected": c.expected,
+                "observed": c.observed,
+            }
+            for c in report.failed
+        ],
+    }
+
+
+# ---------------------------------------------------------------------------
+# Evaluation runner
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class DeliverableRunner:
+    """Runs a deliverable contract evaluation case.
+
+    The runner calls the checker, summarises the outcome, and scores the
+    case against its expected label. A deliverable case carries several
+    conditions rather than a single label, so scoring is done here
+    instead of in the shared layer.
+
+    A deliverable whose only failing requirements are semantic ones is
+    reported as ``cannot_verify``, never as a pass.
+    """
+
+    provider: Any = None
+
+    def evaluate_case(self, case: EvalCase) -> CaseResult:
+        request = case.input.get("request", "")
+        deliverable = case.input.get("deliverable", "")
+
+        report = check_deliverable(request, deliverable)
+        summary = summarize(report)
+
+        predicted: dict[str, Any] = dict(summary)
+        if summary["verdict"] == "cannot_verify" and not summary["failed"]:
+            predicted["verdict"] = "cannot_verify"
+
+        expected = case.expected
+        correct = self._score(predicted, expected)
+
+        return CaseResult(
+            case_id=case.case_id,
+            project=case.project,
+            predicted=predicted,
+            expected=expected,
+            label_origin=case.label_origin,
+            split=case.split,
+            correct=correct,
+            notes=report.render(),
+        )
+
+    @staticmethod
+    def _score(predicted: dict[str, Any], expected: dict[str, Any]) -> bool | None:
+        """Score a deliverable case against its expected conditions."""
+        checks: list[bool] = []
+
+        if "verdict" in expected:
+            checks.append(predicted.get("verdict") == expected["verdict"])
+
+        if "failed" in expected:
+            checks.append(predicted.get("failed") == expected["failed"])
+
+        if "failed_gte" in expected:
+            checks.append(predicted.get("failed", 0) >= expected["failed_gte"])
+
+        if "requirement_count" in expected:
+            checks.append(predicted.get("requirement_count") == expected["requirement_count"])
+
+        if "requirement_count_gte" in expected:
+            checks.append(
+                predicted.get("requirement_count", 0) >= expected["requirement_count_gte"]
+            )
+
+        if "must_detect_failure_containing" in expected:
+            needle = expected["must_detect_failure_containing"].lower()
+            failures = " ".join(f.get("text", "") for f in predicted.get("failures", []))
+            checks.append(needle in failures.lower())
+
+        if not checks:
+            return None
+        return all(checks)
+
+
+def build_cases() -> list[EvalCase]:
+    """Load the deliverable checker's evaluation cases."""
+    from ..core.fixtures import load_project_cases
+
+    return load_project_cases("deliverables")
+
+
+def build_runner(provider: Any = None) -> DeliverableRunner:
+    """Factory used by the project registry."""
+    return DeliverableRunner(provider)

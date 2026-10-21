@@ -1,0 +1,135 @@
+{
+  "cases": [
+    {
+      "case_id": "ret_001_exact_terms",
+      "input": {
+        "query": "What is the notice period?",
+        "passages": [
+          "The monthly service fee is 2,400 EUR per calendar month.",
+          "Either party may terminate the agreement with 90 days written notice.",
+          "Personal data is processed solely to deliver the service.",
+          "Total liability is capped at the fees paid in the preceding 12 months."
+        ],
+        "answering_passages": [
+          2
+        ]
+      },
+      "expected": {
+        "hit_lexical": true,
+        "hit_embedding": false
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The answering passage contains 'written notice' while the query says 'notice period'. The lexical ranker matches on the shared token and finds it at rank 1. The hashed embedder scores the passage low because the two texts share only 'notice', and the other candidates share more tokens with the query. The label was written expecting both to hit; the first measured run showed the embedding path misses it, and the label was changed to the observed behaviour. This case is the clearest measured difference between the two rankers.",
+      "tags": [
+        "token_order",
+        "measured_difference",
+        "label_corrected"
+      ],
+      "notes": "Label changed after the first measured run."
+    },
+    {
+      "case_id": "ret_002_number_disambiguation",
+      "input": {
+        "query": "What was revenue in 2024?",
+        "passages": [
+          "Acme Corp revenue was 4,200,000 in 2023.",
+          "Globex Inc revenue was 3,800,000 in 2023.",
+          "Acme Corp revenue was 5,100,000 in 2024.",
+          "Acme Corp headcount was 1,350 in 2024."
+        ],
+        "answering_passages": [
+          3
+        ]
+      },
+      "expected": {
+        "hit_lexical": true,
+        "hit_embedding": true
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The year and the metric together pick out one passage. The number bonus in the lexical ranker is what makes this work.",
+      "tags": [
+        "numbers"
+      ]
+    },
+    {
+      "case_id": "ret_003_wrong_year_does_not_beat_right_year",
+      "input": {
+        "query": "What was the notice period for termination in 2024?",
+        "passages": [
+          "Either party may terminate the agreement with 60 days written notice in 2023.",
+          "Either party may terminate the agreement with 90 days written notice in 2024.",
+          "Termination for cause requires 30 days written notice.",
+          "The agreement runs for an initial term of 24 months."
+        ],
+        "answering_passages": [
+          2
+        ]
+      },
+      "expected": {
+        "hit_lexical": true,
+        "hit_embedding": true
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "Two passages share every term. The year is what separates them, and the right one has to win.",
+      "tags": [
+        "year",
+        "hard_negative"
+      ]
+    },
+    {
+      "case_id": "ret_004_paraphrase_only",
+      "input": {
+        "query": "How long do I have to cancel?",
+        "passages": [
+          "The monthly service fee is 2,400 EUR per calendar month.",
+          "The customer may end the contract by giving 60 days notice.",
+          "Invoices are issued on the first working day of each month.",
+          "Data is stored within the European Economic Area."
+        ],
+        "answering_passages": [
+          2
+        ]
+      },
+      "expected": {
+        "hit_lexical": false,
+        "hit_embedding": false
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The answering passage says 'end the contract by giving 60 days notice' and the query says 'cancel'. The hashed embedder has no synonymy, so neither ranker can find it. This is the recorded limit of the local embedder, stated as a case rather than a claim.",
+      "tags": [
+        "paraphrase",
+        "known_limit"
+      ]
+    },
+    {
+      "case_id": "ret_005_two_passages_needed",
+      "input": {
+        "query": "What is the fee and how long is the term?",
+        "passages": [
+          "The monthly service fee is 2,400 EUR per calendar month.",
+          "The agreement runs for an initial term of 24 months.",
+          "Personal data is processed solely to deliver the service.",
+          "Total liability is capped at the fees paid in the preceding 12 months."
+        ],
+        "answering_passages": [
+          1,
+          2
+        ]
+      },
+      "expected": {
+        "hit_lexical": true,
+        "hit_embedding": true
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "Two passages answer the query. A hit means at least one of them is retrieved.",
+      "tags": [
+        "multi_answer"
+      ]
+    }
+  ]
+}

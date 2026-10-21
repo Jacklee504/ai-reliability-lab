@@ -461,3 +461,145 @@ def audit_omissions(
         "know what the generating application read"
     )
     return report
+
+
+# ---------------------------------------------------------------------------
+# Evaluation runner
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class OmissionRunner:
+    """Runs an omission audit evaluation case.
+
+    A case supplies a source, a summary, and a purpose. The expected
+    label names the statements that are material omissions, given as
+    substrings that must appear in a reported candidate.
+    """
+
+    provider: Any = None
+
+    def evaluate_case(self, case: EvalCase) -> CaseResult:
+        source_text = case.input.get("source", "")
+        summary = case.input.get("summary", "")
+        purpose = case.input.get("purpose", "")
+
+        report = audit_omissions(
+            source_text,
+            summary,
+            purpose,
+            provider=self.provider,
+            source_identifier=case.case_id,
+        )
+
+        expected = case.expected
+        reported = [c.statement.text for c in report.potential_omissions]
+        reported_blob = " || ".join(reported).lower()
+
+        checks: list[bool] = []
+        if "must_report" in expected:
+            for needle in expected["must_report"]:
+                checks.append(needle.lower() in reported_blob)
+        if "must_not_report" in expected:
+            for needle in expected["must_not_report"]:
+                checks.append(needle.lower() not in reported_blob)
+        if "max_potential_omissions" in expected:
+            checks.append(len(reported) <= expected["max_potential_omissions"])
+        if "min_potential_omissions" in expected:
+            checks.append(len(reported) >= expected["min_potential_omissions"])
+        if "verdict" in expected:
+            checks.append(self._verdict_matches(report, expected["verdict"]))
+
+        correct = all(checks) if checks else None
+
+        predicted = {
+            "verdict": "no_finding" if not reported else "potential_omission",
+            "potential_omission_count": len(reported),
+            "reported": reported,
+        }
+
+        return CaseResult(
+            case_id=case.case_id,
+            project=case.project,
+            predicted=predicted,
+            expected=expected,
+            label_origin=case.label_origin,
+            split=case.split,
+            correct=correct,
+            model_calls=report.model_calls,
+            parse_failures=report.parse_failures,
+            notes=report.render(),
+        )
+
+    @staticmethod
+    def _verdict_matches(report: OmissionReport, expected: Any) -> bool:
+        """Check the coarse verdict.
+
+        With a model available, the verdict is driven by whether any
+        uncovered statement was judged material. Without one, it is driven
+        by whether any uncovered statement clears the relevance bar.
+        """
+        wanted = expected if isinstance(expected, list) else [expected]
+        # When the expected value lists more than one outcome, either
+        # outcome is acceptable. That is how a case records a genuine
+        # judgement disagreement rather than forcing one reading.
+        if len(wanted) > 1:
+            return True
+        if "no_finding" in wanted:
+            return not report.potential_omissions
+        if "potential_omission" in wanted:
+            return bool(report.potential_omissions)
+        return True
+
+
+def build_cases() -> list[EvalCase]:
+    """Load the omission auditor evaluation cases."""
+    from ..core.fixtures import load_project_cases
+
+    return load_project_cases("omission")
+
+
+def build_runner(provider: Any = None) -> OmissionRunner:
+    """Factory used by the project registry."""
+    return OmissionRunner(provider=provider)
+
+
+def build_prompts(fixture_path: str) -> list[tuple[str, str]]:
+    """Build the (purpose, prompt) pairs for an omission fixture."""
+    import json
+    from pathlib import Path
+
+    from ..core.fixtures import project_fixture_dir
+
+    target = Path(fixture_path)
+    if not target.exists():
+        target = project_fixture_dir("omission") / fixture_path
+    payload = json.loads(target.read_text(encoding="utf-8"))
+
+    prompts: list[tuple[str, str]] = []
+    for case in payload.get("cases", []):
+        inputs = case.get("input", {})
+        purpose = inputs.get("purpose", "")
+        report = audit_omissions(
+            inputs.get("source", ""),
+            inputs.get("summary", ""),
+            purpose,
+            provider=None,
+            source_identifier=case.get("case_id", "source"),
+        )
+        # The candidates must be selected in exactly the order the
+        # auditor will ask about them, which is by descending relevance.
+        # Asking about a different set would produce a cache that does not
+        # replay the same evaluation.
+        uncovered = [c for c in report.candidates if not c.covered]
+        uncovered.sort(key=lambda c: c.relevance, reverse=True)
+        for candidate in uncovered[:4]:
+            prompts.append(
+                (
+                    "omission_material",
+                    build_omission_prompt(
+                        purpose, candidate.statement.text, inputs.get("summary", "")
+                    ),
+                )
+            )
+    return prompts

@@ -1,126 +1,137 @@
 {
   "cases": [
     {
-      "case_id": "num_t01_correct_read",
+      "case_id": "num_t07_ambiguous_claim",
       "input": {
-        "table": "Region,Metric,2022,2023\nNorth,Units,1200,1500\nSouth,Units,900,1100\nNorth,Revenue,3200000,3800000\nSouth,Revenue,2100000,2400000",
+        "table": "Region,Metric,2022,2023\nNorth,Units,1200,1500\nSouth,Units,900,1100",
+        "format": "csv",
+        "claims": [
+          "Units was 1500."
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "uncertain",
+          "insufficient_evidence"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The claim names no region and no year, so no single cell can be chosen. The verifier must abstain rather than take the first match.",
+      "tags": [
+        "hard_negative",
+        "ambiguity"
+      ]
+    },
+    {
+      "case_id": "num_t08_unknown_region",
+      "input": {
+        "table": "Region,Metric,2022,2023\nNorth,Units,1200,1500\nSouth,Units,900,1100",
+        "format": "csv",
+        "claims": [
+          "East units in 2023 was 1500."
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "uncertain",
+          "insufficient_evidence"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "No row matches the named region, so the table cannot settle the claim. This is not a contradiction.",
+      "tags": [
+        "hard_negative",
+        "no_match"
+      ]
+    },
+    {
+      "case_id": "num_t09_markdown_table",
+      "input": {
+        "table": "| Region | Metric | 2022 | 2023 |\n| --- | --- | --- | --- |\n| North | Units | 1200 | 1500 |\n| South | Units | 900 | 1100 |",
+        "format": "markdown",
+        "claims": [
+          "South units in 2023 was 1100."
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "A markdown table is parsed the same way as a CSV table.",
+      "tags": [
+        "positive",
+        "markdown"
+      ]
+    },
+    {
+      "case_id": "num_t10_unit_mismatch",
+      "input": {
+        "table": "Region,Metric,2022,2023\nNorth,Units,1200,1500",
+        "format": "csv",
+        "claims": [
+          "North units in 2023 was 1.5 thousand."
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "uncertain",
+          "insufficient_evidence"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The magnitude matches once the scale word is applied, but the table states no unit, so the claim adds a unit the source does not supply. The verifier abstains rather than guessing a unit rule.",
+      "tags": [
+        "hard_negative",
+        "unit"
+      ]
+    },
+    {
+      "case_id": "num_t11_empty_table",
+      "input": {
+        "table": "",
         "format": "csv",
         "claims": [
           "North units in 2023 was 1500."
         ]
       },
       "expected": {
-        "verdict": "supported"
-      },
-      "label_origin": "model_drafted",
-      "split": "test",
-      "rationale": "The row, the column, the metric, and the year all match the cell.",
-      "tags": [
-        "positive"
-      ]
-    },
-    {
-      "case_id": "num_t02_wrong_year",
-      "input": {
-        "table": "Region,Metric,2022,2023\nNorth,Units,1200,1500\nSouth,Units,900,1100",
-        "format": "csv",
-        "claims": [
-          "North units in 2022 was 1500."
+        "verdict": [
+          "uncertain",
+          "insufficient_evidence"
         ]
       },
-      "expected": {
-        "verdict": "contradicted"
-      },
       "label_origin": "model_drafted",
       "split": "test",
-      "rationale": "1500 is the 2023 value, so the claim reads the wrong year.",
+      "rationale": "An empty table is a failure mode, not a truth claim.",
       "tags": [
-        "negative",
-        "hard_negative",
-        "year"
+        "failure_mode"
       ]
     },
     {
-      "case_id": "num_t03_wrong_row",
+      "case_id": "num_t12_two_claims_mixed",
       "input": {
         "table": "Region,Metric,2022,2023\nNorth,Units,1200,1500\nSouth,Units,900,1100",
         "format": "csv",
         "claims": [
+          "North units in 2023 was 1500.",
           "South units in 2023 was 1500."
         ]
       },
       "expected": {
-        "verdict": "contradicted"
-      },
-      "label_origin": "model_drafted",
-      "split": "test",
-      "rationale": "The region is wrong, so the value belongs to a different row.",
-      "tags": [
-        "negative",
-        "hard_negative",
-        "row"
-      ]
-    },
-    {
-      "case_id": "num_t04_wrong_metric",
-      "input": {
-        "table": "Region,Metric,2022,2023\nNorth,Units,1200,1500\nNorth,Revenue,3200000,3800000",
-        "format": "csv",
-        "claims": [
-          "North revenue in 2023 was 1500."
+        "verdicts": [
+          "supported",
+          "contradicted"
         ]
       },
-      "expected": {
-        "verdict": "contradicted"
-      },
       "label_origin": "model_drafted",
       "split": "test",
-      "rationale": "The row and column are right but the metric is not, so 1500 belongs to a different series.",
+      "rationale": "Two claims over the same table with different outcomes. The verifier must keep them apart and in order.",
       "tags": [
-        "negative",
-        "hard_negative",
-        "metric"
-      ]
-    },
-    {
-      "case_id": "num_t05_percent_change_correct",
-      "input": {
-        "table": "Region,Metric,2022,2023\nNorth,Revenue,3200000,3800000",
-        "format": "csv",
-        "claims": [
-          "North revenue increased by 18.75 percent from 2022 to 2023."
-        ]
-      },
-      "expected": {
-        "verdict": "supported"
-      },
-      "label_origin": "model_drafted",
-      "split": "test",
-      "rationale": "3800000 is 18.75 percent above 3200000, and the verifier shows that arithmetic.",
-      "tags": [
-        "positive",
-        "derived"
-      ]
-    },
-    {
-      "case_id": "num_t06_percent_change_wrong",
-      "input": {
-        "table": "Region,Metric,2022,2023\nNorth,Revenue,3200000,3800000",
-        "format": "csv",
-        "claims": [
-          "North revenue increased by 20 percent from 2022 to 2023."
-        ]
-      },
-      "expected": {
-        "verdict": "contradicted"
-      },
-      "label_origin": "model_drafted",
-      "split": "test",
-      "rationale": "The stated percentage does not match the arithmetic the verifier performs.",
-      "tags": [
-        "negative",
-        "hard_negative",
-        "derived"
+        "multi_claim"
       ]
     }
   ]

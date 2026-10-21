@@ -1,0 +1,30 @@
+{
+  "request": "Write 2 questions across 2 chapters",
+  "instructions": "Edit any field, then recheck with: audit deliverable <request> --deliverable <file> --requirements <this file>",
+  "requirements": [
+    {
+      "requirement_id": "req_01",
+      "text": "must contain 2 question",
+      "kind": "count",
+      "check": "deterministic",
+      "target": "",
+      "count": 2,
+      "unit": "question",
+      "source_quote": "Write 2 questions across 2 chapters",
+      "note": "",
+      "comparator": "exactly"
+    },
+    {
+      "requirement_id": "req_02",
+      "text": "must contain 2 chapter",
+      "kind": "count",
+      "check": "deterministic",
+      "target": "",
+      "count": 2,
+      "unit": "chapter",
+      "source_quote": "Write 2 questions across 2 chapters",
+      "note": "",
+      "comparator": "exactly"
+    }
+  ]
+}

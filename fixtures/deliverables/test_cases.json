@@ -1,0 +1,95 @@
+{
+  "cases": [
+    {
+      "case_id": "deliv_t01_meets_every_requirement",
+      "input": {
+        "request": "Write 3 questions across 3 chapters, four options each, with an answer key.",
+        "deliverable": "CHAPTER 1\nQ1) What is 2+2?\nA) 3\nB) 4\nC) 5\nD) 6\n\nCHAPTER 2\nQ2) Capital of France?\nA) Rome\nB) Paris\nC) Madrid\nD) Berlin\n\nCHAPTER 3\nQ3) Capital of Spain?\nA) Lisbon\nB) Madrid\nC) Rome\nD) Athens\n\nANSWER KEY\n1. B\n2. B\n3. B"
+      },
+      "expected": {
+        "verdict": "passed",
+        "failed": 0,
+        "requirement_count_gte": 3
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The deliverable meets every requirement the request stated. The control case.",
+      "tags": [
+        "happy_path",
+        "control"
+      ]
+    },
+    {
+      "case_id": "deliv_t02_wrong_question_count",
+      "input": {
+        "request": "Write 3 questions across 3 chapters, four options each, with an answer key.",
+        "deliverable": "CHAPTER 1\nQ1) What is 2+2?\nA) 3\nB) 4\nC) 5\nD) 6\n\nCHAPTER 2\nQ2) Capital of France?\nA) Rome\nB) Paris\nC) Madrid\nD) Berlin\n\nANSWER KEY\n1. B\n2. B"
+      },
+      "expected": {
+        "verdict": "failed",
+        "failed_gte": 1,
+        "must_detect_failure_containing": "question"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "Three questions were asked for and two were produced. The answer key also has only two entries, which agrees with the shortfall. The first version of this fixture had three question lines with two key entries; the tool counted three and the fixture was wrong, so the fixture was corrected rather than the tool.",
+      "tags": [
+        "wrong_count"
+      ]
+    },
+    {
+      "case_id": "deliv_t03_missing_named_section",
+      "input": {
+        "request": "Write 1 question across 1 chapter, four options each, with an answer key, and include a section titled Appendix.",
+        "deliverable": "CHAPTER 1\nQ1) What is 2+2?\nA) 3\nB) 4\nC) 5\nD) 6\n\nANSWER KEY\n1. B"
+      },
+      "expected": {
+        "verdict": "failed",
+        "failed_gte": 1
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "A named section the user asked for is absent.",
+      "tags": [
+        "missing_section",
+        "named"
+      ]
+    },
+    {
+      "case_id": "deliv_t04_wrong_option_count",
+      "input": {
+        "request": "Write 1 question across 1 chapter, four options each, with an answer key.",
+        "deliverable": "CHAPTER 1\nQ1) What is 2+2?\nA) 3\nB) 4\nC) 5\n\nANSWER KEY\n1. B"
+      },
+      "expected": {
+        "verdict": "failed",
+        "failed_gte": 1,
+        "must_detect_failure_containing": "option"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "Only three options were given where four were asked for.",
+      "tags": [
+        "wrong_count",
+        "options"
+      ]
+    },
+    {
+      "case_id": "deliv_t05_vague_request",
+      "input": {
+        "request": "Make it good.",
+        "deliverable": "Here is a summary of the document."
+      },
+      "expected": {
+        "verdict": "cannot_verify",
+        "requirement_count": 0
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "A vague request yields no requirements, and reporting 'passed' for a vague request would be a false assurance.",
+      "tags": [
+        "abstain"
+      ]
+    }
+  ]
+}

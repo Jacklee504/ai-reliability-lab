@@ -1,0 +1,275 @@
+{
+  "project": "deliverables",
+  "method": "deterministic",
+  "model_id": "minimax-m3.1-flash:cloud",
+  "model_calls": 0,
+  "parse_failures": 0,
+  "total_latency_ms": 0.0,
+  "total_cases": 8,
+  "scored_cases": 8,
+  "correct_cases": 8,
+  "label_origins": {
+    "model_drafted": 8
+  },
+  "splits": {
+    "dev": 8
+  },
+  "metrics": [
+    {
+      "name": "accepted_outcome",
+      "numerator": 8,
+      "denominator": 8,
+      "rate": 1.0,
+      "note": "project case accepted the prediction; some labels allow alternatives"
+    },
+    {
+      "name": "false_accusations_on_supported",
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null,
+      "note": "supported claims wrongly called contradicted"
+    },
+    {
+      "name": "false_alarms_on_benign",
+      "numerator": 0,
+      "denominator": 1,
+      "rate": null,
+      "note": "benign cases wrongly flagged"
+    },
+    {
+      "name": "abstentions",
+      "numerator": 3,
+      "denominator": 8,
+      "rate": 0.375,
+      "note": "outcomes that declined to assert"
+    }
+  ],
+  "confusion": {
+    "expected=failed,predicted=failed": 4,
+    "expected=passed,predicted=passed": 1,
+    "expected=cannot_verify,predicted=cannot_verify": 3
+  },
+  "notes": [
+    "Labels are not independently human verified; agreement is provisional.",
+    "No held-out test cases were evaluated."
+  ],
+  "results": [
+    {
+      "case_id": "deliv_001_complete_quiz",
+      "project": "deliverables",
+      "predicted": {
+        "verdict": "failed",
+        "requirement_count": 5,
+        "passed": 2,
+        "failed": 2,
+        "cannot_verify": 1,
+        "failures": [
+          {
+            "text": "must contain 50 question",
+            "expected": "50",
+            "observed": "2"
+          },
+          {
+            "text": "must contain 6 chapter",
+            "expected": "6",
+            "observed": "2"
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "failed",
+        "requirement_count_gte": 4,
+        "failed_gte": 1,
+        "must_detect_failure_containing": "question"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Deliverable contract check: failed\n  requirements: 5  passed=2 failed=2 cannot_verify=1\n  [FAIL] must contain 50 question\n         expected 50, observed 2\n         counted 2 question in the deliverable\n  [FAIL] must contain 6 chapter\n         expected 6, observed 2\n         found headings: 1, 2\n  [PASS] must contain 4 option\n  [PASS] must include an answer key\n  [SKIP] must include an explanation for every answer\n         expected judged by a model or a human, observed not checked deterministically\n         this requirement needs semantic judgement\n  note: 1 requirement(s) need semantic judgement and are reported as cannot_verify without a model"
+    },
+    {
+      "case_id": "deliv_002_correct_counts",
+      "project": "deliverables",
+      "predicted": {
+        "verdict": "passed",
+        "requirement_count": 4,
+        "passed": 4,
+        "failed": 0,
+        "cannot_verify": 0,
+        "failures": []
+      },
+      "expected": {
+        "verdict": "passed",
+        "requirement_count_gte": 3,
+        "failed": 0
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Deliverable contract check: passed\n  requirements: 4  passed=4 failed=0 cannot_verify=0\n  [PASS] must contain 2 question\n  [PASS] must contain 2 chapter\n  [PASS] must contain 4 option\n  [PASS] must include an answer key"
+    },
+    {
+      "case_id": "deliv_003_missing_answer_key",
+      "project": "deliverables",
+      "predicted": {
+        "verdict": "failed",
+        "requirement_count": 4,
+        "passed": 3,
+        "failed": 1,
+        "cannot_verify": 0,
+        "failures": [
+          {
+            "text": "must include an answer key",
+            "expected": "present",
+            "observed": "absent"
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "failed",
+        "failed_gte": 1,
+        "must_detect_failure_containing": "answer key"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Deliverable contract check: failed\n  requirements: 4  passed=3 failed=1 cannot_verify=0\n  [PASS] must contain 2 question\n  [PASS] must contain 2 chapter\n  [PASS] must contain 4 option\n  [FAIL] must include an answer key\n         expected present, observed absent\n         looked for an answer key section"
+    },
+    {
+      "case_id": "deliv_004_missing_named_section",
+      "project": "deliverables",
+      "predicted": {
+        "verdict": "failed",
+        "requirement_count": 4,
+        "passed": 3,
+        "failed": 1,
+        "cannot_verify": 0,
+        "failures": [
+          {
+            "text": "must contain a section named 'Glossary'",
+            "expected": "present",
+            "observed": "absent"
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "failed",
+        "failed_gte": 1
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Deliverable contract check: failed\n  requirements: 4  passed=3 failed=1 cannot_verify=0\n  [PASS] must contain 2 question\n  [PASS] must contain 2 chapter\n  [PASS] must contain 4 option\n  [FAIL] must contain a section named 'Glossary'\n         expected present, observed absent\n         looked for a heading matching 'Glossary'"
+    },
+    {
+      "case_id": "deliv_005_wrong_format",
+      "project": "deliverables",
+      "predicted": {
+        "verdict": "failed",
+        "requirement_count": 5,
+        "passed": 4,
+        "failed": 1,
+        "cannot_verify": 0,
+        "failures": [
+          {
+            "text": "must be delivered in markdown",
+            "expected": "present",
+            "observed": "absent"
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "failed",
+        "failed_gte": 1
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Deliverable contract check: failed\n  requirements: 5  passed=4 failed=1 cannot_verify=0\n  [PASS] must contain 2 question\n  [PASS] must contain 2 chapter\n  [PASS] must contain 4 option\n  [FAIL] must be delivered in markdown\n         expected present, observed absent\n         looked for markdown formatting\n  [PASS] must include an answer key"
+    },
+    {
+      "case_id": "deliv_006_semantic_only_requirement",
+      "project": "deliverables",
+      "predicted": {
+        "verdict": "cannot_verify",
+        "requirement_count": 1,
+        "passed": 0,
+        "failed": 0,
+        "cannot_verify": 1,
+        "failures": []
+      },
+      "expected": {
+        "verdict": "cannot_verify",
+        "failed": 0
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Deliverable contract check: cannot_verify\n  requirements: 1  passed=0 failed=0 cannot_verify=1\n  [SKIP] Explain how compound interest works.\n         expected judged by a model or a human, observed not checked deterministically\n         this requirement needs semantic judgement\n  note: 1 requirement(s) need semantic judgement and are reported as cannot_verify without a model"
+    },
+    {
+      "case_id": "deliverable_007_no_requirements",
+      "project": "deliverables",
+      "predicted": {
+        "verdict": "cannot_verify",
+        "requirement_count": 0,
+        "passed": 0,
+        "failed": 0,
+        "cannot_verify": 0,
+        "failures": []
+      },
+      "expected": {
+        "verdict": "cannot_verify",
+        "requirement_count": 0
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Deliverable contract check: cannot_verify\n  requirements: 0  passed=0 failed=0 cannot_verify=0\n  note: no explicit requirements could be extracted from the request; nothing was checked"
+    },
+    {
+      "case_id": "deliverable_008_explanation_requirement",
+      "project": "deliverables",
+      "predicted": {
+        "verdict": "cannot_verify",
+        "requirement_count": 5,
+        "passed": 4,
+        "failed": 0,
+        "cannot_verify": 1,
+        "failures": []
+      },
+      "expected": {
+        "verdict": "cannot_verify",
+        "failed": 0
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Deliverable contract check: cannot_verify\n  requirements: 5  passed=4 failed=0 cannot_verify=1\n  [PASS] must contain 2 question\n  [PASS] must contain 2 chapter\n  [PASS] must contain 4 option\n  [PASS] must include an answer key\n  [SKIP] must include an explanation for every answer\n         expected judged by a model or a human, observed not checked deterministically\n         this requirement needs semantic judgement\n  note: 1 requirement(s) need semantic judgement and are reported as cannot_verify without a model"
+    }
+  ]
+}

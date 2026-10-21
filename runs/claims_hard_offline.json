@@ -1,0 +1,150 @@
+{
+  "project": "claims",
+  "method": "hybrid",
+  "model_id": "unavailable",
+  "model_calls": 0,
+  "parse_failures": 0,
+  "total_latency_ms": 0.0,
+  "total_cases": 4,
+  "scored_cases": 4,
+  "correct_cases": 3,
+  "label_origins": {
+    "model_drafted": 4
+  },
+  "splits": {
+    "dev": 4
+  },
+  "metrics": [
+    {
+      "name": "accepted_outcome",
+      "numerator": 3,
+      "denominator": 4,
+      "rate": null,
+      "note": "project case accepted the prediction; some labels allow alternatives"
+    },
+    {
+      "name": "false_accusations_on_supported",
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null,
+      "note": "supported claims wrongly called contradicted"
+    },
+    {
+      "name": "false_alarms_on_benign",
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null,
+      "note": "benign cases wrongly flagged"
+    },
+    {
+      "name": "abstentions",
+      "numerator": 4,
+      "denominator": 4,
+      "rate": null,
+      "note": "outcomes that declined to assert"
+    }
+  ],
+  "confusion": {
+    "expected=['insufficient_evidence', 'uncertain'],predicted=insufficient_evidence": 3,
+    "expected=contradicted,predicted=insufficient_evidence": 1
+  },
+  "notes": [
+    "Labels are not independently human verified; agreement is provisional.",
+    "No held-out test cases were evaluated."
+  ],
+  "results": [
+    {
+      "case_id": "claim_hard_001_wrong_entity",
+      "project": "claims",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [insufficient_evidence] Acme Corp's renewal fee is 100 EUR.\n      best passage overlap was 83%; lexical evidence did not establish all claim details (model unavailable: provider error: offline mode requested)\n      evidence: Globex Corp's renewal fee is 100 EUR."
+    },
+    {
+      "case_id": "claim_hard_002_one_example_not_all",
+      "project": "claims",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [insufficient_evidence] All customers receive 90 days notice.\n      best passage overlap was 60%; lexical evidence did not establish all claim details (model unavailable: provider error: offline mode requested)\n      evidence: One customer received 90 days notice."
+    },
+    {
+      "case_id": "claim_hard_003_negation",
+      "project": "claims",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": false,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [insufficient_evidence] The service does not charge a fee.\n      best passage overlap was 67%; lexical evidence did not establish all claim details (model unavailable: provider error: offline mode requested)\n      evidence: The service charges a fee of 5 EUR."
+    },
+    {
+      "case_id": "claim_hard_004_prior_year",
+      "project": "claims",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [insufficient_evidence] The office was in Dublin in 2024.\n      best passage overlap was 67%; lexical evidence did not establish all claim details (model unavailable: provider error: offline mode requested)\n      evidence: The office was in Dublin in 2023."
+    }
+  ]
+}

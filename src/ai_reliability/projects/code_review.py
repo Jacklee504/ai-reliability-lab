@@ -498,3 +498,96 @@ def verify_runtime_claim(
     finding.verdict = Verdict.UNCERTAIN
     finding.explanation = "no runtime checker is implemented for this claim"
     return finding
+
+
+# ---------------------------------------------------------------------------
+# Evaluation runner
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class CodeReviewRunner:
+    """Runs a code review comment verification case."""
+
+    provider: Any = None
+    timeout: float = 10.0
+
+    def evaluate_case(self, case: EvalCase) -> CaseResult:
+        inputs = case.input
+        snapshot = CodeSnapshot(
+            identifier=inputs.get("snapshot_id", "snapshot"),
+            files=dict(inputs.get("files", {})),
+        )
+        comments = [
+            ReviewComment(
+                text=item.get("text", ""),
+                file=item.get("file", ""),
+                line=item.get("line"),
+            )
+            for item in inputs.get("comments", [])
+        ]
+        # A harness is the reviewer's code for settling a runtime
+        # claim. It may be given once for the case, once per comment,
+        # or keyed by the comment text.
+        case_harness = inputs.get("harness", "")
+        findings = []
+        for index, comment in enumerate(comments):
+            harness = ""
+            if isinstance(case_harness, list) and index < len(case_harness):
+                harness = case_harness[index]
+            elif isinstance(case_harness, dict):
+                harness = case_harness.get(comment.text, "")
+            elif isinstance(case_harness, str):
+                harness = case_harness
+            if harness:
+                findings.append(
+                    verify_runtime_claim(
+                        comment, snapshot, harness, timeout=self.timeout
+                    )
+                )
+            else:
+                findings.append(verify_review_comment(comment, snapshot))
+
+        expected = case.expected
+        if "verdict" in expected:
+            wanted = expected["verdict"]
+            if isinstance(wanted, list):
+                correct = bool(findings) and all(
+                    f.verdict.value in wanted for f in findings
+                )
+            else:
+                correct = len(findings) == 1 and findings[0].verdict.value == wanted
+        else:
+            correct = None
+
+        predicted = {
+            "verdict": findings[0].verdict.value if len(findings) == 1 else "multiple",
+            "verdicts": [f.verdict.value for f in findings],
+            "methods": [f.method.value for f in findings],
+        }
+
+        return CaseResult(
+            case_id=case.case_id,
+            project=case.project,
+            predicted=predicted,
+            expected=expected,
+            label_origin=case.label_origin,
+            split=case.split,
+            correct=correct,
+            notes="\n".join(
+                "%s -> %s: %s" % (f.comment.text, f.verdict.value, f.explanation)
+                for f in findings
+            ),
+        )
+
+
+def build_cases() -> list[EvalCase]:
+    """Load the code review verifier evaluation cases."""
+    from ..core.fixtures import load_project_cases
+
+    return load_project_cases("code_review")
+
+
+def build_runner(provider: Any = None) -> CodeReviewRunner:
+    """Factory used by the project registry."""
+    return CodeReviewRunner(provider=provider)

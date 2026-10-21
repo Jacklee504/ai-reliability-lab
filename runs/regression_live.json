@@ -1,0 +1,1504 @@
+{
+  "project": "eval_regression",
+  "method": "regression_suite",
+  "model_id": "minimax-m3.1-flash:cloud",
+  "model_calls": 81,
+  "parse_failures": 0,
+  "total_latency_ms": 0.0,
+  "total_cases": 61,
+  "scored_cases": 61,
+  "correct_cases": 56,
+  "label_origins": {
+    "model_drafted": 182
+  },
+  "splits": {
+    "dev": 88,
+    "test": 94
+  },
+  "metrics": [
+    {
+      "name": "accepted_outcome",
+      "numerator": 176,
+      "denominator": 181,
+      "rate": 0.9724,
+      "note": "project case accepted the prediction; some labels allow alternatives"
+    },
+    {
+      "name": "false_accusations_on_supported",
+      "numerator": 0,
+      "denominator": 20,
+      "rate": 0.0,
+      "note": "supported claims wrongly called contradicted"
+    },
+    {
+      "name": "false_alarms_on_benign",
+      "numerator": 1,
+      "denominator": 28,
+      "rate": 0.0357,
+      "note": "benign cases wrongly flagged"
+    },
+    {
+      "name": "abstentions",
+      "numerator": 38,
+      "denominator": 182,
+      "rate": 0.2088,
+      "note": "outcomes that declined to assert"
+    }
+  ],
+  "confusion": {
+    "expected=supported,predicted=supported": 20,
+    "expected=contradicted,predicted=contradicted": 27,
+    "expected=['insufficient_evidence', 'uncertain'],predicted=insufficient_evidence": 17,
+    "expected=['supported', 'contradicted'],predicted=multiple": 1,
+    "expected=['insufficient_evidence', 'uncertain'],predicted=uncertain": 1,
+    "expected=contradicted,predicted=supported": 1,
+    "expected=None,predicted=multiple": 1,
+    "expected=['insufficient_evidence', 'uncertain'],predicted=supported": 1,
+    "expected=potential_omission,predicted=potential_omission": 7,
+    "expected=['no_finding', 'potential_omission'],predicted=potential_omission": 2,
+    "expected=None,predicted=no_finding": 1,
+    "expected=no_finding,predicted=potential_omission": 1,
+    "expected=no_finding,predicted=no_finding": 3,
+    "expected=failed,predicted=failed": 9,
+    "expected=passed,predicted=passed": 24,
+    "expected=cannot_verify,predicted=cannot_verify": 5,
+    "expected=None,predicted=passed": 7,
+    "expected=['uncertain', 'insufficient_evidence'],predicted=uncertain": 11,
+    "expected=['uncertain', 'insufficient_evidence'],predicted=insufficient_evidence": 4,
+    "expected=violated,predicted=violated": 13,
+    "expected=inconclusive,predicted=inconclusive": 2,
+    "expected=None,predicted=allowed": 8,
+    "expected=None,predicted=denied": 10,
+    "expected=None,predicted=needs_clarification": 5
+  },
+  "notes": [
+    "Labels are not independently human verified; agreement is provisional."
+  ],
+  "results": [
+    {
+      "case_id": "claim_001_supported",
+      "project": "claims",
+      "predicted": {
+        "verdict": "supported",
+        "verdicts": [
+          "supported"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [supported] The monthly service fee is 2,400 EUR.\n      The passage explicitly states that the monthly service fee is 2,400 EUR per calendar month.\n      evidence: The monthly service fee is 2,400 EUR per calendar month."
+    },
+    {
+      "case_id": "claim_002_contradicted",
+      "project": "claims",
+      "predicted": {
+        "verdict": "contradicted",
+        "verdicts": [
+          "contradicted"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [contradicted] The monthly service fee is 2,400 EUR.\n      The passage states that the monthly service fee is 2,800 EUR, which is incompatible with the claimed 2,400 EUR fee.\n      evidence: The monthly service fee is 2,800 EUR per calendar month."
+    },
+    {
+      "case_id": "claim_003_wrong_year",
+      "project": "claims",
+      "predicted": {
+        "verdict": "contradicted",
+        "verdicts": [
+          "contradicted"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [contradicted] The notice period is 90 days.\n      The passage specifies 30 days' notice for termination for cause and 60 days' notice for termination for convenience, not 90 days.\n      evidence: Termination for cause requires 30 days written notice.\n      evidence: Either party may terminate the agreement for convenience with 60 days written notice."
+    },
+    {
+      "case_id": "claim_004_offtopic_source",
+      "project": "claims",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [insufficient_evidence] The processor must notify the controller of any personal data breach within 48 hours.\n      Neither passage mentions personal data breaches, notification, or a 48-hour deadline.\n      evidence: Data is stored within the European Economic Area.\n      evidence: Personal data is processed solely for the purpose of delivering the service."
+    },
+    {
+      "case_id": "claim_005_qualifier_all",
+      "project": "claims",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [insufficient_evidence] All customers receive a refund within 30 days of cancelling.\n      The passage confirms only that one customer received a refund within 30 days, so it does not establish that all customers do.\n      evidence: One customer received a refund within 30 days of cancelling in March."
+    },
+    {
+      "case_id": "claim_006_no_source_for_claim",
+      "project": "claims",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [insufficient_evidence] The office is located in Dublin.\n      No passage was provided to establish whether the office is located in Dublin."
+    },
+    {
+      "case_id": "claim_007_mixed_sentence",
+      "project": "claims",
+      "predicted": {
+        "verdict": "multiple",
+        "verdicts": [
+          "supported",
+          "contradicted"
+        ],
+        "claim_count": 2
+      },
+      "expected": {
+        "verdict": [
+          "supported",
+          "contradicted"
+        ],
+        "verdicts": [
+          "supported",
+          "contradicted"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 2,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 2 claim(s)\n  [supported] The monthly service fee is 2,400 EUR\n      The passage explicitly states that the monthly service fee is 2,400 EUR per calendar month.\n      evidence: The monthly service fee is 2,400 EUR per calendar month.\n  [contradicted] the notice period is 60 days.\n      The passage specifies a 90-day written notice period rather than 60 days.\n      evidence: Either party may terminate the agreement for convenience with 90 days written notice."
+    },
+    {
+      "case_id": "claim_008_negation",
+      "project": "claims",
+      "predicted": {
+        "verdict": "contradicted",
+        "verdicts": [
+          "contradicted"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [contradicted] The customer does not pay late interest on overdue amounts.\n      The passage states that late payment interest applies to overdue amounts, directly contradicting the claim that the customer does not pay such interest.\n      evidence: A late payment interest of 1.5 percent per month applies to overdue amounts."
+    },
+    {
+      "case_id": "claim_009_empty_source",
+      "project": "claims",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [insufficient_evidence] The monthly service fee is 2,400 EUR.\n      No relevant passage was provided to verify the monthly service fee."
+    },
+    {
+      "case_id": "claim_010_before_2024_qualifier",
+      "project": "claims",
+      "predicted": {
+        "verdict": "uncertain",
+        "verdicts": [
+          "uncertain"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [uncertain] Applicants must re-enrol before 2024.\n      The passage requires re-enrolment before 2025, not before 2024. (universal claim not refuted: the passage does not address the universal scope)\n      evidence: Applicants must re-enrol before 2025."
+    },
+    {
+      "case_id": "claim_011_fixed_date_contradiction",
+      "project": "claims",
+      "predicted": {
+        "verdict": "contradicted",
+        "verdicts": [
+          "contradicted"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [contradicted] The refund deadline is 2025-06-01.\n      Passage 1 states that the refund deadline is 2024-03-01, which is incompatible with the claimed deadline of 2025-06-01.\n      evidence: The refund deadline is 2024-03-01.\n      evidence: Requests received after the deadline are not processed."
+    },
+    {
+      "case_id": "claim_t01_supported",
+      "project": "claims",
+      "predicted": {
+        "verdict": "supported",
+        "verdicts": [
+          "supported"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [supported] The annual licence fee is 1,200 EUR.\n      Passage 1 explicitly states that the annual licence fee is 1,200 EUR.\n      evidence: The annual licence fee is 1,200 EUR per subscription year.\n      evidence: The licence renews automatically unless cancelled."
+    },
+    {
+      "case_id": "claim_t02_contradicted_amount",
+      "project": "claims",
+      "predicted": {
+        "verdict": "contradicted",
+        "verdicts": [
+          "contradicted"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [contradicted] The annual licence fee is 1,200 EUR.\n      Passage 1 states that the annual licence fee is 1,450 EUR, not 1,200 EUR.\n      evidence: The annual licence fee is 1,450 EUR per subscription year.\n      evidence: The licence renews automatically unless cancelled."
+    },
+    {
+      "case_id": "claim_t03_contradicted_month",
+      "project": "claims",
+      "predicted": {
+        "verdict": "supported",
+        "verdicts": [
+          "supported"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": false,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [supported] The support plan costs 99 EUR per month.\n      Passage 1 explicitly states that the standard support plan costs 99 EUR per month.\n      evidence: The standard support plan costs 99 EUR per month.\n      evidence: The premium support plan costs 249 EUR per month."
+    },
+    {
+      "case_id": "claim_t04_topical_but_silent",
+      "project": "claims",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [insufficient_evidence] The service is available in Ireland and France.\n      The passage mentions Ireland and Germany as data-centre locations but does not establish service availability in France.\n      evidence: The service is operated from data centres in Ireland and Germany."
+    },
+    {
+      "case_id": "claim_t05_universal_claim",
+      "project": "claims",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [insufficient_evidence] Every support ticket is answered within 24 hours.\n      The passage only states that priority one support tickets are answered within 24 hours, not that every support ticket is.\n      evidence: Priority one support tickets are answered within 24 hours."
+    },
+    {
+      "case_id": "claim_t06_negation_preserved",
+      "project": "claims",
+      "predicted": {
+        "verdict": "contradicted",
+        "verdicts": [
+          "contradicted"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [contradicted] The supplier does not charge for data export.\n      The passage states that the supplier charges 50 EUR for each data export, which is incompatible with the claim that it does not charge for data export.\n      evidence: The supplier charges 50 EUR for each data export."
+    },
+    {
+      "case_id": "claim_t07_two_claims_two_outcomes",
+      "project": "claims",
+      "predicted": {
+        "verdict": "multiple",
+        "verdicts": [
+          "supported",
+          "contradicted"
+        ],
+        "claim_count": 2
+      },
+      "expected": {
+        "verdicts": [
+          "supported",
+          "contradicted"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": true,
+      "model_calls": 2,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 2 claim(s)\n  [supported] The support plan costs 99 EUR per month\n      The passage directly states that the standard support plan costs 99 EUR per month.\n      evidence: The standard support plan costs 99 EUR per month.\n  [contradicted] the onboarding fee is 500 EUR.\n      Passage 1 directly states that there is no onboarding fee, which is incompatible with the claim that it is 500 EUR.\n      evidence: There is no onboarding fee.\n      evidence: The standard support plan costs 99 EUR per month."
+    },
+    {
+      "case_id": "claim_t08_empty_source",
+      "project": "claims",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [insufficient_evidence] The annual licence fee is 1,200 EUR.\n      No passage is provided that states or contradicts the annual licence fee."
+    },
+    {
+      "case_id": "claim_t09_year_mismatch",
+      "project": "claims",
+      "predicted": {
+        "verdict": "contradicted",
+        "verdicts": [
+          "contradicted"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [contradicted] The warranty expires in 2027.\n      The passage states that the warranty expires in 2025, which is incompatible with the claim that it expires in 2027.\n      evidence: The warranty expires in 2025."
+    },
+    {
+      "case_id": "claim_t10_compatible_deadline",
+      "project": "claims",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [insufficient_evidence] The refund request must be made before 2024.\n      The passage states a deadline before 2026 but does not establish whether a refund request must also be made before 2024.\n      evidence: The refund request must be made before 2026."
+    },
+    {
+      "case_id": "claim_t11_entity_mismatch",
+      "project": "claims",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [insufficient_evidence] Initech signed the agreement on 3 March 2024.\n      The passages identify Globex and Umbrella as signing the agreement, but do not state whether Initech signed it on 3 March 2024.\n      evidence: Globex signed the agreement on 3 March 2024.\n      evidence: Umbrella signed the agreement on 11 June 2024."
+    },
+    {
+      "case_id": "claim_t12_metric_mismatch",
+      "project": "claims",
+      "predicted": {
+        "verdict": "contradicted",
+        "verdicts": [
+          "contradicted"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [contradicted] The number of active users in 2024 was 12,000.\n      Passage 1 states that the number of active users in 2024 was 48,000, which is incompatible with the claim of 12,000.\n      evidence: The number of active users in 2024 was 48,000.\n      evidence: The number of paying customers in 2024 was 12,000."
+    },
+    {
+      "case_id": "claim_t13_two_sources_one_silent",
+      "project": "claims",
+      "predicted": {
+        "verdict": "supported",
+        "verdicts": [
+          "supported"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [supported] The office is located in Dublin.\n      The passage explicitly states that the registered office is located in Dublin.\n      evidence: The registered office is located at 12 Bridge Street, Dublin."
+    },
+    {
+      "case_id": "claim_t14_conditional_claim",
+      "project": "claims",
+      "predicted": {
+        "verdict": "supported",
+        "verdicts": [
+          "supported"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [supported] If the customer cancels early, the deposit is forfeited.\n      Passage 1 directly states that an early cancellation by the customer causes the deposit to be forfeited.\n      evidence: If the customer cancels early, the deposit is forfeited.\n      evidence: If the customer completes the full term, the deposit is returned."
+    },
+    {
+      "case_id": "claim_t15_scope_claim_partially_covered",
+      "project": "claims",
+      "predicted": {
+        "verdict": "supported",
+        "verdicts": [
+          "supported"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": false,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [supported] Support is available in English and Irish.\n      The passage explicitly states that support is available in English and Irish, as well as French.\n      evidence: Support is available in English, Irish, and French."
+    },
+    {
+      "case_id": "cit_001_direct_support",
+      "project": "citations",
+      "predicted": {
+        "verdict": "supported",
+        "verdicts": [
+          "supported"
+        ],
+        "max_topical_overlap": 1.0
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Citation audit: 1 citation(s)\n  [supported] The monthly service fee is 2,400 EUR.\n      topical overlap: 1.00\n      The passage explicitly states that the monthly service fee is 2,400 EUR per calendar month.\n      key phrase: The monthly service fee is 2,400 EUR per calendar month."
+    },
+    {
+      "case_id": "cit_002_keyword_match_wrong_year",
+      "project": "citations",
+      "predicted": {
+        "verdict": "contradicted",
+        "verdicts": [
+          "contradicted"
+        ],
+        "max_topical_overlap": 0.6667
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Citation audit: 1 citation(s)\n  [contradicted] The refund deadline is 2025-06-01.\n      topical overlap: 0.67\n      The cited passage states that the refund deadline is 2024-03-01, which is incompatible with the claimed deadline of 2025-06-01.\n      key phrase: The refund deadline is 2024-03-01."
+    },
+    {
+      "case_id": "cit_003_topical_but_insufficient",
+      "project": "citations",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "max_topical_overlap": 0.25
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Citation audit: 1 citation(s)\n  [insufficient_evidence] The monthly service fee is 2,400 EUR per calendar month.\n      topical overlap: 0.25\n      The passage does not state the amount or monthly billing basis of the service fee.\n      key phrase: The service fee is described in this agreement."
+    },
+    {
+      "case_id": "cit_004_partial_support",
+      "project": "citations",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "max_topical_overlap": 0.4286
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Citation audit: 1 citation(s)\n  [insufficient_evidence] The notice period is 90 days and the fee is 2,400 EUR.\n      topical overlap: 0.43\n      The passage states the 2,400 EUR fee but does not state a 90-day notice period.\n      key phrase: monthly service fee is 2,400 EUR per calendar month"
+    },
+    {
+      "case_id": "cit_005_two_passages_together",
+      "project": "citations",
+      "predicted": {
+        "verdict": "supported",
+        "verdicts": [
+          "supported"
+        ],
+        "max_topical_overlap": 0.4444
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Citation audit: 1 citation(s)\n  [supported] The agreement has a 24 month initial term and a 90 day notice period.\n      topical overlap: 0.44\n      The passages together state that the agreement has a 24-month initial term and may be terminated with 90 days' written notice.\n      key phrase: initial term of 24 months; 90 days written notice"
+    },
+    {
+      "case_id": "cit_006_same_topic_different_entity",
+      "project": "citations",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "max_topical_overlap": 0.7143
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Citation audit: 1 citation(s)\n  [insufficient_evidence] Acme Corp reported revenue of 4.2 million EUR in 2024.\n      topical overlap: 0.71\n      The passage reports the same revenue figure and year for Globex Inc, not Acme Corp.\n      key phrase: Globex Inc reported revenue of 4.2 million EUR in 2024"
+    },
+    {
+      "case_id": "cit_007_no_citation",
+      "project": "citations",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "max_topical_overlap": 0.0
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Citation audit: 1 citation(s)\n  [insufficient_evidence] The processor must notify the controller within 48 hours.\n      topical overlap: 0.00\n      No passage was cited, so there is no evidence that the processor must notify the controller within 48 hours."
+    },
+    {
+      "case_id": "cit_t01_direct_support",
+      "project": "citations",
+      "predicted": {
+        "verdict": "supported",
+        "verdicts": [
+          "supported"
+        ],
+        "max_topical_overlap": 1.0
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Citation audit: 1 citation(s)\n  [supported] The early-career programme runs for 12 months.\n      topical overlap: 1.00\n      The passage explicitly states that the early-career programme runs for 12 months.\n      key phrase: The early-career programme runs for 12 months"
+    },
+    {
+      "case_id": "cit_t02_wrong_duration",
+      "project": "citations",
+      "predicted": {
+        "verdict": "contradicted",
+        "verdicts": [
+          "contradicted"
+        ],
+        "max_topical_overlap": 0.8
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Citation audit: 1 citation(s)\n  [contradicted] The early-career programme runs for 12 months.\n      topical overlap: 0.80\n      The passage states that the early-career programme runs for 18 months, which is incompatible with the claim that it runs for 12 months.\n      key phrase: runs for 18 months"
+    },
+    {
+      "case_id": "cit_t03_topical_but_no_answer",
+      "project": "citations",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "max_topical_overlap": 0.4
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Citation audit: 1 citation(s)\n  [insufficient_evidence] The early-career programme runs for 12 months.\n      topical overlap: 0.40\n      The passage describes who the programme is open to but does not state how long the programme runs.\n      key phrase: open to people in their first two years of employment"
+    },
+    {
+      "case_id": "cit_t04_two_passages_together",
+      "project": "citations",
+      "predicted": {
+        "verdict": "supported",
+        "verdicts": [
+          "supported"
+        ],
+        "max_topical_overlap": 0.6364
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Citation audit: 1 citation(s)\n  [supported] The early-career programme runs for 12 months and includes two mentoring sessions per month.\n      topical overlap: 0.64\n      The two passages together state that the programme runs for 12 months and includes two mentoring sessions per month.\n      key phrase: runs for 12 months; includes two mentoring sessions per month"
+    },
+    {
+      "case_id": "cit_t05_wrong_entity",
+      "project": "citations",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "max_topical_overlap": 0.8
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Citation audit: 1 citation(s)\n  [insufficient_evidence] The early-career programme runs for 12 months.\n      topical overlap: 0.80\n      the cited passage names a different entity than the claim, so it cannot support or contradict it"
+    },
+    {
+      "case_id": "cit_t06_no_citation",
+      "project": "citations",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "max_topical_overlap": 0.0
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Citation audit: 1 citation(s)\n  [insufficient_evidence] The early-career programme runs for 12 months.\n      topical overlap: 0.00\n      No passage was cited, so there is no evidence that the early-career programme runs for 12 months."
+    },
+    {
+      "case_id": "cit_t07_partial_support",
+      "project": "citations",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "max_topical_overlap": 0.7143
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Citation audit: 1 citation(s)\n  [insufficient_evidence] The early-career programme runs for 12 months and starts in September.\n      topical overlap: 0.71\n      The passage states that the programme runs for 12 months but does not state that it starts in September.\n      key phrase: The early-career programme runs for 12 months."
+    },
+    {
+      "case_id": "cit_t08_wrong_metric",
+      "project": "citations",
+      "predicted": {
+        "verdict": "contradicted",
+        "verdicts": [
+          "contradicted"
+        ],
+        "max_topical_overlap": 1.0
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Citation audit: 1 citation(s)\n  [contradicted] The programme has 40 participants.\n      topical overlap: 1.00\n      The cited passage states that the programme has 120 participants, not 40.\n      key phrase: The programme has 120 participants."
+    },
+    {
+      "case_id": "cit_t09_negated_support",
+      "project": "citations",
+      "predicted": {
+        "verdict": "contradicted",
+        "verdicts": [
+          "contradicted"
+        ],
+        "max_topical_overlap": 0.75
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Citation audit: 1 citation(s)\n  [contradicted] The programme does not charge a participation fee.\n      topical overlap: 0.75\n      The cited passage directly contradicts the claim by stating that the programme charges a participation fee.\n      key phrase: charges a 50 EUR participation fee"
+    },
+    {
+      "case_id": "cit_t10_year_mismatch",
+      "project": "citations",
+      "predicted": {
+        "verdict": "contradicted",
+        "verdicts": [
+          "contradicted"
+        ],
+        "max_topical_overlap": 0.6667
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Citation audit: 1 citation(s)\n  [contradicted] The programme launched in 2021.\n      topical overlap: 0.67\n      The passage states that the programme launched in 2019, not 2021.\n      key phrase: launched in 2019"
+    },
+    {
+      "case_id": "om_001_material_omission_breach_notice",
+      "project": "omission",
+      "predicted": {
+        "verdict": "potential_omission",
+        "potential_omission_count": 3,
+        "reported": [
+          "The processor shall notify the controller of any personal data breach within 48 hours.",
+          "The processor shall inform the controller of any intended change of subprocessor.",
+          "The processor shall keep a record of all international transfers."
+        ]
+      },
+      "expected": {
+        "must_report": [
+          "breach within 48 hours"
+        ],
+        "verdict": "potential_omission"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 4,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Omission audit for purpose: Summarize the security obligations the processor has.\n  source statements: 17  covered: 9  potential omissions: 3\n  [potential omission, relevance 0.82] The processor shall notify the controller of any personal data breach within 48 hours.\n      section: 3. Security Measures\n      markers: shall,within,breach,shall not\n      why: source statement is not present in the summary\n  [potential omission, relevance 0.59] The processor shall inform the controller of any intended change of subprocessor.\n      section: 4. Subprocessors\n      markers: shall\n      why: source statement is not present in the summary\n  [potential omission, relevance 0.59] The processor shall keep a record of all international transfers.\n      section: 5. International Transfers\n      markers: shall\n      why: source statement is not present in the summary\n  note: candidates are potential omissions, not confirmed ones; the auditor compares the supplied summary with the supplied source and does not know what the generating application read"
+    },
+    {
+      "case_id": "om_002_material_omission_technical_measures",
+      "project": "omission",
+      "predicted": {
+        "verdict": "potential_omission",
+        "potential_omission_count": 4,
+        "reported": [
+          "The processor shall notify the controller of any personal data breach within 48 hours.",
+          "The processor shall implement appropriate technical and organisational measures.",
+          "The processor shall inform the controller of any intended change of subprocessor.",
+          "The processor shall keep a record of all international transfers."
+        ]
+      },
+      "expected": {
+        "must_report": [
+          "technical and organisational measures"
+        ],
+        "verdict": "potential_omission"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 4,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Omission audit for purpose: Summarize the security obligations the processor has.\n  source statements: 17  covered: 7  potential omissions: 4\n  [potential omission, relevance 0.82] The processor shall notify the controller of any personal data breach within 48 hours.\n      section: 3. Security Measures\n      markers: shall,within,breach,shall not\n      why: source statement is not present in the summary\n  [potential omission, relevance 0.59] The processor shall implement appropriate technical and organisational measures.\n      section: 3. Security Measures\n      markers: shall\n      why: source statement is not present in the summary\n  [potential omission, relevance 0.59] The processor shall inform the controller of any intended change of subprocessor.\n      section: 4. Subprocessors\n      markers: shall\n      why: source statement is not present in the summary\n  [potential omission, relevance 0.59] The processor shall keep a record of all international transfers.\n      section: 5. International Transfers\n      markers: shall\n      why: source statement is not present in the summary\n  note: candidates are potential omissions, not confirmed ones; the auditor compares the supplied summary with the supplied source and does not know what the generating application read"
+    },
+    {
+      "case_id": "om_003_harmless_omission_control",
+      "project": "omission",
+      "predicted": {
+        "verdict": "potential_omission",
+        "potential_omission_count": 2,
+        "reported": [
+          "The processor shall inform the controller of any intended change of subprocessor.",
+          "The processor shall keep a record of all international transfers."
+        ]
+      },
+      "expected": {
+        "max_potential_omissions": 1,
+        "verdict": [
+          "no_finding",
+          "potential_omission"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": false,
+      "model_calls": 4,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Omission audit for purpose: Summarize the security obligations the processor has.\n  source statements: 17  covered: 10  potential omissions: 2\n  [potential omission, relevance 0.59] The processor shall inform the controller of any intended change of subprocessor.\n      section: 4. Subprocessors\n      markers: shall\n      why: source statement is not present in the summary\n  [potential omission, relevance 0.59] The processor shall keep a record of all international transfers.\n      section: 5. International Transfers\n      markers: shall\n      why: source statement is not present in the summary\n  note: candidates are potential omissions, not confirmed ones; the auditor compares the supplied summary with the supplied source and does not know what the generating application read"
+    },
+    {
+      "case_id": "om_004_purpose_relative",
+      "project": "omission",
+      "predicted": {
+        "verdict": "potential_omission",
+        "potential_omission_count": 1,
+        "reported": [
+          "Personal data means any information relating to an identified or identifiable natural person."
+        ]
+      },
+      "expected": {
+        "must_report": [
+          "Personal data means"
+        ],
+        "max_potential_omissions": 1,
+        "verdict": "potential_omission"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 4,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Omission audit for purpose: Summarize the definitions used in the addendum.\n  source statements: 17  covered: 9  potential omissions: 1\n  [potential omission, relevance 0.25] Personal data means any information relating to an identified or identifiable natural person.\n      section: 1. Scope and Definitions\n      why: source statement is not present in the summary; the model judged this material for the stated purpose\n  note: candidates are potential omissions, not confirmed ones; the auditor compares the supplied summary with the supplied source and does not know what the generating application read"
+    },
+    {
+      "case_id": "om_005_no_omission",
+      "project": "omission",
+      "predicted": {
+        "verdict": "potential_omission",
+        "potential_omission_count": 2,
+        "reported": [
+          "The processor shall inform the controller of any intended change of subprocessor.",
+          "The processor shall keep a record of all international transfers."
+        ]
+      },
+      "expected": {
+        "max_potential_omissions": 1,
+        "verdict": [
+          "no_finding",
+          "potential_omission"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": false,
+      "model_calls": 4,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Omission audit for purpose: Summarize the security obligations the processor has.\n  source statements: 17  covered: 10  potential omissions: 2\n  [potential omission, relevance 0.59] The processor shall inform the controller of any intended change of subprocessor.\n      section: 4. Subprocessors\n      markers: shall\n      why: source statement is not present in the summary\n  [potential omission, relevance 0.59] The processor shall keep a record of all international transfers.\n      section: 5. International Transfers\n      markers: shall\n      why: source statement is not present in the summary\n  note: candidates are potential omissions, not confirmed ones; the auditor compares the supplied summary with the supplied source and does not know what the generating application read"
+    },
+    {
+      "case_id": "om_006_empty_source",
+      "project": "omission",
+      "predicted": {
+        "verdict": "no_finding",
+        "potential_omission_count": 0,
+        "reported": []
+      },
+      "expected": {
+        "max_potential_omissions": 0
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Omission audit for purpose: Summarize the security obligations the processor has.\n  source statements: 0  covered: 0  potential omissions: 0\n  note: candidates are potential omissions, not confirmed ones; the auditor compares the supplied summary with the supplied source and does not know what the generating application read"
+    },
+    {
+      "case_id": "om_007_empty_summary",
+      "project": "omission",
+      "predicted": {
+        "verdict": "potential_omission",
+        "potential_omission_count": 4,
+        "reported": [
+          "The processor shall not sell personal data to third parties.",
+          "The processor shall notify the controller of any personal data breach within 48 hours.",
+          "Personal data shall not be transferred outside the European Economic Area.",
+          "The processor shall implement appropriate technical and organisational measures."
+        ]
+      },
+      "expected": {
+        "min_potential_omissions": 1,
+        "verdict": "potential_omission"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 4,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Omission audit for purpose: Summarize the security obligations the processor has.\n  source statements: 17  covered: 0  potential omissions: 4\n  [potential omission, relevance 0.82] The processor shall not sell personal data to third parties.\n      section: 2. Processing Purposes\n      markers: shall,shall not\n      why: source statement is not present in the summary\n  [potential omission, relevance 0.82] The processor shall notify the controller of any personal data breach within 48 hours.\n      section: 3. Security Measures\n      markers: shall,within,breach,shall not\n      why: source statement is not present in the summary\n  [potential omission, relevance 0.63] Personal data shall not be transferred outside the European Economic Area.\n      section: 5. International Transfers\n      markers: shall,shall not\n      why: source statement is not present in the summary\n  [potential omission, relevance 0.59] The processor shall implement appropriate technical and organisational measures.\n      section: 3. Security Measures\n      markers: shall\n      why: source statement is not present in the summary\n  note: candidates are potential omissions, not confirmed ones; the auditor compares the supplied summary with the supplied source and does not know what the generating application read"
+    },
+    {
+      "case_id": "om_t01_material_omission_retention",
+      "project": "omission",
+      "predicted": {
+        "verdict": "potential_omission",
+        "potential_omission_count": 2,
+        "reported": [
+          "Backups are deleted within 90 days.",
+          "Customer records are retained for 24 months after the end of the subscription."
+        ]
+      },
+      "expected": {
+        "must_report": [
+          "retained for 24 months"
+        ],
+        "verdict": "potential_omission"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": true,
+      "model_calls": 4,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Omission audit for purpose: Summarize the data retention obligations.\n  source statements: 6  covered: 2  potential omissions: 2\n  [potential omission, relevance 0.47] Backups are deleted within 90 days.\n      section: 1. Retention\n      markers: within\n      why: source statement is not present in the summary; the model judged this material for the stated purpose\n  [potential omission, relevance 0.25] Customer records are retained for 24 months after the end of the subscription.\n      section: 1. Retention\n      why: source statement is not present in the summary; the model judged this material for the stated purpose\n  note: candidates are potential omissions, not confirmed ones; the auditor compares the supplied summary with the supplied source and does not know what the generating application read"
+    },
+    {
+      "case_id": "om_t02_purpose_relative_same_source",
+      "project": "omission",
+      "predicted": {
+        "verdict": "potential_omission",
+        "potential_omission_count": 4,
+        "reported": [
+          "Backups are deleted within 90 days.",
+          "Emergency support is available for 24 hours a day.",
+          "Support is available on business days only.",
+          "Customer records are retained for 24 months after the end of the subscription."
+        ]
+      },
+      "expected": {
+        "must_not_report": [
+          "retained for 24 months"
+        ],
+        "verdict": "no_finding"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": false,
+      "model_calls": 4,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Omission audit for purpose: Summarize the support arrangements.\n  source statements: 6  covered: 2  potential omissions: 4\n  [potential omission, relevance 0.47] Backups are deleted within 90 days.\n      section: 1. Retention\n      markers: within\n      why: source statement is not present in the summary; the model judged this material for the stated purpose\n  [potential omission, relevance 0.43] Emergency support is available for 24 hours a day.\n      section: 3. Support\n      why: source statement is not present in the summary; the model judged this material for the stated purpose\n  [potential omission, relevance 0.41] Support is available on business days only.\n      section: 3. Support\n      markers: only\n      why: source statement is not present in the summary\n  [potential omission, relevance 0.25] Customer records are retained for 24 months after the end of the subscription.\n      section: 1. Retention\n      why: source statement is not present in the summary; the model judged this material for the stated purpose\n  note: candidates are potential omissions, not confirmed ones; the auditor compares the supplied summary with the supplied source and does not know what the generating application read"
+    },
+    {
+      "case_id": "om_t03_empty_source",
+      "project": "omission",
+      "predicted": {
+        "verdict": "no_finding",
+        "potential_omission_count": 0,
+        "reported": []
+      },
+      "expected": {
+        "max_potential_omissions": 0,
+        "verdict": "no_finding"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Omission audit for purpose: Summarize the data retention obligations.\n  source statements: 0  covered: 0  potential omissions: 0\n  note: candidates are potential omissions, not confirmed ones; the auditor compares the supplied summary with the supplied source and does not know what the generating application read"
+    },
+    {
+      "case_id": "om_t04_empty_summary",
+      "project": "omission",
+      "predicted": {
+        "verdict": "potential_omission",
+        "potential_omission_count": 1,
+        "reported": [
+          "Customer records are retained for 24 months after the end of the subscription."
+        ]
+      },
+      "expected": {
+        "min_potential_omissions": 1,
+        "verdict": "potential_omission"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Omission audit for purpose: Summarize the data retention obligations.\n  source statements: 1  covered: 0  potential omissions: 1\n  [potential omission, relevance 0.25] Customer records are retained for 24 months after the end of the subscription.\n      section: 1. Retention\n      why: source statement is not present in the summary; the model judged this material for the stated purpose\n  note: candidates are potential omissions, not confirmed ones; the auditor compares the supplied summary with the supplied source and does not know what the generating application read"
+    },
+    {
+      "case_id": "om_t05_harmless_omission",
+      "project": "omission",
+      "predicted": {
+        "verdict": "no_finding",
+        "potential_omission_count": 0,
+        "reported": []
+      },
+      "expected": {
+        "must_not_report": [
+          "Service means"
+        ],
+        "verdict": "no_finding"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Omission audit for purpose: Summarize the support arrangements.\n  source statements: 4  covered: 3  potential omissions: 0\n  note: candidates are potential omissions, not confirmed ones; the auditor compares the supplied summary with the supplied source and does not know what the generating application read"
+    },
+    {
+      "case_id": "om_t06_material_omission_emergency_support",
+      "project": "omission",
+      "predicted": {
+        "verdict": "potential_omission",
+        "potential_omission_count": 1,
+        "reported": [
+          "Emergency support carries a 4 percent surcharge."
+        ]
+      },
+      "expected": {
+        "must_report": [
+          "4 percent surcharge"
+        ],
+        "verdict": "potential_omission"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": true,
+      "model_calls": 2,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Omission audit for purpose: Summarize the costs the customer may incur.\n  source statements: 3  covered: 1  potential omissions: 1\n  [potential omission, relevance 0.47] Emergency support carries a 4 percent surcharge.\n      section: 1. Support\n      markers: charge\n      why: source statement is not present in the summary; the model judged this material for the stated purpose\n  note: candidates are potential omissions, not confirmed ones; the auditor compares the supplied summary with the supplied source and does not know what the generating application read"
+    },
+    {
+      "case_id": "om_t07_no_omission",
+      "project": "omission",
+      "predicted": {
+        "verdict": "no_finding",
+        "potential_omission_count": 0,
+        "reported": []
+      },
+      "expected": {
+        "max_potential_omissions": 0,
+        "verdict": "no_finding"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Omission audit for purpose: Summarize the support arrangements.\n  source statements: 2  covered: 2  potential omissions: 0\n  note: candidates are potential omissions, not confirmed ones; the auditor compares the supplied summary with the supplied source and does not know what the generating application read"
+    },
+    {
+      "case_id": "deliv_001_complete_quiz",
+      "project": "deliverables",
+      "predicted": {
+        "verdict": "failed",
+        "requirement_count": 5,
+        "passed": 2,
+        "failed": 2,
+        "cannot_verify": 1,
+        "failures": [
+          {
+            "text": "must contain 50 question",
+            "expected": "50",
+            "observed": "2"
+          },
+          {
+            "text": "must contain 6 chapter",
+            "expected": "6",
+            "observed": "2"
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "failed",
+        "requirement_count_gte": 4,
+        "failed_gte": 1,
+        "must_detect_failure_containing": "question"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Deliverable contract check: failed\n  requirements: 5  passed=2 failed=2 cannot_verify=1\n  [FAIL] req_01: must contain 50 question\n         expected 50, observed 2\n         counted 2 question in the deliverable\n  [FAIL] req_02: must contain 6 chapter\n         expected 6, observed 2\n         found headings: 1, 2\n  [PASS] req_03: must contain 4 option\n  [PASS] req_04: must include an answer key\n  [SKIP] req_05: must include an explanation for every answer\n         expected judged by a model or a human, observed not checked deterministically\n         this requirement needs semantic judgement\n  note: 1 requirement(s) need semantic judgement and are reported as cannot_verify without a model"
+    },
+    {
+      "case_id": "deliv_002_correct_counts",
+      "project": "deliverables",
+      "predicted": {
+        "verdict": "passed",
+        "requirement_count": 4,
+        "passed": 4,
+        "failed": 0,
+        "cannot_verify": 0,
+        "failures": []
+      },
+      "expected": {
+        "verdict": "passed",
+        "requirement_count_gte": 3,
+        "failed": 0
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Deliverable contract check: passed\n  requirements: 4  passed=4 failed=0 cannot_verify=0\n  [PASS] req_01: must contain 2 question\n  [PASS] req_02: must contain 2 chapter\n  [PASS] req_03: must contain 4 option\n  [PASS] req_04: must include an answer key"
+    },
+    {
+      "case_id": "deliv_003_missing_answer_key",
+      "project": "deliverables",
+      "predicted": {
+        "verdict": "failed",
+        "requirement_count": 4,
+        "passed": 3,
+        "failed": 1,
+        "cannot_verify": 0,
+        "failures": [
+          {
+            "text": "must include an answer key",
+            "expected": "present",
+            "observed": "absent"
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "failed",
+        "failed_gte": 1,
+        "must_detect_failure_containing": "answer key"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Deliverable contract check: failed\n  requirements: 4  passed=3 failed=1 cannot_verify=0\n  [PASS] req_01: must contain 2 question\n  [PASS] req_02: must contain 2 chapter\n  [PASS] req_03: must contain 4 option\n  [FAIL] req_04: must include an answer key\n         expected present, observed absent\n         looked for an answer key section"
+    },
+    {
+      "case_id": "deliv_004_missing_named_section",
+      "project": "deliverables",
+      "predicted": {
+        "verdict": "failed",
+        "requirement_count": 4,
+        "passed": 3,
+        "failed": 1,
+        "cannot_verify": 0,
+        "failures": [
+          {
+            "text": "must contain a section named 'Glossary'",
+            "expected": "present",
+            "observed": "absent"
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "failed",
+        "failed_gte": 1
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Deliverable contract check: failed\n  requirements: 4  passed=3 failed=1 cannot_verify=0\n  [PASS] req_01: must contain 2 question\n  [PASS] req_02: must contain 2 chapter\n  [PASS] req_03: must contain 4 option\n  [FAIL] req_04: must contain a section named 'Glossary'\n         expected present, observed absent\n         looked for a heading matching 'Glossary'"
+    }
+  ]
+}

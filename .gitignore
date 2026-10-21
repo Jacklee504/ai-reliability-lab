@@ -6,3 +6,7 @@ __pycache__/
 .commit-tools/
 tools/
 runs/*.tmp
+
+# Legacy raw prompt and payload dumps from an earlier session. The
+# recorded response caches supersede them.
+runs/*_raw/

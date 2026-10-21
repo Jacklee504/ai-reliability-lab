@@ -1,0 +1,163 @@
+{
+  "cases": [
+    {
+      "case_id": "receipt_001_text_extracted",
+      "project": "context_receipts",
+      "input": {
+        "files": [
+          "v1/contract.txt"
+        ]
+      },
+      "expected": {
+        "verdict": "passed",
+        "extraction_status": "ok",
+        "submitted_char_count_gt": 500,
+        "section_count_gte": 4,
+        "chunk_count_gte": 1,
+        "no_warnings": true
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "A plain text contract extracts cleanly, produces sections, and submits text without warnings.",
+      "tags": [
+        "happy_path"
+      ]
+    },
+    {
+      "case_id": "receipt_002_empty_file",
+      "project": "context_receipts",
+      "input": {
+        "files": [
+          "empty_page.txt"
+        ]
+      },
+      "expected": {
+        "verdict": "passed",
+        "extraction_status": "empty",
+        "submitted_char_count_eq": 0,
+        "warning_containing": "empty"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "An empty file must be reported as empty, not as a successful extraction of nothing. This is the silent-failure case the receipt exists to expose.",
+      "tags": [
+        "failure_mode",
+        "empty"
+      ]
+    },
+    {
+      "case_id": "receipt_003_missing_file",
+      "project": "context_receipts",
+      "input": {
+        "files": [
+          "does_not_exist.txt"
+        ]
+      },
+      "expected": {
+        "verdict": "passed",
+        "extraction_status": "failed",
+        "submitted_char_count_eq": 0,
+        "warning_containing": "not found"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "A missing file must fail loudly rather than produce an empty receipt that looks like an empty document.",
+      "tags": [
+        "failure_mode",
+        "missing"
+      ]
+    },
+    {
+      "case_id": "receipt_004_unsupported_media",
+      "project": "context_receipts",
+      "input": {
+        "files": [
+          "unreadable.bin"
+        ]
+      },
+      "expected": {
+        "verdict": "passed",
+        "submitted_char_count_gt": 0,
+        "warning_containing": "unknown media type"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "An unknown file type still decodes as bytes; the receipt must record a warning about the media type being unknown.",
+      "tags": [
+        "failure_mode",
+        "media_type"
+      ]
+    },
+    {
+      "case_id": "receipt_005_stale_version_detectable",
+      "project": "context_receipts",
+      "input": {
+        "files": [
+          "v2/contract.txt"
+        ],
+        "diff_against": [
+          "v1/contract.txt"
+        ]
+      },
+      "expected": {
+        "verdict": "passed",
+        "identical": false,
+        "diff_must_include": [
+          "content hash changed",
+          "submitted characters"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The key evaluation question: can a user detect a stale version from the receipt alone? The diff must show the content hash changed and the amount of submitted text changed.",
+      "tags": [
+        "stale_version",
+        "diff"
+      ]
+    },
+    {
+      "case_id": "receipt_006_same_version_not_flagged",
+      "project": "context_receipts",
+      "input": {
+        "files": [
+          "v1/contract.txt"
+        ],
+        "diff_against": [
+          "v1/contract.txt"
+        ]
+      },
+      "expected": {
+        "verdict": "passed",
+        "identical": true
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "A false alarm here would make the receipt useless, so the unchanged case must be reported as unchanged.",
+      "tags": [
+        "false_alarm_control",
+        "diff"
+      ]
+    },
+    {
+      "case_id": "receipt_007_reproducible",
+      "project": "context_receipts",
+      "input": {
+        "files": [
+          "v1/contract.txt",
+          "v2/contract.txt"
+        ]
+      },
+      "expected": {
+        "verdict": "passed",
+        "submitted_char_count_gt": 1000,
+        "chunk_count_gte": 1
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "A multi-file submission records each file and its chunks.",
+      "tags": [
+        "multi_file"
+      ]
+    }
+  ]
+}

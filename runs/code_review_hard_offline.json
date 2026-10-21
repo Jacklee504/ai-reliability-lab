@@ -1,0 +1,143 @@
+{
+  "project": "code_review",
+  "method": "deterministic",
+  "model_id": "unavailable",
+  "model_calls": 0,
+  "parse_failures": 0,
+  "total_latency_ms": 0.0,
+  "total_cases": 4,
+  "scored_cases": 4,
+  "correct_cases": 4,
+  "label_origins": {
+    "model_drafted": 4
+  },
+  "splits": {
+    "dev": 4
+  },
+  "metrics": [
+    {
+      "name": "accepted_outcome",
+      "numerator": 4,
+      "denominator": 4,
+      "rate": null,
+      "note": "project case accepted the prediction; some labels allow alternatives"
+    },
+    {
+      "name": "false_accusations_on_supported",
+      "numerator": 0,
+      "denominator": 2,
+      "rate": null,
+      "note": "supported claims wrongly called contradicted"
+    },
+    {
+      "name": "false_alarms_on_benign",
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null,
+      "note": "benign cases wrongly flagged"
+    },
+    {
+      "name": "abstentions",
+      "numerator": 2,
+      "denominator": 4,
+      "rate": null,
+      "note": "outcomes that declined to assert"
+    }
+  ],
+  "confusion": {
+    "expected=supported,predicted=supported": 2,
+    "expected=['uncertain', 'insufficient_evidence'],predicted=uncertain": 2
+  },
+  "notes": [
+    "Labels are not independently human verified; agreement is provisional.",
+    "No held-out test cases were evaluated."
+  ],
+  "results": [
+    {
+      "case_id": "cr_hard_001_other_function_guard",
+      "project": "code_review",
+      "predicted": {
+        "verdict": "supported",
+        "verdicts": [
+          "supported"
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "There is no null check on y. -> supported: the code contains no such guard"
+    },
+    {
+      "case_id": "cr_hard_002_guard_after_query",
+      "project": "code_review",
+      "predicted": {
+        "verdict": "supported",
+        "verdicts": [
+          "supported"
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "There is no null check on x before the query runs. -> supported: the code contains no such guard"
+    },
+    {
+      "case_id": "cr_hard_003_runtime_claim",
+      "project": "code_review",
+      "predicted": {
+        "verdict": "uncertain",
+        "verdicts": [
+          "uncertain"
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "uncertain",
+          "insufficient_evidence"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "This will raise an error. -> uncertain: a null-triggered exception was not executed or proven by this static check"
+    },
+    {
+      "case_id": "cr_hard_004_bad_syntax",
+      "project": "code_review",
+      "predicted": {
+        "verdict": "uncertain",
+        "verdicts": [
+          "uncertain"
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "uncertain",
+          "insufficient_evidence"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "There is no null check on x. -> uncertain: the supplied Python file cannot be parsed for a static check"
+    }
+  ]
+}

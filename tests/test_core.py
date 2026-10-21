@@ -133,3 +133,81 @@ def test_pdf_with_no_extractable_text_is_reported_as_empty(tmp_path):
     assert source.extraction_status is ExtractionStatus.EMPTY
     assert text.strip() == ""
     assert any("no extractable text" in w for w in source.warnings)
+
+
+# --------------------------------------------------------------------------
+# spans
+# --------------------------------------------------------------------------
+
+
+def test_sections_split_on_numbered_headings():
+    text = "Preamble line.\n\n1. First Part\nBody text here.\n\n2. Second Part\nMore body.\n"
+    sections = split_sections(text)
+    titles = [s.title for s in sections]
+    assert any("First Part" in t for t in titles)
+    assert any("Second Part" in t for t in titles)
+
+
+def test_segments_never_lose_text():
+    text = (
+        "The fee is 2,400 EUR per month. Payment is due within 30 days.\n"
+        "- The customer may terminate with 90 days notice.\n"
+        "- Late interest of 1.5 percent applies.\n"
+    )
+    source = Source(source_id="src_test", path="t.txt", content_hash="h")
+    statements = segment_statements(text, source)
+    assert statements
+    for statement in statements:
+        assert text[statement.start : statement.end] == statement.text
+
+
+def test_empty_source_yields_no_statements():
+    source = Source(source_id="src_test", path="t.txt", content_hash="h")
+    assert segment_statements("   \n  \n", source) == []
+
+
+def test_bulleted_items_become_separate_statements():
+    text = "- First obligation here.\n- Second obligation here.\n"
+    source = Source(source_id="src_test", path="t.txt", content_hash="h")
+    statements = segment_statements(text, source)
+    assert len(statements) == 2
+    assert statements[0].kind == "list_item"
+
+
+# --------------------------------------------------------------------------
+# claims and qualifiers
+# --------------------------------------------------------------------------
+
+
+def test_claim_extraction_preserves_offsets():
+    answer = "The fee is 2,400 EUR. Payment is due within 30 days."
+    claims = split_answer_into_claims(answer)
+    assert len(claims) == 2
+    for claim in claims:
+        assert answer[claim.answer_start : claim.answer_end] == claim.text
+
+
+def test_qualifier_scan_finds_date_quantity_and_scope():
+    q = extract_qualifiers("All applicants must re-enrol before 2024 for 2,400 EUR.")
+    assert q.date == "2024"
+    assert q.quantity is not None
+    assert q.scope == "all"
+
+
+def test_negation_is_detected():
+    q = extract_qualifiers("The customer does not pay the late interest fee.")
+    assert q.negation is True
+
+
+def test_qualifier_missing_versus_present_differs():
+    with_all = extract_qualifiers("All applicants must re-enrol.")
+    with_some = extract_qualifiers("Some applicants must re-enrol.")
+    assert with_all.scope != with_some.scope
+
+
+def test_split_keeps_both_sides_of_a_contrast():
+    answer = "The fee is low, but the notice period is 90 days."
+    claims = split_answer_into_claims(answer)
+    texts = [c.text.lower() for c in claims]
+    assert any("fee is low" in t for t in texts)
+    assert any("notice period" in t for t in texts)

@@ -2,998 +2,13 @@
   "instructions": "For each case, inspect only the input and write your own expected outcome without consulting fixtures or run predictions. Set reviewed_expected to an object such as {\"verdict\": \"supported\"}; add other expected fields only if you independently checked them. Leave null if unreviewed. Use reviewer_notes for uncertainty.",
   "cases": [
     {
-      "case_id": "claim_001_supported",
-      "project": "claims",
-      "input": {
-        "answer": "The monthly service fee is 2,400 EUR.",
-        "sources": [
-          {
-            "identifier": "contract",
-            "text": "The monthly service fee is 2,400 EUR per calendar month. Payment is due within 30 days of the invoice date."
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "claim_002_contradicted",
-      "project": "claims",
-      "input": {
-        "answer": "The monthly service fee is 2,400 EUR.",
-        "sources": [
-          {
-            "identifier": "contract",
-            "text": "The monthly service fee is 2,800 EUR per calendar month. Payment is due within 30 days of the invoice date."
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "claim_003_wrong_year",
-      "project": "claims",
-      "input": {
-        "answer": "The notice period is 90 days.",
-        "sources": [
-          {
-            "identifier": "contract",
-            "text": "Either party may terminate the agreement for convenience with 60 days written notice. Termination for cause requires 30 days written notice."
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "claim_004_offtopic_source",
-      "project": "claims",
-      "input": {
-        "answer": "The processor must notify the controller of any personal data breach within 48 hours.",
-        "sources": [
-          {
-            "identifier": "handbook",
-            "text": "Personal data is processed solely for the purpose of delivering the service. Data is stored within the European Economic Area."
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "claim_005_qualifier_all",
-      "project": "claims",
-      "input": {
-        "answer": "All customers receive a refund within 30 days of cancelling.",
-        "sources": [
-          {
-            "identifier": "policy",
-            "text": "One customer received a refund within 30 days of cancelling in March."
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "claim_006_no_source_for_claim",
-      "project": "claims",
-      "input": {
-        "answer": "The office is located in Dublin.",
-        "sources": [
-          {
-            "identifier": "contract",
-            "text": "The monthly service fee is 2,400 EUR per calendar month. Payment is due within 30 days of the invoice date."
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "claim_007_mixed_sentence",
-      "project": "claims",
-      "input": {
-        "answer": "The monthly service fee is 2,400 EUR and the notice period is 60 days.",
-        "sources": [
-          {
-            "identifier": "contract",
-            "text": "The monthly service fee is 2,400 EUR per calendar month. Either party may terminate the agreement for convenience with 90 days written notice."
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "claim_008_negation",
-      "project": "claims",
-      "input": {
-        "answer": "The customer does not pay late interest on overdue amounts.",
-        "sources": [
-          {
-            "identifier": "contract",
-            "text": "A late payment interest of 1.5 percent per month applies to overdue amounts."
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "claim_009_empty_source",
-      "project": "claims",
-      "input": {
-        "answer": "The monthly service fee is 2,400 EUR.",
-        "sources": [
-          {
-            "identifier": "empty",
-            "text": ""
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "claim_010_before_2024_qualifier",
-      "project": "claims",
-      "input": {
-        "answer": "Applicants must re-enrol before 2024.",
-        "sources": [
-          {
-            "identifier": "policy",
-            "text": "Applicants must re-enrol before 2025."
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "claim_011_fixed_date_contradiction",
-      "project": "claims",
-      "input": {
-        "answer": "The refund deadline is 2025-06-01.",
-        "sources": [
-          {
-            "identifier": "policy",
-            "text": "The refund deadline is 2024-03-01. Requests received after the deadline are not processed."
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "claim_t01_supported",
-      "project": "claims",
-      "input": {
-        "answer": "The annual licence fee is 1,200 EUR.",
-        "sources": [
-          {
-            "identifier": "licence",
-            "text": "The annual licence fee is 1,200 EUR per subscription year. The licence renews automatically unless cancelled."
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "claim_t02_contradicted_amount",
-      "project": "claims",
-      "input": {
-        "answer": "The annual licence fee is 1,200 EUR.",
-        "sources": [
-          {
-            "identifier": "licence",
-            "text": "The annual licence fee is 1,450 EUR per subscription year. The licence renews automatically unless cancelled."
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "claim_t03_contradicted_month",
-      "project": "claims",
-      "input": {
-        "answer": "The support plan costs 99 EUR per month.",
-        "sources": [
-          {
-            "identifier": "pricing",
-            "text": "The standard support plan costs 99 EUR per month. The premium support plan costs 249 EUR per month."
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "claim_t04_topical_but_silent",
-      "project": "claims",
-      "input": {
-        "answer": "The service is available in Ireland and France.",
-        "sources": [
-          {
-            "identifier": "coverage",
-            "text": "The service is operated from data centres in Ireland and Germany."
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "claim_t05_universal_claim",
-      "project": "claims",
-      "input": {
-        "answer": "Every support ticket is answered within 24 hours.",
-        "sources": [
-          {
-            "identifier": "sla",
-            "text": "Priority one support tickets are answered within 24 hours. Lower priority tickets may take up to three business days."
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "claim_t06_negation_preserved",
-      "project": "claims",
-      "input": {
-        "answer": "The supplier does not charge for data export.",
-        "sources": [
-          {
-            "identifier": "pricing",
-            "text": "The supplier charges 50 EUR for each data export."
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "claim_t07_two_claims_two_outcomes",
-      "project": "claims",
-      "input": {
-        "answer": "The support plan costs 99 EUR per month and the onboarding fee is 500 EUR.",
-        "sources": [
-          {
-            "identifier": "pricing",
-            "text": "The standard support plan costs 99 EUR per month. There is no onboarding fee."
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "claim_t08_empty_source",
-      "project": "claims",
-      "input": {
-        "answer": "The annual licence fee is 1,200 EUR.",
-        "sources": [
-          {
-            "identifier": "licence",
-            "text": ""
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "claim_t09_year_mismatch",
-      "project": "claims",
-      "input": {
-        "answer": "The warranty expires in 2027.",
-        "sources": [
-          {
-            "identifier": "warranty",
-            "text": "The warranty expires in 2025. Coverage does not extend to consequential loss."
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "claim_t10_compatible_deadline",
-      "project": "claims",
-      "input": {
-        "answer": "The refund request must be made before 2024.",
-        "sources": [
-          {
-            "identifier": "policy",
-            "text": "The refund request must be made before 2026."
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "claim_t11_entity_mismatch",
-      "project": "claims",
-      "input": {
-        "answer": "Initech signed the agreement on 3 March 2024.",
-        "sources": [
-          {
-            "identifier": "register",
-            "text": "Globex signed the agreement on 3 March 2024. Umbrella signed the agreement on 11 June 2024."
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "claim_t12_metric_mismatch",
-      "project": "claims",
-      "input": {
-        "answer": "The number of active users in 2024 was 12,000.",
-        "sources": [
-          {
-            "identifier": "metrics",
-            "text": "The number of paying customers in 2024 was 12,000. The number of active users in 2024 was 48,000."
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "claim_t13_two_sources_one_silent",
-      "project": "claims",
-      "input": {
-        "answer": "The office is located in Dublin.",
-        "sources": [
-          {
-            "identifier": "contract",
-            "text": "The monthly service fee is 2,400 EUR per calendar month."
-          },
-          {
-            "identifier": "register",
-            "text": "The registered office is located at 12 Bridge Street, Dublin."
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "claim_t14_conditional_claim",
-      "project": "claims",
-      "input": {
-        "answer": "If the customer cancels early, the deposit is forfeited.",
-        "sources": [
-          {
-            "identifier": "terms",
-            "text": "If the customer cancels early, the deposit is forfeited. If the customer completes the full term, the deposit is returned."
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "claim_t15_scope_claim_partially_covered",
-      "project": "claims",
-      "input": {
-        "answer": "Support is available in English and Irish.",
-        "sources": [
-          {
-            "identifier": "support",
-            "text": "Support is available in English, Irish, and French."
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "cit_001_direct_support",
-      "project": "citations",
-      "input": {
-        "citations": [
-          {
-            "claim": "The monthly service fee is 2,400 EUR.",
-            "passages": [
-              "The monthly service fee is 2,400 EUR per calendar month."
-            ]
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "cit_002_keyword_match_wrong_year",
-      "project": "citations",
-      "input": {
-        "citations": [
-          {
-            "claim": "The refund deadline is 2025-06-01.",
-            "passages": [
-              "The refund deadline is 2024-03-01. Requests received after the deadline are not processed."
-            ]
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "cit_003_topical_but_insufficient",
-      "project": "citations",
-      "input": {
-        "citations": [
-          {
-            "claim": "The monthly service fee is 2,400 EUR per calendar month.",
-            "passages": [
-              "The service fee is described in this agreement."
-            ]
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "cit_004_partial_support",
-      "project": "citations",
-      "input": {
-        "citations": [
-          {
-            "claim": "The notice period is 90 days and the fee is 2,400 EUR.",
-            "passages": [
-              "The monthly service fee is 2,400 EUR per calendar month."
-            ]
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "cit_005_two_passages_together",
-      "project": "citations",
-      "input": {
-        "citations": [
-          {
-            "claim": "The agreement has a 24 month initial term and a 90 day notice period.",
-            "passages": [
-              "The agreement runs for an initial term of 24 months.",
-              "Either party may terminate the agreement for convenience with 90 days written notice."
-            ]
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "cit_006_same_topic_different_entity",
-      "project": "citations",
-      "input": {
-        "citations": [
-          {
-            "claim": "Acme Corp reported revenue of 4.2 million EUR in 2024.",
-            "passages": [
-              "Globex Inc reported revenue of 4.2 million EUR in 2024."
-            ]
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "cit_007_no_citation",
-      "project": "citations",
-      "input": {
-        "citations": [
-          {
-            "claim": "The processor must notify the controller within 48 hours.",
-            "passages": []
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "cit_t01_direct_support",
-      "project": "citations",
-      "input": {
-        "citations": [
-          {
-            "claim": "The early-career programme runs for 12 months.",
-            "passages": [
-              "The early-career programme runs for 12 months and includes two mentoring sessions per month."
-            ]
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "cit_t02_wrong_duration",
-      "project": "citations",
-      "input": {
-        "citations": [
-          {
-            "claim": "The early-career programme runs for 12 months.",
-            "passages": [
-              "The early-career programme runs for 18 months and includes two mentoring sessions per month."
-            ]
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "cit_t03_topical_but_no_answer",
-      "project": "citations",
-      "input": {
-        "citations": [
-          {
-            "claim": "The early-career programme runs for 12 months.",
-            "passages": [
-              "The early-career programme is open to people in their first two years of employment."
-            ]
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "cit_t04_two_passages_together",
-      "project": "citations",
-      "input": {
-        "citations": [
-          {
-            "claim": "The early-career programme runs for 12 months and includes two mentoring sessions per month.",
-            "passages": [
-              "The early-career programme runs for 12 months.",
-              "The programme includes two mentoring sessions per month."
-            ]
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "cit_t05_wrong_entity",
-      "project": "citations",
-      "input": {
-        "citations": [
-          {
-            "claim": "The early-career programme runs for 12 months.",
-            "passages": [
-              "The graduate programme runs for 12 months."
-            ]
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "cit_t06_no_citation",
-      "project": "citations",
-      "input": {
-        "citations": [
-          {
-            "claim": "The early-career programme runs for 12 months.",
-            "passages": []
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "cit_t07_partial_support",
-      "project": "citations",
-      "input": {
-        "citations": [
-          {
-            "claim": "The early-career programme runs for 12 months and starts in September.",
-            "passages": [
-              "The early-career programme runs for 12 months."
-            ]
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "cit_t08_wrong_metric",
-      "project": "citations",
-      "input": {
-        "citations": [
-          {
-            "claim": "The programme has 40 participants.",
-            "passages": [
-              "The programme has 40 mentors. The programme has 120 participants."
-            ]
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "cit_t09_negated_support",
-      "project": "citations",
-      "input": {
-        "citations": [
-          {
-            "claim": "The programme does not charge a participation fee.",
-            "passages": [
-              "The programme charges a 50 EUR participation fee."
-            ]
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "cit_t10_year_mismatch",
-      "project": "citations",
-      "input": {
-        "citations": [
-          {
-            "claim": "The programme launched in 2021.",
-            "passages": [
-              "The programme launched in 2019 and was expanded in 2022."
-            ]
-          }
-        ]
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "om_001_material_omission_breach_notice",
-      "project": "omission",
-      "input": {
-        "source": "DATA PROCESSING ADDENDUM\n\n1. Scope and Definitions\nPersonal data means any information relating to an identified or identifiable natural person.\nThe controller is the entity that determines the purposes of processing.\nThe processor processes personal data solely on the controller documented instructions.\n\n2. Processing Purposes\nPersonal data is processed for the purpose of delivering the service.\nPersonal data is processed for the purpose of improving the service.\nThe processor shall not sell personal data to third parties.\nData is retained for 24 months after the end of the contract.\n\n3. Security Measures\nThe processor shall implement appropriate technical and organisational measures.\nPersonal data shall be encrypted in transit and at rest.\nThe processor shall notify the controller of any personal data breach within 48 hours.\nAccess to personal data shall be limited to authorised personnel.\n\n4. Subprocessors\nThe controller gives general written authorisation for the use of subprocessors.\nThe processor shall inform the controller of any intended change of subprocessor.\nThe processor remains fully liable for the acts and omissions of its subprocessors.\n\n5. International Transfers\nPersonal data shall not be transferred outside the European Economic Area.\nTransfers outside the European Economic Area require appropriate safeguards.\nThe processor shall keep a record of all international transfers.\n",
-        "summary": "This addendum governs the processing of personal data by the processor.\nThe processor processes personal data only on the controller documented instructions.\nThe processor must not sell personal data to third parties.\nThe processor must implement appropriate technical and organisational measures.\nPersonal data must be encrypted in transit and at rest.\nAccess to personal data is limited to authorised personnel.\nThe controller gives general written authorisation for subprocessors.\nThe processor remains liable for the acts of its subprocessors.\nPersonal data may not be transferred outside the European Economic Area.",
-        "purpose": "Summarize the security obligations the processor has."
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "om_002_material_omission_technical_measures",
-      "project": "omission",
-      "input": {
-        "source": "DATA PROCESSING ADDENDUM\n\n1. Scope and Definitions\nPersonal data means any information relating to an identified or identifiable natural person.\nThe controller is the entity that determines the purposes of processing.\nThe processor processes personal data solely on the controller documented instructions.\n\n2. Processing Purposes\nPersonal data is processed for the purpose of delivering the service.\nPersonal data is processed for the purpose of improving the service.\nThe processor shall not sell personal data to third parties.\nData is retained for 24 months after the end of the contract.\n\n3. Security Measures\nThe processor shall implement appropriate technical and organisational measures.\nPersonal data shall be encrypted in transit and at rest.\nThe processor shall notify the controller of any personal data breach within 48 hours.\nAccess to personal data shall be limited to authorised personnel.\n\n4. Subprocessors\nThe controller gives general written authorisation for the use of subprocessors.\nThe processor shall inform the controller of any intended change of subprocessor.\nThe processor remains fully liable for the acts and omissions of its subprocessors.\n\n5. International Transfers\nPersonal data shall not be transferred outside the European Economic Area.\nTransfers outside the European Economic Area require appropriate safeguards.\nThe processor shall keep a record of all international transfers.\n",
-        "summary": "This addendum governs the processing of personal data by the processor.\nThe processor processes personal data only on the controller documented instructions.\nThe processor must not sell personal data to third parties.\nPersonal data must be encrypted in transit and at rest.\nAccess to personal data is limited to authorised personnel.\nThe controller gives general written authorisation for subprocessors.\nThe processor remains liable for the acts of its subprocessors.\nPersonal data may not be transferred outside the European Economic Area.",
-        "purpose": "Summarize the security obligations the processor has."
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "om_003_harmless_omission_control",
-      "project": "omission",
-      "input": {
-        "source": "DATA PROCESSING ADDENDUM\n\n1. Scope and Definitions\nPersonal data means any information relating to an identified or identifiable natural person.\nThe controller is the entity that determines the purposes of processing.\nThe processor processes personal data solely on the controller documented instructions.\n\n2. Processing Purposes\nPersonal data is processed for the purpose of delivering the service.\nPersonal data is processed for the purpose of improving the service.\nThe processor shall not sell personal data to third parties.\nData is retained for 24 months after the end of the contract.\n\n3. Security Measures\nThe processor shall implement appropriate technical and organisational measures.\nPersonal data shall be encrypted in transit and at rest.\nThe processor shall notify the controller of any personal data breach within 48 hours.\nAccess to personal data shall be limited to authorised personnel.\n\n4. Subprocessors\nThe controller gives general written authorisation for the use of subprocessors.\nThe processor shall inform the controller of any intended change of subprocessor.\nThe processor remains fully liable for the acts and omissions of its subprocessors.\n\n5. International Transfers\nPersonal data shall not be transferred outside the European Economic Area.\nTransfers outside the European Economic Area require appropriate safeguards.\nThe processor shall keep a record of all international transfers.\n",
-        "summary": "This addendum governs the processing of personal data by the processor.\nThe processor processes personal data only on the controller documented instructions.\nThe processor must not sell personal data to third parties.\nThe processor must implement appropriate technical and organisational measures.\nPersonal data must be encrypted in transit and at rest.\nThe processor must notify the controller of any personal data breach within 48 hours.\nAccess to personal data is limited to authorised personnel.\nThe controller gives general written authorisation for subprocessors.\nThe processor remains liable for the acts of its subprocessors.\nPersonal data may not be transferred outside the European Economic Area.",
-        "purpose": "Summarize the security obligations the processor has."
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "om_004_purpose_relative",
-      "project": "omission",
-      "input": {
-        "source": "DATA PROCESSING ADDENDUM\n\n1. Scope and Definitions\nPersonal data means any information relating to an identified or identifiable natural person.\nThe controller is the entity that determines the purposes of processing.\nThe processor processes personal data solely on the controller documented instructions.\n\n2. Processing Purposes\nPersonal data is processed for the purpose of delivering the service.\nPersonal data is processed for the purpose of improving the service.\nThe processor shall not sell personal data to third parties.\nData is retained for 24 months after the end of the contract.\n\n3. Security Measures\nThe processor shall implement appropriate technical and organisational measures.\nPersonal data shall be encrypted in transit and at rest.\nThe processor shall notify the controller of any personal data breach within 48 hours.\nAccess to personal data shall be limited to authorised personnel.\n\n4. Subprocessors\nThe controller gives general written authorisation for the use of subprocessors.\nThe processor shall inform the controller of any intended change of subprocessor.\nThe processor remains fully liable for the acts and omissions of its subprocessors.\n\n5. International Transfers\nPersonal data shall not be transferred outside the European Economic Area.\nTransfers outside the European Economic Area require appropriate safeguards.\nThe processor shall keep a record of all international transfers.\n",
-        "summary": "This addendum governs the processing of personal data by the processor.\nThe processor processes personal data only on the controller documented instructions.\nThe processor must not sell personal data to third parties.\nThe processor must implement appropriate technical and organisational measures.\nPersonal data must be encrypted in transit and at rest.\nAccess to personal data is limited to authorised personnel.\nThe controller gives general written authorisation for subprocessors.\nThe processor remains liable for the acts of its subprocessors.\nPersonal data may not be transferred outside the European Economic Area.",
-        "purpose": "Summarize the definitions used in the addendum."
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "om_005_no_omission",
-      "project": "omission",
-      "input": {
-        "source": "DATA PROCESSING ADDENDUM\n\n1. Scope and Definitions\nPersonal data means any information relating to an identified or identifiable natural person.\nThe controller is the entity that determines the purposes of processing.\nThe processor processes personal data solely on the controller documented instructions.\n\n2. Processing Purposes\nPersonal data is processed for the purpose of delivering the service.\nPersonal data is processed for the purpose of improving the service.\nThe processor shall not sell personal data to third parties.\nData is retained for 24 months after the end of the contract.\n\n3. Security Measures\nThe processor shall implement appropriate technical and organisational measures.\nPersonal data shall be encrypted in transit and at rest.\nThe processor shall notify the controller of any personal data breach within 48 hours.\nAccess to personal data shall be limited to authorised personnel.\n\n4. Subprocessors\nThe controller gives general written authorisation for the use of subprocessors.\nThe processor shall inform the controller of any intended change of subprocessor.\nThe processor remains fully liable for the acts and omissions of its subprocessors.\n\n5. International Transfers\nPersonal data shall not be transferred outside the European Economic Area.\nTransfers outside the European Economic Area require appropriate safeguards.\nThe processor shall keep a record of all international transfers.\n",
-        "summary": "This addendum governs the processing of personal data by the processor.\nThe processor processes personal data only on the controller documented instructions.\nThe processor must not sell personal data to third parties.\nThe processor must implement appropriate technical and organisational measures.\nPersonal data must be encrypted in transit and at rest.\nThe processor must notify the controller of any personal data breach within 48 hours.\nAccess to personal data is limited to authorised personnel.\nThe controller gives general written authorisation for subprocessors.\nThe processor remains liable for the acts of its subprocessors.\nPersonal data may not be transferred outside the European Economic Area.",
-        "purpose": "Summarize the security obligations the processor has."
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "om_006_empty_source",
-      "project": "omission",
-      "input": {
-        "source": "",
-        "summary": "Some summary.",
-        "purpose": "Summarize the security obligations the processor has."
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "om_007_empty_summary",
-      "project": "omission",
-      "input": {
-        "source": "DATA PROCESSING ADDENDUM\n\n1. Scope and Definitions\nPersonal data means any information relating to an identified or identifiable natural person.\nThe controller is the entity that determines the purposes of processing.\nThe processor processes personal data solely on the controller documented instructions.\n\n2. Processing Purposes\nPersonal data is processed for the purpose of delivering the service.\nPersonal data is processed for the purpose of improving the service.\nThe processor shall not sell personal data to third parties.\nData is retained for 24 months after the end of the contract.\n\n3. Security Measures\nThe processor shall implement appropriate technical and organisational measures.\nPersonal data shall be encrypted in transit and at rest.\nThe processor shall notify the controller of any personal data breach within 48 hours.\nAccess to personal data shall be limited to authorised personnel.\n\n4. Subprocessors\nThe controller gives general written authorisation for the use of subprocessors.\nThe processor shall inform the controller of any intended change of subprocessor.\nThe processor remains fully liable for the acts and omissions of its subprocessors.\n\n5. International Transfers\nPersonal data shall not be transferred outside the European Economic Area.\nTransfers outside the European Economic Area require appropriate safeguards.\nThe processor shall keep a record of all international transfers.\n",
-        "summary": "",
-        "purpose": "Summarize the security obligations the processor has."
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "om_t01_material_omission_retention",
-      "project": "omission",
-      "input": {
-        "source": "SERVICE ADDENDUM\n\n1. Retention\nCustomer records are retained for 24 months after the end of the subscription.\nBackups are deleted within 90 days.\n\n2. Termination\nThe customer may terminate with 60 days notice.\nTermination for convenience does not trigger a refund.\n\n3. Support\nSupport is available on business days only.\nEmergency support is available for 24 hours a day.",
-        "summary": "This addendum governs the subscription service.\nThe customer may terminate with 60 days notice.\nTermination for convenience does not trigger a refund.",
-        "purpose": "Summarize the data retention obligations."
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "om_t02_purpose_relative_same_source",
-      "project": "omission",
-      "input": {
-        "source": "SERVICE ADDENDUM\n\n1. Retention\nCustomer records are retained for 24 months after the end of the subscription.\nBackups are deleted within 90 days.\n\n2. Termination\nThe customer may terminate with 60 days notice.\nTermination for convenience does not trigger a refund.\n\n3. Support\nSupport is available on business days only.\nEmergency support is available for 24 hours a day.",
-        "summary": "This addendum governs the subscription service.\nThe customer may terminate with 60 days notice.\nTermination for convenience does not trigger a refund.",
-        "purpose": "Summarize the support arrangements."
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "om_t03_empty_source",
-      "project": "omission",
-      "input": {
-        "source": "",
-        "summary": "The addendum governs the service.",
-        "purpose": "Summarize the data retention obligations."
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "om_t04_empty_summary",
-      "project": "omission",
-      "input": {
-        "source": "SERVICE ADDENDUM\n\n1. Retention\nCustomer records are retained for 24 months after the end of the subscription.",
-        "summary": "",
-        "purpose": "Summarize the data retention obligations."
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "om_t05_harmless_omission",
-      "project": "omission",
-      "input": {
-        "source": "SERVICE ADDENDUM\n\n1. Definitions\nService means the subscription service described in the order form.\n\n2. Retention\nCustomer records are retained for 24 months after the end of the subscription.\n\n3. Support\nSupport is available on business days only.\nEmergency support is available for 24 hours a day.",
-        "summary": "The addendum governs the subscription service.\nCustomer records are retained for 24 months after the end of the subscription.\nSupport is available on business days only.\nEmergency support is available for 24 hours a day.",
-        "purpose": "Summarize the support arrangements."
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "om_t06_material_omission_emergency_support",
-      "project": "omission",
-      "input": {
-        "source": "SERVICE ADDENDUM\n\n1. Support\nSupport is available on business days only.\nEmergency support is available for 24 hours a day.\nEmergency support carries a 4 percent surcharge.",
-        "summary": "This addendum governs the subscription service.\nSupport is available on business days only.",
-        "purpose": "Summarize the costs the customer may incur."
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "om_t07_no_omission",
-      "project": "omission",
-      "input": {
-        "source": "SERVICE ADDENDUM\n\n1. Support\nSupport is available on business days only.\nEmergency support is available for 24 hours a day.",
-        "summary": "This addendum governs the subscription service.\nSupport is available on business days only.\nEmergency support is available for 24 hours a day.",
-        "purpose": "Summarize the support arrangements."
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "deliv_001_complete_quiz",
-      "project": "deliverables",
-      "input": {
-        "request": "Write 50 questions across six chapters, four options each, with an answer key and an explanation for every answer.",
-        "deliverable": "CHAPTER 1\nQ1) What is 2+2?\nA) 3\nB) 4\nC) 5\nD) 6\n\nCHAPTER 2\nQ2) Capital of France?\nA) Rome\nB) Paris\nC) Madrid\nD) Berlin\n\nANSWER KEY\n1. B\n2. B\n\nEXPLANATIONS\n1. 2+2 is 4, so B is correct.\n2. The capital of France is Paris, so B is correct."
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "deliv_002_correct_counts",
-      "project": "deliverables",
-      "input": {
-        "request": "Write 2 questions across 2 chapters, four options each, with an answer key.",
-        "deliverable": "CHAPTER 1\nQ1) What is 2+2?\nA) 3\nB) 4\nC) 5\nD) 6\n\nCHAPTER 2\nQ2) Capital of France?\nA) Rome\nB) Paris\nC) Madrid\nD) Berlin\n\nANSWER KEY\n1. B\n2. B"
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "deliv_003_missing_answer_key",
-      "project": "deliverables",
-      "input": {
-        "request": "Write 2 questions across 2 chapters, four options each, with an answer key.",
-        "deliverable": "CHAPTER 1\nQ1) What is 2+2?\nA) 3\nB) 4\nC) 5\nD) 6\n\nCHAPTER 2\nQ2) Capital of France?\nA) Rome\nB) Paris\nC) Madrid\nD) Berlin"
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "deliv_004_missing_named_section",
-      "project": "deliverables",
-      "input": {
-        "request": "Write 2 questions across 2 chapters, four options each, and include a section titled Glossary.",
-        "deliverable": "CHAPTER 1\nQ1) What is 2+2?\nA) 3\nB) 4\nC) 5\nD) 6\n\nCHAPTER 2\nQ2) Capital of France?\nA) Rome\nB) Paris\nC) Madrid\nD) Berlin"
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "deliv_005_wrong_format",
-      "project": "deliverables",
-      "input": {
-        "request": "Write 2 questions across 2 chapters, four options each, with an answer key, in markdown.",
-        "deliverable": "CHAPTER 1\nQ1) What is 2+2?\nA) 3\nB) 4\nC) 5\nD) 6\n\nCHAPTER 2\nQ2) Capital of France?\nA) Rome\nB) Paris\nC) Madrid\nD) Berlin\n\nANSWER KEY\n1. B\n2. B"
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "deliv_006_semantic_only_requirement",
-      "project": "deliverables",
-      "input": {
-        "request": "Explain how compound interest works.",
-        "deliverable": "Compound interest is interest calculated on the principal and on accumulated interest from previous periods."
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "deliverable_007_no_requirements",
-      "project": "deliverables",
-      "input": {
-        "request": "Make it good.",
-        "deliverable": "It is good now."
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "deliverable_008_explanation_requirement",
-      "project": "deliverables",
-      "input": {
-        "request": "Write 2 questions across 2 chapters, four options each, with an answer key and an explanation for every answer.",
-        "deliverable": "CHAPTER 1\nQ1) What is 2+2?\nA) 3\nB) 4\nC) 5\nD) 6\n\nCHAPTER 2\nQ2) Capital of France?\nA) Rome\nB) Paris\nC) Madrid\nD) Berlin\n\nANSWER KEY\n1. B\n2. B"
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "deliv_t01_meets_every_requirement",
-      "project": "deliverables",
-      "input": {
-        "request": "Write 3 questions across 3 chapters, four options each, with an answer key.",
-        "deliverable": "CHAPTER 1\nQ1) What is 2+2?\nA) 3\nB) 4\nC) 5\nD) 6\n\nCHAPTER 2\nQ2) Capital of France?\nA) Rome\nB) Paris\nC) Madrid\nD) Berlin\n\nCHAPTER 3\nQ3) Capital of Spain?\nA) Lisbon\nB) Madrid\nC) Rome\nD) Athens\n\nANSWER KEY\n1. B\n2. B\n3. B"
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "deliv_t02_wrong_question_count",
-      "project": "deliverables",
-      "input": {
-        "request": "Write 3 questions across 3 chapters, four options each, with an answer key.",
-        "deliverable": "CHAPTER 1\nQ1) What is 2+2?\nA) 3\nB) 4\nC) 5\nD) 6\n\nCHAPTER 2\nQ2) Capital of France?\nA) Rome\nB) Paris\nC) Madrid\nD) Berlin\n\nANSWER KEY\n1. B\n2. B"
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "deliv_t03_missing_named_section",
-      "project": "deliverables",
-      "input": {
-        "request": "Write 1 question across 1 chapter, four options each, with an answer key, and include a section titled Appendix.",
-        "deliverable": "CHAPTER 1\nQ1) What is 2+2?\nA) 3\nB) 4\nC) 5\nD) 6\n\nANSWER KEY\n1. B"
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "deliv_t04_wrong_option_count",
-      "project": "deliverables",
-      "input": {
-        "request": "Write 1 question across 1 chapter, four options each, with an answer key.",
-        "deliverable": "CHAPTER 1\nQ1) What is 2+2?\nA) 3\nB) 4\nC) 5\n\nANSWER KEY\n1. B"
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "deliv_t05_vague_request",
-      "project": "deliverables",
-      "input": {
-        "request": "Make it good.",
-        "deliverable": "Here is a summary of the document."
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "deliv_t06_semantic_requirement",
-      "project": "deliverables",
-      "input": {
-        "request": "Explain how compound interest works.",
-        "deliverable": "Compound interest is interest calculated on the initial principal and on the accumulated interest from previous periods."
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "deliv_t07_missing_answer_key",
-      "project": "deliverables",
-      "input": {
-        "request": "Write 1 question across 1 chapter, four options each, with an answer key.",
-        "deliverable": "CHAPTER 1\nQ1) What is 2+2?\nA) 3\nB) 4\nC) 5\nD) 6"
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "deliv_t08_requirement_not_invented",
-      "project": "deliverables",
-      "input": {
-        "request": "Write 1 question across 1 chapter, four options each, with an answer key.",
-        "deliverable": "CHAPTER 1\nQ1) What is 2+2?\nA) 3\nB) 4\nC) 5\nD) 6\n\nANSWER KEY\n1. B"
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "deliv_t09_wrong_format",
-      "project": "deliverables",
-      "input": {
-        "request": "Write 1 question across 1 chapter, four options each, with an answer key, in markdown.",
-        "deliverable": "CHAPTER 1\nQ1) What is 2+2?\nA) 3\nB) 4\nC) 5\nD) 6\n\nANSWER KEY\n1. B"
-      },
-      "reviewed_expected": null,
-      "reviewer_notes": ""
-    },
-    {
-      "case_id": "receipt_001_text_extracted",
+      "case_id": "receipt_005_stale_version_detectable",
       "project": "context_receipts",
       "input": {
         "files": [
+          "v2/contract.txt"
+        ],
+        "diff_against": [
           "v1/contract.txt"
         ]
       },
@@ -1001,7 +16,80 @@
       "reviewer_notes": ""
     },
     {
-      "case_id": "receipt_002_empty_file",
+      "case_id": "receipt_006_same_version_not_flagged",
+      "project": "context_receipts",
+      "input": {
+        "files": [
+          "v1/contract.txt"
+        ],
+        "diff_against": [
+          "v1/contract.txt"
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "receipt_007_reproducible",
+      "project": "context_receipts",
+      "input": {
+        "files": [
+          "v1/contract.txt",
+          "v2/contract.txt"
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "receipt_t01_text_extracted",
+      "project": "context_receipts",
+      "input": {
+        "files": [
+          "t1/policy.txt"
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "receipt_t02_stale_version_detectable",
+      "project": "context_receipts",
+      "input": {
+        "files": [
+          "t2/policy.txt"
+        ],
+        "diff_against": [
+          "t1/policy.txt"
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "receipt_t03_missing_file",
+      "project": "context_receipts",
+      "input": {
+        "files": [
+          "t1/does_not_exist.txt"
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "receipt_t04_unsupported_media",
+      "project": "context_receipts",
+      "input": {
+        "files": [
+          "unreadable.bin"
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "receipt_t05_empty_file",
       "project": "context_receipts",
       "input": {
         "files": [
@@ -1012,22 +100,1147 @@
       "reviewer_notes": ""
     },
     {
-      "case_id": "receipt_003_missing_file",
+      "case_id": "receipt_t06_same_version_not_flagged",
       "project": "context_receipts",
       "input": {
         "files": [
-          "does_not_exist.txt"
+          "t1/policy.txt"
+        ],
+        "diff_against": [
+          "t1/policy.txt"
         ]
       },
       "reviewed_expected": null,
       "reviewer_notes": ""
     },
     {
-      "case_id": "receipt_004_unsupported_media",
+      "case_id": "receipt_t07_pdf_extracted",
       "project": "context_receipts",
       "input": {
         "files": [
-          "unreadable.bin"
+          "sample_policy.pdf"
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "num_001_correct_read",
+      "project": "numerical",
+      "input": {
+        "table": "Entity,Metric,2023,2024\nAcme Corp,Revenue,4200000,5100000\nGlobex Inc,Revenue,3800000,3900000\nAcme Corp,Headcount,1200,1350\nGlobex Inc,Headcount,880,905",
+        "format": "csv",
+        "claims": [
+          "Acme Corp revenue in 2024 was 5100000 EUR."
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "num_002_wrong_year",
+      "project": "numerical",
+      "input": {
+        "table": "Entity,Metric,2023,2024\nAcme Corp,Revenue,4200000,5100000\nGlobex Inc,Revenue,3800000,3900000\nAcme Corp,Headcount,1200,1350\nGlobex Inc,Headcount,880,905",
+        "format": "csv",
+        "claims": [
+          "Acme Corp revenue in 2023 was 5100000 EUR."
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "num_003_wrong_row",
+      "project": "numerical",
+      "input": {
+        "table": "Entity,Metric,2023,2024\nAcme Corp,Revenue,4200000,5100000\nGlobex Inc,Revenue,3800000,3900000\nAcme Corp,Headcount,1200,1350\nGlobex Inc,Headcount,880,905",
+        "format": "csv",
+        "claims": [
+          "Globex Inc revenue in 2024 was 5100000 EUR."
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "num_004_wrong_column",
+      "project": "numerical",
+      "input": {
+        "table": "Entity,Metric,2023,2024\nAcme Corp,Revenue,4200000,5100000\nGlobex Inc,Revenue,3800000,3900000\nAcme Corp,Headcount,1200,1350\nGlobex Inc,Headcount,880,905",
+        "format": "csv",
+        "claims": [
+          "Acme Corp headcount in 2024 was 5100000."
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "num_005_wrong_unit_millions",
+      "project": "numerical",
+      "input": {
+        "table": "Entity,Metric,2023,2024\nAcme Corp,Revenue,4200000,5100000\nGlobex Inc,Revenue,3800000,3900000\nAcme Corp,Headcount,1200,1350\nGlobex Inc,Headcount,880,905",
+        "format": "csv",
+        "claims": [
+          "Acme Corp revenue in 2024 was 5.1 million EUR."
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "num_006_percent_change",
+      "project": "numerical",
+      "input": {
+        "table": "Entity,Metric,2023,2024\nAcme Corp,Revenue,4200000,5100000\nGlobex Inc,Revenue,3800000,3900000\nAcme Corp,Headcount,1200,1350\nGlobex Inc,Headcount,880,905",
+        "format": "csv",
+        "claims": [
+          "Acme Corp revenue increased by 21.4 percent from 2023 to 2024."
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "num_007_percent_change_wrong",
+      "project": "numerical",
+      "input": {
+        "table": "Entity,Metric,2023,2024\nAcme Corp,Revenue,4200000,5100000\nGlobex Inc,Revenue,3800000,3900000\nAcme Corp,Headcount,1200,1350\nGlobex Inc,Headcount,880,905",
+        "format": "csv",
+        "claims": [
+          "Acme Corp revenue increased by 30 percent from 2023 to 2024."
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "num_008_markdown_table",
+      "project": "numerical",
+      "input": {
+        "table": "| Region | Q1 2024 | Q2 2024 |\n| --- | --- | --- |\n| North | 1200 | 1500 |\n| South | 900 | 875 |",
+        "format": "markdown",
+        "claims": [
+          "North Q2 2024 was 1500."
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "num_009_markdown_wrong_quarter",
+      "project": "numerical",
+      "input": {
+        "table": "| Region | Q1 2024 | Q2 2024 |\n| --- | --- | --- |\n| North | 1200 | 1500 |\n| South | 900 | 875 |",
+        "format": "markdown",
+        "claims": [
+          "North Q1 2024 was 1500."
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "num_010_ambiguous_claim",
+      "project": "numerical",
+      "input": {
+        "table": "Entity,Metric,2023,2024\nAcme Corp,Revenue,4200000,5100000\nGlobex Inc,Revenue,3800000,3900000\nAcme Corp,Headcount,1200,1350\nGlobex Inc,Headcount,880,905",
+        "format": "csv",
+        "claims": [
+          "Revenue was 5100000."
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "num_011_empty_table",
+      "project": "numerical",
+      "input": {
+        "table": "",
+        "format": "csv",
+        "claims": [
+          "Acme Corp revenue in 2024 was 5100000."
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "num_t01_correct_read",
+      "project": "numerical",
+      "input": {
+        "table": "Region,Metric,2022,2023\nNorth,Units,1200,1500\nSouth,Units,900,1100\nNorth,Revenue,3200000,3800000\nSouth,Revenue,2100000,2400000",
+        "format": "csv",
+        "claims": [
+          "North units in 2023 was 1500."
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "num_t02_wrong_year",
+      "project": "numerical",
+      "input": {
+        "table": "Region,Metric,2022,2023\nNorth,Units,1200,1500\nSouth,Units,900,1100",
+        "format": "csv",
+        "claims": [
+          "North units in 2022 was 1500."
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "num_t03_wrong_row",
+      "project": "numerical",
+      "input": {
+        "table": "Region,Metric,2022,2023\nNorth,Units,1200,1500\nSouth,Units,900,1100",
+        "format": "csv",
+        "claims": [
+          "South units in 2023 was 1500."
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "num_t04_wrong_metric",
+      "project": "numerical",
+      "input": {
+        "table": "Region,Metric,2022,2023\nNorth,Units,1200,1500\nNorth,Revenue,3200000,3800000",
+        "format": "csv",
+        "claims": [
+          "North revenue in 2023 was 1500."
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "num_t05_percent_change_correct",
+      "project": "numerical",
+      "input": {
+        "table": "Region,Metric,2022,2023\nNorth,Revenue,3200000,3800000",
+        "format": "csv",
+        "claims": [
+          "North revenue increased by 18.75 percent from 2022 to 2023."
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "num_t06_percent_change_wrong",
+      "project": "numerical",
+      "input": {
+        "table": "Region,Metric,2022,2023\nNorth,Revenue,3200000,3800000",
+        "format": "csv",
+        "claims": [
+          "North revenue increased by 20 percent from 2022 to 2023."
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "num_t07_ambiguous_claim",
+      "project": "numerical",
+      "input": {
+        "table": "Region,Metric,2022,2023\nNorth,Units,1200,1500\nSouth,Units,900,1100",
+        "format": "csv",
+        "claims": [
+          "Units was 1500."
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "num_t08_unknown_region",
+      "project": "numerical",
+      "input": {
+        "table": "Region,Metric,2022,2023\nNorth,Units,1200,1500\nSouth,Units,900,1100",
+        "format": "csv",
+        "claims": [
+          "East units in 2023 was 1500."
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "num_t09_markdown_table",
+      "project": "numerical",
+      "input": {
+        "table": "| Region | Metric | 2022 | 2023 |\n| --- | --- | --- | --- |\n| North | Units | 1200 | 1500 |\n| South | Units | 900 | 1100 |",
+        "format": "markdown",
+        "claims": [
+          "South units in 2023 was 1100."
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "num_t10_unit_mismatch",
+      "project": "numerical",
+      "input": {
+        "table": "Region,Metric,2022,2023\nNorth,Units,1200,1500",
+        "format": "csv",
+        "claims": [
+          "North units in 2023 was 1.5 thousand."
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "num_t11_empty_table",
+      "project": "numerical",
+      "input": {
+        "table": "",
+        "format": "csv",
+        "claims": [
+          "North units in 2023 was 1500."
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "num_t12_two_claims_mixed",
+      "project": "numerical",
+      "input": {
+        "table": "Region,Metric,2022,2023\nNorth,Units,1200,1500\nSouth,Units,900,1100",
+        "format": "csv",
+        "claims": [
+          "North units in 2023 was 1500.",
+          "South units in 2023 was 1500."
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "instr_001_unchanged_file_respected",
+      "project": "instructions",
+      "input": {
+        "instructions": [
+          "Do not modify config/settings.toml"
+        ],
+        "before": {
+          "config/settings.toml": "debug = false\n"
+        },
+        "after": {
+          "config/settings.toml": "debug = false\n",
+          "src/app.py": "print(1)\n"
+        }
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "instr_002_unchanged_file_violated",
+      "project": "instructions",
+      "input": {
+        "instructions": [
+          "Do not modify config/settings.toml"
+        ],
+        "before": {
+          "config/settings.toml": "debug = false\n"
+        },
+        "after": {
+          "config/settings.toml": "debug = true\n"
+        }
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "instr_003_test_file_added",
+      "project": "instructions",
+      "input": {
+        "instructions": [
+          "Add a test for tests/test_parser.py"
+        ],
+        "before": {
+          "src/parser.py": "def parse():\n    return 1\n"
+        },
+        "after": {
+          "src/parser.py": "def parse():\n    return 1\n",
+          "tests/test_parser.py": "def test_parse():\n    assert parse() == 1\n"
+        }
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "instr_004_test_file_missing",
+      "project": "instructions",
+      "input": {
+        "instructions": [
+          "Add a test for tests/test_parser.py"
+        ],
+        "before": {
+          "src/parser.py": "def parse():\n    return 1\n"
+        },
+        "after": {
+          "src/parser.py": "def parse():\n    return 1\n"
+        }
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "instr_005_command_run",
+      "project": "instructions",
+      "input": {
+        "instructions": [
+          "Run the linter before finishing."
+        ],
+        "before": {
+          "src/app.py": "x = 1\n"
+        },
+        "after": {
+          "src/app.py": "x = 1\n"
+        },
+        "trace": [
+          "python -m pytest",
+          "ruff check ."
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "instr_006_command_not_run",
+      "project": "instructions",
+      "input": {
+        "instructions": [
+          "Run the linter before finishing."
+        ],
+        "before": {
+          "src/app.py": "x = 1\n"
+        },
+        "after": {
+          "src/app.py": "x = 1\n"
+        },
+        "trace": [
+          "python -m pytest"
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "instr_007_ambiguous_instruction",
+      "project": "instructions",
+      "input": {
+        "instructions": [
+          "Make the code as good as you can."
+        ],
+        "before": {
+          "src/app.py": "x = 1\n"
+        },
+        "after": {
+          "src/app.py": "x = 2\n"
+        }
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "instr_008_mixed_instructions",
+      "project": "instructions",
+      "input": {
+        "instructions": [
+          "Do not modify config/settings.toml",
+          "Add a test for tests/test_app.py",
+          "Keep the output format REPORT_JSON"
+        ],
+        "before": {
+          "config/settings.toml": "debug = false\n"
+        },
+        "after": {
+          "config/settings.toml": "debug = false\n",
+          "tests/test_app.py": "def test_app():\n    assert True\n",
+          "out/report.json": "{\"REPORT_JSON\": true}\n"
+        }
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "instr_009_one_of_three_violated",
+      "project": "instructions",
+      "input": {
+        "instructions": [
+          "Do not modify config/settings.toml",
+          "Add a test for tests/test_app.py",
+          "Keep the output format REPORT_JSON"
+        ],
+        "before": {
+          "config/settings.toml": "debug = false\n"
+        },
+        "after": {
+          "config/settings.toml": "debug = true\n",
+          "tests/test_app.py": "def test_app():\n    assert True\n",
+          "out/report.json": "{\"other\": true}\n"
+        }
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "instr_010_file_removed_respected",
+      "project": "instructions",
+      "input": {
+        "instructions": [
+          "Remove tmp/scratch.txt"
+        ],
+        "before": {
+          "tmp/scratch.txt": "scratch\n",
+          "src/app.py": "x = 1\n"
+        },
+        "after": {
+          "src/app.py": "x = 1\n"
+        }
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "instr_011_file_removed_violated",
+      "project": "instructions",
+      "input": {
+        "instructions": [
+          "Remove tmp/scratch.txt"
+        ],
+        "before": {
+          "tmp/scratch.txt": "scratch\n",
+          "src/app.py": "x = 1\n"
+        },
+        "after": {
+          "tmp/scratch.txt": "scratch\n",
+          "src/app.py": "x = 1\n"
+        }
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "instr_012_no_new_dependencies_respected",
+      "project": "instructions",
+      "input": {
+        "instructions": [
+          "Do not add new requirements*.txt"
+        ],
+        "before": {
+          "src/app.py": "x = 1\n"
+        },
+        "after": {
+          "src/app.py": "x = 1\n"
+        }
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "instr_013_no_new_dependencies_violated",
+      "project": "instructions",
+      "input": {
+        "instructions": [
+          "Do not add new requirements*.txt"
+        ],
+        "before": {
+          "src/app.py": "x = 1\n"
+        },
+        "after": {
+          "src/app.py": "x = 1\n",
+          "docs/requirements_extra.txt": "extra\n"
+        }
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "instr_014_line_limit_respected",
+      "project": "instructions",
+      "input": {
+        "instructions": [
+          "Keep src/app.py under 5 lines"
+        ],
+        "before": {
+          "src/app.py": "x = 1\n"
+        },
+        "after": {
+          "src/app.py": "x = 1\ny = 2\nz = 3\n"
+        }
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "instr_015_line_limit_violated",
+      "project": "instructions",
+      "input": {
+        "instructions": [
+          "Keep src/app.py under 5 lines"
+        ],
+        "before": {
+          "src/app.py": "x = 1\n"
+        },
+        "after": {
+          "src/app.py": "x = 1\ny = 2\nz = 3\nw = 4\nv = 5\nu = 6\n"
+        }
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "instr_016_no_secrets_respected",
+      "project": "instructions",
+      "input": {
+        "instructions": [
+          "Do not hard-code API keys"
+        ],
+        "before": {
+          "src/app.py": "x = 1\n"
+        },
+        "after": {
+          "src/app.py": "x = 1\n"
+        }
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "instr_017_no_secrets_violated",
+      "project": "instructions",
+      "input": {
+        "instructions": [
+          "Do not hard-code API keys"
+        ],
+        "before": {
+          "src/app.py": "x = 1\n"
+        },
+        "after": {
+          "src/app.py": "x = 1\nAPI_KEY = \"sk-live-abc123\"\n"
+        }
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "instr_t01_unchanged_respected",
+      "project": "instructions",
+      "input": {
+        "instructions": [
+          "Do not modify config/prod.toml"
+        ],
+        "before": {
+          "config/prod.toml": "retries = 3\n"
+        },
+        "after": {
+          "config/prod.toml": "retries = 3\n",
+          "src/app.py": "x = 1\n"
+        }
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "instr_t02_unchanged_violated",
+      "project": "instructions",
+      "input": {
+        "instructions": [
+          "Do not modify config/prod.toml"
+        ],
+        "before": {
+          "config/prod.toml": "retries = 3\n"
+        },
+        "after": {
+          "config/prod.toml": "retries = 9\n"
+        }
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "instr_t03_command_run",
+      "project": "instructions",
+      "input": {
+        "instructions": [
+          "Run the tests before finishing."
+        ],
+        "before": {
+          "src/app.py": "x = 1\n"
+        },
+        "after": {
+          "src/app.py": "x = 1\n"
+        },
+        "trace": [
+          "python -m pytest -q"
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "instr_t04_command_not_run",
+      "project": "instructions",
+      "input": {
+        "instructions": [
+          "Run the tests before finishing."
+        ],
+        "before": {
+          "src/app.py": "x = 1\n"
+        },
+        "after": {
+          "src/app.py": "x = 1\n"
+        },
+        "trace": [
+          "ruff check ."
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "instr_t05_ambiguous_instruction",
+      "project": "instructions",
+      "input": {
+        "instructions": [
+          "Handle the edge cases thoughtfully."
+        ],
+        "before": {
+          "src/app.py": "x = 1\n"
+        },
+        "after": {
+          "src/app.py": "x = 2\n"
+        }
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "instr_t06_mixed_all_satisfied",
+      "project": "instructions",
+      "input": {
+        "instructions": [
+          "Do not modify config/prod.toml",
+          "Add a test for tests/test_new.py",
+          "Run the linter"
+        ],
+        "before": {
+          "config/prod.toml": "retries = 3\n"
+        },
+        "after": {
+          "config/prod.toml": "retries = 3\n",
+          "tests/test_new.py": "def test_new():\n    assert True\n"
+        },
+        "trace": [
+          "ruff check ."
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "instr_t07_mixed_one_violated",
+      "project": "instructions",
+      "input": {
+        "instructions": [
+          "Do not modify config/prod.toml",
+          "Add a test for tests/test_new.py",
+          "Run the linter"
+        ],
+        "before": {
+          "config/prod.toml": "retries = 3\n"
+        },
+        "after": {
+          "config/prod.toml": "retries = 9\n",
+          "tests/test_new.py": "def test_new():\n    assert True\n"
+        },
+        "trace": [
+          "ruff check ."
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "instr_t08_file_removed",
+      "project": "instructions",
+      "input": {
+        "instructions": [
+          "Remove tmp/notes.md"
+        ],
+        "before": {
+          "tmp/notes.md": "notes\n",
+          "src/app.py": "x = 1\n"
+        },
+        "after": {
+          "src/app.py": "x = 1\n"
+        }
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "instr_t09_no_new_file",
+      "project": "instructions",
+      "input": {
+        "instructions": [
+          "Do not add new deps*.txt"
+        ],
+        "before": {
+          "src/app.py": "x = 1\n"
+        },
+        "after": {
+          "src/app.py": "x = 1\n"
+        }
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "instr_t10_line_limit_exceeded",
+      "project": "instructions",
+      "input": {
+        "instructions": [
+          "Keep src/app.py under 4 lines"
+        ],
+        "before": {
+          "src/app.py": "x = 1\n"
+        },
+        "after": {
+          "src/app.py": "a = 1\nb = 2\nc = 3\nd = 4\ne = 5\n"
+        }
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "instr_t11_secret_present",
+      "project": "instructions",
+      "input": {
+        "instructions": [
+          "Do not hard-code API keys"
+        ],
+        "before": {
+          "src/app.py": "x = 1\n"
+        },
+        "after": {
+          "src/app.py": "API_KEY = \"sk-live-abc123\"\n"
+        }
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "instr_t12_secret_absent",
+      "project": "instructions",
+      "input": {
+        "instructions": [
+          "Do not hard-code API keys"
+        ],
+        "before": {
+          "src/app.py": "x = 1\n"
+        },
+        "after": {
+          "src/app.py": "import os\nKEY = os.environ['API_KEY']\n"
+        }
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "cr_001_valid_null_warning",
+      "project": "code_review",
+      "input": {
+        "files": {
+          "db.py": "def get_user(conn, user_id):\n    cursor = conn.cursor()\n    cursor.execute(\"SELECT * FROM users WHERE id = ?\", (user_id,))\n    return cursor.fetchone()"
+        },
+        "comments": [
+          {
+            "text": "There is no null check on user_id before the query runs.",
+            "file": "db.py",
+            "line": 1
+          }
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "cr_002_false_null_warning",
+      "project": "code_review",
+      "input": {
+        "files": {
+          "db.py": "def get_user(conn, user_id):\n    if user_id is None:\n        raise ValueError(\"user_id is required\")\n    cursor = conn.cursor()\n    cursor.execute(\"SELECT * FROM users WHERE id = ?\", (user_id,))\n    return cursor.fetchone()"
+        },
+        "comments": [
+          {
+            "text": "There is no null check on user_id before the query runs.",
+            "file": "db.py",
+            "line": 1
+          }
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "cr_003_missing_guard_valid",
+      "project": "code_review",
+      "input": {
+        "files": {
+          "db.py": "def get_user(conn, user_id):\n    cursor = conn.cursor()\n    cursor.execute(\"SELECT * FROM users WHERE id = ?\", (user_id,))\n    return cursor.fetchone()"
+        },
+        "comments": [
+          {
+            "text": "There is no null check on user_id before the query runs.",
+            "file": "db.py",
+            "line": 1
+          }
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "cr_004_missing_guard_false",
+      "project": "code_review",
+      "input": {
+        "files": {
+          "db.py": "def get_user(conn, user_id):\n    if user_id is None:\n        raise ValueError(\"user_id is required\")\n    cursor = conn.cursor()\n    cursor.execute(\"SELECT * FROM users WHERE id = ?\", (user_id,))\n    return cursor.fetchone()"
+        },
+        "comments": [
+          {
+            "text": "There is no null check on user_id before the query runs.",
+            "file": "db.py",
+            "line": 1
+          }
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "cr_005_unbounded_valid",
+      "project": "code_review",
+      "input": {
+        "files": {
+          "calc.py": "def total(values):\n    running = 0\n    while True:\n        running += next(values)\n    return running"
+        },
+        "comments": [
+          {
+            "text": "This loop is unbounded.",
+            "file": "calc.py",
+            "line": 1
+          }
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "cr_006_unbounded_false",
+      "project": "code_review",
+      "input": {
+        "files": {
+          "calc.py": "def total():\n    running = 0\n    for value in [1, 2, 3]:\n        running += value\n    return running"
+        },
+        "comments": [
+          {
+            "text": "This loop is unbounded.",
+            "file": "calc.py",
+            "line": 1
+          }
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "cr_007_race_condition_unverified",
+      "project": "code_review",
+      "input": {
+        "files": {
+          "fs.py": "def delete_if_exists(path):\n    if path.exists():\n        path.unlink()"
+        },
+        "comments": [
+          {
+            "text": "This is a race condition between the check and the use.",
+            "file": "fs.py",
+            "line": 1
+          }
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "cr_008_wrong_file",
+      "project": "code_review",
+      "input": {
+        "files": {
+          "db.py": "def get_user(conn, user_id):\n    cursor = conn.cursor()\n    cursor.execute(\"SELECT * FROM users WHERE id = ?\", (user_id,))\n    return cursor.fetchone()"
+        },
+        "comments": [
+          {
+            "text": "There is no null check on user_id before the query runs.",
+            "file": "missing.py",
+            "line": 1
+          }
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "cr_009_style_comment_unverified",
+      "project": "code_review",
+      "input": {
+        "files": {
+          "db.py": "def get_user(conn, user_id):\n    cursor = conn.cursor()\n    cursor.execute(\"SELECT * FROM users WHERE id = ?\", (user_id,))\n    return cursor.fetchone()"
+        },
+        "comments": [
+          {
+            "text": "Consider using a more descriptive variable name here.",
+            "file": "db.py",
+            "line": 3
+          }
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "cr_t01_missing_guard_valid",
+      "project": "code_review",
+      "input": {
+        "files": {
+          "repo.py": "def read_config(conn, path):\n    cursor = conn.cursor()\n    cursor.execute(\"SELECT value FROM config WHERE path = ?\", (path,))\n    return cursor.fetchone()\n"
+        },
+        "comments": [
+          {
+            "text": "There is no null check on path before the query runs.",
+            "file": "repo.py",
+            "line": 1
+          }
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "cr_t02_guard_present_refutes",
+      "project": "code_review",
+      "input": {
+        "files": {
+          "repo.py": "def read_config(conn, path):\n    if path is None:\n        raise ValueError(\"path is required\")\n    cursor = conn.cursor()\n    cursor.execute(\"SELECT value FROM config WHERE path = ?\", (path,))\n    return cursor.fetchone()\n"
+        },
+        "comments": [
+          {
+            "text": "There is no null check on path before the query runs.",
+            "file": "repo.py",
+            "line": 1
+          }
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "cr_t03_unbounded_valid",
+      "project": "code_review",
+      "input": {
+        "files": {
+          "loop.py": "def drain(values):\n    total = 0\n    while True:\n        total += next(values)\n    return total\n"
+        },
+        "comments": [
+          {
+            "text": "This loop is unbounded.",
+            "file": "loop.py",
+            "line": 1
+          }
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "cr_t04_bounded_refutes",
+      "project": "code_review",
+      "input": {
+        "files": {
+          "loop.py": "def drain(values):\n    total = 0\n    for value in range(10):\n        total += value\n    return total\n"
+        },
+        "comments": [
+          {
+            "text": "This loop is unbounded.",
+            "file": "loop.py",
+            "line": 1
+          }
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "cr_t05_wrong_file_unverified",
+      "project": "code_review",
+      "input": {
+        "files": {
+          "repo.py": "def f(x):\n    return x\n"
+        },
+        "comments": [
+          {
+            "text": "There is no null check on x.",
+            "file": "other.py",
+            "line": 1
+          }
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "cr_t06_style_comment_unverified",
+      "project": "code_review",
+      "input": {
+        "files": {
+          "repo.py": "def f(x):\n    return x\n"
+        },
+        "comments": [
+          {
+            "text": "This would read better with a docstring.",
+            "file": "repo.py",
+            "line": 1
+          }
+        ]
+      },
+      "reviewed_expected": null,
+      "reviewer_notes": ""
+    },
+    {
+      "case_id": "cr_t07_concurrency_unverified",
+      "project": "code_review",
+      "input": {
+        "files": {
+          "repo.py": "def check_then_use(path):\n    if os.path.exists(path):\n        return open(path).read()\n    return None\n"
+        },
+        "comments": [
+          {
+            "text": "This has a race condition between the check and the use.",
+            "file": "repo.py",
+            "line": 1
+          }
         ]
       },
       "reviewed_expected": null,

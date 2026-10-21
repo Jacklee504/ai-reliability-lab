@@ -1,0 +1,126 @@
+{
+  "project": "citations",
+  "method": "hybrid",
+  "model_id": "unavailable",
+  "model_calls": 0,
+  "parse_failures": 0,
+  "total_latency_ms": 0.0,
+  "total_cases": 3,
+  "scored_cases": 3,
+  "correct_cases": 3,
+  "label_origins": {
+    "model_drafted": 3
+  },
+  "splits": {
+    "dev": 3
+  },
+  "metrics": [
+    {
+      "name": "accepted_outcome",
+      "numerator": 3,
+      "denominator": 3,
+      "rate": null,
+      "note": "project case accepted the prediction; some labels allow alternatives"
+    },
+    {
+      "name": "false_accusations_on_supported",
+      "numerator": 0,
+      "denominator": 1,
+      "rate": null,
+      "note": "supported claims wrongly called contradicted"
+    },
+    {
+      "name": "false_alarms_on_benign",
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null,
+      "note": "benign cases wrongly flagged"
+    },
+    {
+      "name": "abstentions",
+      "numerator": 2,
+      "denominator": 3,
+      "rate": null,
+      "note": "outcomes that declined to assert"
+    }
+  ],
+  "confusion": {
+    "expected=['insufficient_evidence', 'uncertain'],predicted=insufficient_evidence": 2,
+    "expected=supported,predicted=supported": 1
+  },
+  "notes": [
+    "Labels are not independently human verified; agreement is provisional.",
+    "No held-out test cases were evaluated."
+  ],
+  "results": [
+    {
+      "case_id": "cit_hard_001_missing_amount",
+      "project": "citations",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "max_topical_overlap": 0.5
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Citation audit: 1 citation(s)\n  [insufficient_evidence] The monthly fee is 900 EUR.\n      topical overlap: 0.50\n      cited passage overlap was 50%; the citation is on topic but was not judged to support the claim (model unavailable: provider error: offline mode requested)"
+    },
+    {
+      "case_id": "cit_hard_002_two_passages",
+      "project": "citations",
+      "predicted": {
+        "verdict": "supported",
+        "verdicts": [
+          "supported"
+        ],
+        "max_topical_overlap": 0.6
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Citation audit: 1 citation(s)\n  [supported] The contract starts in June and ends in December.\n      topical overlap: 0.60\n      the cited passages contain all claim terms and logical qualifiers (model unavailable: provider error: offline mode requested)"
+    },
+    {
+      "case_id": "cit_hard_003_wrong_metric",
+      "project": "citations",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "max_topical_overlap": 0.8333
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Citation audit: 1 citation(s)\n  [insufficient_evidence] Acme's profit was 12 million EUR in 2024.\n      topical overlap: 0.83\n      cited passage overlap was 83%; the citation is on topic but was not judged to support the claim (model unavailable: provider error: offline mode requested)"
+    }
+  ]
+}

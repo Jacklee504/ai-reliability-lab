@@ -1,145 +1,7 @@
 {
   "cases": [
     {
-      "case_id": "instr_t01_unchanged_respected",
-      "input": {
-        "instructions": [
-          "Do not modify config/prod.toml"
-        ],
-        "before": {
-          "config/prod.toml": "retries = 3\n"
-        },
-        "after": {
-          "config/prod.toml": "retries = 3\n",
-          "src/app.py": "x = 1\n"
-        }
-      },
-      "expected": {
-        "violated": 0,
-        "passed": 1,
-        "verdict": "passed"
-      },
-      "label_origin": "model_drafted",
-      "split": "test",
-      "rationale": "The protected file was not modified. The control case.",
-      "tags": [
-        "control",
-        "happy_path"
-      ]
-    },
-    {
-      "case_id": "instr_t02_unchanged_violated",
-      "input": {
-        "instructions": [
-          "Do not modify config/prod.toml"
-        ],
-        "before": {
-          "config/prod.toml": "retries = 3\n"
-        },
-        "after": {
-          "config/prod.toml": "retries = 9\n"
-        }
-      },
-      "expected": {
-        "violated": 1,
-        "must_violate_containing": [
-          "prod.toml"
-        ],
-        "verdict": "violated"
-      },
-      "label_origin": "model_drafted",
-      "split": "test",
-      "rationale": "The protected file was modified.",
-      "tags": [
-        "violation",
-        "positive"
-      ]
-    },
-    {
-      "case_id": "instr_t03_command_run",
-      "input": {
-        "instructions": [
-          "Run the tests before finishing."
-        ],
-        "before": {
-          "src/app.py": "x = 1\n"
-        },
-        "after": {
-          "src/app.py": "x = 1\n"
-        },
-        "trace": [
-          "python -m pytest -q"
-        ]
-      },
-      "expected": {
-        "violated": 0,
-        "passed": 1,
-        "verdict": "passed"
-      },
-      "label_origin": "model_drafted",
-      "split": "test",
-      "rationale": "The trace shows the tests ran.",
-      "tags": [
-        "trace",
-        "happy_path"
-      ]
-    },
-    {
-      "case_id": "instr_t04_command_not_run",
-      "input": {
-        "instructions": [
-          "Run the tests before finishing."
-        ],
-        "before": {
-          "src/app.py": "x = 1\n"
-        },
-        "after": {
-          "src/app.py": "x = 1\n"
-        },
-        "trace": [
-          "ruff check ."
-        ]
-      },
-      "expected": {
-        "violated": 1,
-        "verdict": "violated"
-      },
-      "label_origin": "model_drafted",
-      "split": "test",
-      "rationale": "Only the linter ran, not the tests. The instruction named the tests specifically.",
-      "tags": [
-        "trace",
-        "violation",
-        "hard_negative"
-      ]
-    },
-    {
-      "case_id": "instr_t05_ambiguous_instruction",
-      "input": {
-        "instructions": [
-          "Handle the edge cases thoughtfully."
-        ],
-        "before": {
-          "src/app.py": "x = 1\n"
-        },
-        "after": {
-          "src/app.py": "x = 2\n"
-        }
-      },
-      "expected": {
-        "inconclusive_instructions": 1,
-        "verdict": "inconclusive"
-      },
-      "label_origin": "model_drafted",
-      "split": "test",
-      "rationale": "An instruction that cannot be turned into a predicate must be reported as inconclusive, never as a pass.",
-      "tags": [
-        "ambiguous",
-        "abstain"
-      ]
-    },
-    {
-      "case_id": "instr_t06_mixed_all_satisfied",
+      "case_id": "instr_t07_mixed_one_violated",
       "input": {
         "instructions": [
           "Do not modify config/prod.toml",
@@ -150,7 +12,7 @@
           "config/prod.toml": "retries = 3\n"
         },
         "after": {
-          "config/prod.toml": "retries = 3\n",
+          "config/prod.toml": "retries = 9\n",
           "tests/test_new.py": "def test_new():\n    assert True\n"
         },
         "trace": [
@@ -158,15 +20,150 @@
         ]
       },
       "expected": {
+        "violated": 1,
+        "must_violate_containing": [
+          "prod.toml"
+        ],
+        "verdict": "violated"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "Exactly one of the three predicates fails. The count must be exact.",
+      "tags": [
+        "multi_predicate",
+        "violation"
+      ]
+    },
+    {
+      "case_id": "instr_t08_file_removed",
+      "input": {
+        "instructions": [
+          "Remove tmp/notes.md"
+        ],
+        "before": {
+          "tmp/notes.md": "notes\n",
+          "src/app.py": "x = 1\n"
+        },
+        "after": {
+          "src/app.py": "x = 1\n"
+        }
+      },
+      "expected": {
         "violated": 0,
-        "passed": 3,
+        "passed": 1,
         "verdict": "passed"
       },
       "label_origin": "model_drafted",
       "split": "test",
-      "rationale": "Three predicates of three different kinds, all satisfied.",
+      "rationale": "The removable file is gone.",
       "tags": [
-        "multi_predicate",
+        "file_deleted",
+        "happy_path"
+      ]
+    },
+    {
+      "case_id": "instr_t09_no_new_file",
+      "input": {
+        "instructions": [
+          "Do not add new deps*.txt"
+        ],
+        "before": {
+          "src/app.py": "x = 1\n"
+        },
+        "after": {
+          "src/app.py": "x = 1\n"
+        }
+      },
+      "expected": {
+        "violated": 0,
+        "passed": 1,
+        "verdict": "passed"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "No new file matching the forbidden pattern was created.",
+      "tags": [
+        "file_not_created",
+        "happy_path"
+      ]
+    },
+    {
+      "case_id": "instr_t10_line_limit_exceeded",
+      "input": {
+        "instructions": [
+          "Keep src/app.py under 4 lines"
+        ],
+        "before": {
+          "src/app.py": "x = 1\n"
+        },
+        "after": {
+          "src/app.py": "a = 1\nb = 2\nc = 3\nd = 4\ne = 5\n"
+        }
+      },
+      "expected": {
+        "violated": 1,
+        "must_violate_containing": [
+          "lines"
+        ],
+        "verdict": "violated"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "Five lines against a limit of four.",
+      "tags": [
+        "line_limit",
+        "violation"
+      ]
+    },
+    {
+      "case_id": "instr_t11_secret_present",
+      "input": {
+        "instructions": [
+          "Do not hard-code API keys"
+        ],
+        "before": {
+          "src/app.py": "x = 1\n"
+        },
+        "after": {
+          "src/app.py": "API_KEY = \"sk-live-abc123\"\n"
+        }
+      },
+      "expected": {
+        "violated": 1,
+        "verdict": "violated"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "A credential-shaped value was written into a final artifact.",
+      "tags": [
+        "no_artifact_contains",
+        "violation"
+      ]
+    },
+    {
+      "case_id": "instr_t12_secret_absent",
+      "input": {
+        "instructions": [
+          "Do not hard-code API keys"
+        ],
+        "before": {
+          "src/app.py": "x = 1\n"
+        },
+        "after": {
+          "src/app.py": "import os\nKEY = os.environ['API_KEY']\n"
+        }
+      },
+      "expected": {
+        "violated": 0,
+        "passed": 1,
+        "verdict": "passed"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "Reading the key from the environment is the correct pattern and must not be flagged.",
+      "tags": [
+        "no_artifact_contains",
+        "false_accusation_control",
         "happy_path"
       ]
     }

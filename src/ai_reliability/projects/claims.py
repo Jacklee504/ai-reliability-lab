@@ -234,3 +234,199 @@ def _deterministic_verdict(claim_text: str, passages: list[str]) -> tuple[Verdic
     return Verdict.INSUFFICIENT, (
         f"best passage overlap was {overlap:.0%}; lexical evidence did not establish all claim details"
     )
+
+def audit_claims(
+    answer: str,
+    sources: Iterable[SourceDocument],
+    provider: Provider | None = None,
+    *,
+    top_k: int = 4,
+    use_model: bool = True,
+    embedder: EmbeddingProvider | None = None,
+) -> ClaimReport:
+    """Audit an answer against a set of sources.
+
+    With a provider, each claim is classified by the model and the model
+    answer is then passed through the abstention rules. Without one, the
+    deterministic fallback is used and the report says so.
+    """
+    documents = list(sources)
+    all_spans: list[Span] = []
+    for document in documents:
+        all_spans.extend(document.spans())
+
+    claims = split_answer_into_claims(answer, settings=ExtractionSettings())
+    report = ClaimReport(answer=answer, model_id=getattr(provider, "model_id", None))
+
+    for claim in claims:
+        evidence = (
+            retrieve_semantic(claim.text, all_spans, embedder, top_k=top_k)
+            if embedder is not None else retrieve(claim.text, all_spans, top_k=top_k)
+        )
+        passages = [span.text for ev in evidence for span in ev.spans]
+
+        parsed = None
+        error = None
+        latency = 0.0
+        if provider is not None and use_model:
+            parsed, error, latency, _raw = _classify_with_model(provider, claim.text, passages)
+            if parsed is not None:
+                report.model_calls += 1
+            elif error and not error.startswith("provider error:"):
+                report.parse_failures += 1
+
+        if parsed is None:
+            verdict, explanation = _deterministic_verdict(claim.text, passages)
+            if error:
+                explanation = f"{explanation} (model unavailable: {error})"
+            record = make_verdict(
+                claim.claim_id,
+                verdict,
+                explanation=explanation,
+                evidence_ids=tuple(e.evidence_id for e in evidence),
+                method=Method.LEXICAL,
+            )
+            report.findings.append(
+                ClaimFinding(
+                    claim=claim,
+                    verdict=record,
+                    evidence=evidence,
+                    retrieval_ok=bool(evidence),
+                    note=error or "",
+                )
+            )
+            continue
+
+        label = str(parsed.get("verdict", "")).strip().lower()
+        if label not in VALID_VERDICTS:
+            report.parse_failures += 1
+            verdict, explanation = _deterministic_verdict(claim.text, passages)
+            record = make_verdict(
+                claim.claim_id,
+                verdict,
+                explanation=f"model returned an unusable label; {explanation}",
+                evidence_ids=tuple(e.evidence_id for e in evidence),
+                method=Method.LEXICAL,
+                raw_label=label,
+                parse_error=f"invalid verdict label: {label!r}",
+            )
+            report.findings.append(
+                ClaimFinding(
+                    claim=claim,
+                    verdict=record,
+                    evidence=evidence,
+                    retrieval_ok=bool(evidence),
+                    note=f"invalid label {label!r}",
+                )
+            )
+            continue
+
+        verdict = Verdict(label)
+        explanation = str(parsed.get("explanation", "")).strip()
+        key_phrase = parsed.get("key_phrase")
+        key_phrase = str(key_phrase) if key_phrase else None
+
+        evidence_text = "\n".join(passages)
+        adjusted, note = apply_abstention_rules(
+            verdict,
+            claim_is_universal=is_strict_claim(claim),
+            evidence_text=evidence_text,
+            claim_text=claim.text,
+        )
+        if note:
+            explanation = f"{explanation} ({note})".strip()
+
+        record = make_verdict(
+            claim.claim_id,
+            adjusted,
+            explanation=explanation,
+            evidence_ids=tuple(e.evidence_id for e in evidence),
+            method=Method.MODEL,
+            model_id=getattr(provider, "model_id", None),
+            prompt_version=PROMPT_VERSION,
+            key_phrase=key_phrase,
+            raw_label=label,
+            latency_ms=latency,
+        )
+        report.findings.append(
+            ClaimFinding(
+                claim=claim,
+                verdict=record,
+                evidence=evidence,
+                key_phrase=key_phrase,
+                retrieval_ok=bool(evidence),
+            )
+        )
+
+    if provider is None or not use_model:
+        report.notes.append("no model was used; verdicts came from the deterministic fallback")
+    return report
+
+# ---------------------------------------------------------------------------
+# Evaluation runner
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class ClaimRunner:
+    """Runs a claim-level audit evaluation case.
+
+    A case supplies an answer and one or more sources. The expected
+    label may be a single verdict or a list of acceptable verdicts, which
+    is how "any abstention is acceptable" cases are expressed.
+    """
+
+    provider: Any = None
+    use_model: bool = True
+
+    def evaluate_case(self, case: EvalCase) -> CaseResult:
+        answer = case.input.get("answer", "")
+        source_inputs = case.input.get("sources", [])
+        documents = [
+            SourceDocument(
+                identifier=item.get("identifier", f"source_{index}"),
+                text=item.get("text", ""),
+                version=item.get("version"),
+            )
+            for index, item in enumerate(source_inputs)
+        ]
+
+        report = audit_claims(
+            answer,
+            documents,
+            provider=self.provider,
+            use_model=self.use_model,
+        )
+
+        expected = case.expected
+        findings = report.findings
+
+        if "verdicts" in expected:
+            correct = [f.verdict.verdict.value for f in findings] == expected["verdicts"]
+        elif "verdict" in expected:
+            wanted = expected["verdict"]
+            if isinstance(wanted, list):
+                correct = all(f.verdict.verdict.value in wanted for f in findings)
+            else:
+                correct = len(findings) == 1 and findings[0].verdict.verdict.value == wanted
+        else:
+            correct = None
+
+        predicted = {
+            "verdict": findings[0].verdict.verdict.value if len(findings) == 1 else "multiple",
+            "verdicts": [f.verdict.verdict.value for f in findings],
+            "claim_count": len(findings),
+        }
+
+        return CaseResult(
+            case_id=case.case_id,
+            project=case.project,
+            predicted=predicted,
+            expected=expected,
+            label_origin=case.label_origin,
+            split=case.split,
+            correct=correct,
+            model_calls=report.model_calls,
+            parse_failures=report.parse_failures,
+            notes=report.render(),
+        )

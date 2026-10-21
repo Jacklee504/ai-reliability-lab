@@ -129,3 +129,159 @@ def is_heading(line: str) -> bool:
         if len(stripped) <= 80 and _is_title_case(rest):
             return True
     return False
+
+
+def split_sections(text: str) -> list[Section]:
+    """Split text into sections based on headings.
+
+    Text before the first heading becomes a preamble section with an
+    empty title, so no content is ever dropped.
+    """
+    sections: list[Section] = []
+    current_title = ""
+    current_start = 0
+    for start, end, line in _line_offsets(text):
+        if is_heading(line):
+            if current_start < start:
+                sections.append(Section(current_title, current_start, start))
+            current_title = line.strip().rstrip(":").strip()
+            current_start = end
+    if current_start < len(text) or not sections:
+        sections.append(Section(current_title, current_start, len(text)))
+    return [s for s in sections if s.end > s.start] or [Section("", 0, len(text))]
+
+
+def sentence_spans(text: str) -> list[tuple[int, int, str]]:
+    """Split a block of text into (start, end, text) sentence fragments.
+
+    Offsets are relative to the start of ``text``. Splitting happens on the
+    original string so every fragment is a verbatim slice of the input.
+    """
+    if not text.strip():
+        return []
+    out: list[tuple[int, int, str]] = []
+    cursor = 0
+    for match in _SENTENCE_END.finditer(text):
+        end = match.start()
+        fragment = text[cursor:end]
+        stripped = fragment.strip()
+        if stripped:
+            lead = fragment.index(stripped[0])
+            out.append((cursor + lead, cursor + lead + len(stripped), stripped))
+        cursor = match.end()
+    tail = text[cursor:]
+    stripped = tail.strip()
+    if stripped:
+        lead = tail.index(stripped[0])
+        out.append((cursor + lead, cursor + lead + len(stripped), stripped))
+    return out
+
+
+def segment_statements(text: str, source: Source) -> list[Statement]:
+    """Split a source into candidate statements.
+
+    Bulleted and numbered list items become separate statements because
+    an omission of one list item is a materially different event from an
+    omission of a clause inside a paragraph.
+    """
+    if not text.strip():
+        return []
+
+    sections = split_sections(text)
+    statements: list[Statement] = []
+    for section in sections:
+        body = text[section.start : section.end]
+        base = section.start
+        for line_start, _line_end, line in _line_offsets(body):
+            raw = line.strip()
+            if not raw:
+                continue
+
+            bullet = _BULLET.match(line)
+            if bullet and not is_heading(line):
+                content = line[bullet.end():].strip()
+                if not content:
+                    continue
+                offset_in_line = line.index(content, bullet.end())
+                start = base + line_start + offset_in_line
+                end = start + len(content)
+                statements.append(
+                    Statement(
+                        statement_id=short_id("st", source.source_id, str(start), str(end)),
+                        text=text[start:end],
+                        start=start,
+                        end=end,
+                        section=section.title or None,
+                        kind="list_item",
+                    )
+                )
+                continue
+
+            # Paragraph: split into sentences.
+            line_body = line.strip()
+            lead = len(line) - len(line.lstrip())
+            para_start = base + line_start + lead
+            for rel_start, _rel_end, fragment in sentence_spans(line_body):
+                start = para_start + rel_start
+                end = start + len(fragment)
+                statements.append(
+                    Statement(
+                        statement_id=short_id("st", source.source_id, str(start), str(end)),
+                        text=text[start:end],
+                        start=start,
+                        end=end,
+                        section=section.title or None,
+                        kind="statement",
+                    )
+                )
+
+    seen: set[tuple[int, int]] = set()
+    unique: list[Statement] = []
+    for st in statements:
+        key = (st.start, st.end)
+        if key in seen:
+            continue
+        seen.add(key)
+        unique.append(st)
+    return unique
+
+
+def sentences_of(text: str) -> list[str]:
+    """Convenience: plain list of sentence strings."""
+    return [fragment for _s, _e, fragment in sentence_spans(text)]
+
+
+def page_spans(text: str, source: Source, page_marks: list[int] | None = None) -> list[Span]:
+    """Split text into page-level spans.
+
+    ``page_marks`` holds the character offsets where each page begins.
+    When absent, the whole document is one page.
+    """
+    if not page_marks:
+        return [
+            Span(
+                span_id=short_id("sp", source.source_id, "0", str(len(text))),
+                source_id=source.source_id,
+                text=text,
+                start=0,
+                end=len(text),
+                page=1,
+                kind="page",
+            )
+        ]
+    marks = sorted(page_marks)
+    spans: list[Span] = []
+    for index, start in enumerate(marks):
+        end = marks[index + 1] if index + 1 < len(marks) else len(text)
+        spans.append(
+            Span(
+                span_id=short_id("sp", source.source_id, str(start), str(end)),
+                source_id=source.source_id,
+                text=text[start:end],
+                start=start,
+                end=end,
+                page=index + 1,
+                kind="page",
+            )
+        )
+    return spans

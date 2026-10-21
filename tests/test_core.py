@@ -211,3 +211,109 @@ def test_split_keeps_both_sides_of_a_contrast():
     texts = [c.text.lower() for c in claims]
     assert any("fee is low" in t for t in texts)
     assert any("notice period" in t for t in texts)
+
+
+# --------------------------------------------------------------------------
+# retrieval
+# --------------------------------------------------------------------------
+
+
+def test_retrieval_prefers_the_passage_that_shares_content():
+    spans = [
+        _span("s1", "The notice period is 90 days written notice."),
+        _span("s2", "The service fee is 2,400 EUR per month."),
+    ]
+    evidence = retrieve("How long is the notice period?", spans, top_k=1)
+    assert evidence
+    assert "notice" in evidence[0].spans[0].text
+
+
+def test_retrieval_returns_nothing_for_unrelated_query():
+    spans = [_span("s1", "The fee is 2,400 EUR per month.")]
+    assert retrieve("What colour is the car?", spans, top_k=3) == []
+
+
+def test_injected_embeddings_rank_spans_without_claiming_entailment():
+    from ai_reliability.core.retrieval import retrieve_semantic
+
+    class FakeEmbedder:
+        def embed(self, texts):
+            assert len(texts) == 3
+            return [[1.0, 0.0], [0.0, 1.0], [0.9, 0.1]]
+
+    spans = [_span("s1", "Unrelated."), _span("s2", "Relevant but not necessarily supporting.")]
+    evidence = retrieve_semantic("Claim", spans, FakeEmbedder(), top_k=1)
+    assert evidence[0].spans[0].span_id == "s2"
+    assert evidence[0].method == "embedding"
+
+
+def test_topical_overlap_is_high_for_relevant_but_insufficient():
+    claim = "The service fee is 2,400 EUR per calendar month."
+    passage = "The service fee is described in the agreement."
+    overlap = topical_overlap(claim, passage)
+    assert overlap > 0.25
+
+
+def _span(span_id: str, text: str) -> Span:
+    return Span(span_id=span_id, source_id="src_x", text=text, start=0, end=len(text))
+
+def test_hashed_embeddings_are_deterministic_and_normalised():
+    from ai_reliability.core.embeddings import HashedEmbeddingProvider, hashed_embedding
+
+    first = hashed_embedding("the fee is 2,400 EUR")
+    second = hashed_embedding("the fee is 2,400 EUR")
+    assert first == second
+    norm = sum(value * value for value in first) ** 0.5
+    assert abs(norm - 1.0) < 1e-9 or first == [0.0] * len(first)
+
+
+def test_hashed_embeddings_separate_different_texts():
+    from ai_reliability.core.embeddings import cosine, hashed_embedding
+
+    a = hashed_embedding("the monthly service fee is 2,400 EUR")
+    b = hashed_embedding("either party may terminate with 90 days notice")
+    same = hashed_embedding("the monthly service fee is 2,400 EUR")
+    assert cosine(a, same) > 0.99
+    assert cosine(a, b) < 0.5
+
+
+def test_embedding_provider_satisfies_the_retrieval_protocol():
+    from ai_reliability.core.embeddings import HashedEmbeddingProvider
+    from ai_reliability.core.retrieval import retrieve_semantic
+
+    provider = HashedEmbeddingProvider()
+    spans = [
+        _span("s1", "The notice period is 90 days written notice."),
+        _span("s2", "The service fee is 2,400 EUR per month."),
+    ]
+    evidence = retrieve_semantic("What is the notice period?", spans, provider, top_k=2)
+    assert evidence
+    assert all(item.method == "embedding" for item in evidence)
+
+
+def test_retrieval_comparison_reports_both_rankers():
+    from ai_reliability.core.fixtures import load_project_cases
+    from ai_reliability.projects.retrieval_eval import evaluate_retrieval, summarise
+
+    cases = load_project_cases("retrieval_eval")
+    assert cases
+    outcomes = evaluate_retrieval(cases[0], top_k=3)
+    assert set(outcomes) == {"lexical", "embedding"}
+    for outcome in outcomes.values():
+        assert outcome.method in ("lexical", "embedding")
+        assert isinstance(outcome.hit, bool)
+
+
+def test_retrieval_summary_reports_recall_and_rank():
+    from ai_reliability.core.fixtures import load_project_cases
+    from ai_reliability.projects.retrieval_eval import RetrievalRunner, summarise
+
+    cases = load_project_cases("retrieval_eval")
+    runner = RetrievalRunner()
+    results = [runner.evaluate_case(case) for case in cases]
+    summary = summarise(results)
+    for method in ("lexical", "embedding"):
+        block = summary["methods"][method]
+        assert block["cases"] == len(cases)
+        assert 0 <= block["recall_at_k"] <= block["recall_denominator"]
+        assert block["mean_reciprocal_rank"] is not None

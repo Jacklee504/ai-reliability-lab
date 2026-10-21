@@ -1,0 +1,69 @@
+{
+  "cases": [
+    {
+      "case_id": "deliverable_hard_001_extra_items",
+      "input": {
+        "request": "Write 2 questions.",
+        "deliverable": "Q1) One?\nQ2) Two?\nQ3) Three?"
+      },
+      "expected": {
+        "verdict": "failed"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "An exact count is not a minimum."
+    },
+    {
+      "case_id": "deliverable_hard_002_minimum",
+      "input": {
+        "request": "Write at least 2 questions.",
+        "deliverable": "Q1) One?\nQ2) Two?\nQ3) Three?"
+      },
+      "expected": {
+        "verdict": "passed"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "Three satisfies a minimum of two."
+    },
+    {
+      "case_id": "deliverable_hard_003_second_question_missing_option",
+      "input": {
+        "request": "Write 2 questions with four options each.",
+        "deliverable": "Q1) One?\nA) a\nB) b\nC) c\nD) d\nQ2) Two?\nA) a\nB) b\nC) c"
+      },
+      "expected": {
+        "verdict": "failed"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The first question has four options but the second has three."
+    },
+    {
+      "case_id": "deliverable_hard_004_duplicate_option_label",
+      "input": {
+        "request": "Write 1 question with four options.",
+        "deliverable": "Q1) One?\nA) a\nB) b\nB) c\nC) d"
+      },
+      "expected": {
+        "verdict": "failed"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "Four option lines are not four distinct labelled options."
+    },
+    {
+      "case_id": "deliverable_hard_005_missing_key",
+      "input": {
+        "request": "Write 1 question with an answer key.",
+        "deliverable": "Q1) One?\nA) a\nB) b"
+      },
+      "expected": {
+        "verdict": "failed"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "A plausible quiz can still omit the requested answer key."
+    }
+  ]
+}

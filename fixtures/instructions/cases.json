@@ -1,0 +1,256 @@
+{
+  "cases": [
+    {
+      "case_id": "instr_001_unchanged_file_respected",
+      "input": {
+        "instructions": [
+          "Do not modify config/settings.toml"
+        ],
+        "before": {
+          "config/settings.toml": "debug = false\n"
+        },
+        "after": {
+          "config/settings.toml": "debug = false\n",
+          "src/app.py": "print(1)\n"
+        }
+      },
+      "expected": {
+        "violated": 0,
+        "passed": 1,
+        "verdict": "passed"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The protected file was not modified. The control case: a checker that reports every violation is useless.",
+      "tags": [
+        "control",
+        "happy_path"
+      ]
+    },
+    {
+      "case_id": "instr_002_unchanged_file_violated",
+      "input": {
+        "instructions": [
+          "Do not modify config/settings.toml"
+        ],
+        "before": {
+          "config/settings.toml": "debug = false\n"
+        },
+        "after": {
+          "config/settings.toml": "debug = true\n"
+        }
+      },
+      "expected": {
+        "violated": 1,
+        "must_violate_containing": [
+          "settings.toml"
+        ],
+        "verdict": "violated"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The protected file was modified. The violation must be reported with the file as evidence.",
+      "tags": [
+        "violation",
+        "positive"
+      ]
+    },
+    {
+      "case_id": "instr_003_test_file_added",
+      "input": {
+        "instructions": [
+          "Add a test for tests/test_parser.py"
+        ],
+        "before": {
+          "src/parser.py": "def parse():\n    return 1\n"
+        },
+        "after": {
+          "src/parser.py": "def parse():\n    return 1\n",
+          "tests/test_parser.py": "def test_parse():\n    assert parse() == 1\n"
+        }
+      },
+      "expected": {
+        "violated": 0,
+        "passed": 1,
+        "verdict": "passed"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The required test file exists and is not empty.",
+      "tags": [
+        "happy_path"
+      ]
+    },
+    {
+      "case_id": "instr_004_test_file_missing",
+      "input": {
+        "instructions": [
+          "Add a test for tests/test_parser.py"
+        ],
+        "before": {
+          "src/parser.py": "def parse():\n    return 1\n"
+        },
+        "after": {
+          "src/parser.py": "def parse():\n    return 1\n"
+        }
+      },
+      "expected": {
+        "violated": 1,
+        "must_violate_containing": [
+          "test_parser.py"
+        ],
+        "verdict": "violated"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The required test was never added. This is the omission the project exists to catch.",
+      "tags": [
+        "violation",
+        "positive"
+      ]
+    },
+    {
+      "case_id": "instr_005_command_run",
+      "input": {
+        "instructions": [
+          "Run the linter before finishing."
+        ],
+        "before": {
+          "src/app.py": "x = 1\n"
+        },
+        "after": {
+          "src/app.py": "x = 1\n"
+        },
+        "trace": [
+          "python -m pytest",
+          "ruff check ."
+        ]
+      },
+      "expected": {
+        "violated": 0,
+        "passed": 1,
+        "verdict": "passed"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The trace shows the linter ran. The checker reads the trace, not the agent attention.",
+      "tags": [
+        "trace",
+        "happy_path"
+      ]
+    },
+    {
+      "case_id": "instr_006_command_not_run",
+      "input": {
+        "instructions": [
+          "Run the linter before finishing."
+        ],
+        "before": {
+          "src/app.py": "x = 1\n"
+        },
+        "after": {
+          "src/app.py": "x = 1\n"
+        },
+        "trace": [
+          "python -m pytest"
+        ]
+      },
+      "expected": {
+        "violated": 1,
+        "verdict": "violated"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The linter never ran even though the output was submitted.",
+      "tags": [
+        "trace",
+        "violation"
+      ]
+    },
+    {
+      "case_id": "instr_007_ambiguous_instruction",
+      "input": {
+        "instructions": [
+          "Make the code as good as you can."
+        ],
+        "before": {
+          "src/app.py": "x = 1\n"
+        },
+        "after": {
+          "src/app.py": "x = 2\n"
+        }
+      },
+      "expected": {
+        "inconclusive_instructions": 1,
+        "verdict": "inconclusive"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "An instruction that cannot be turned into a predicate must be reported as inconclusive, never as a pass. Claiming compliance here would be a false assurance.",
+      "tags": [
+        "ambiguous",
+        "abstain",
+        "false_accusation_control"
+      ]
+    },
+    {
+      "case_id": "instr_008_mixed_instructions",
+      "input": {
+        "instructions": [
+          "Do not modify config/settings.toml",
+          "Add a test for tests/test_app.py",
+          "Keep the output format REPORT_JSON"
+        ],
+        "before": {
+          "config/settings.toml": "debug = false\n"
+        },
+        "after": {
+          "config/settings.toml": "debug = false\n",
+          "tests/test_app.py": "def test_app():\n    assert True\n",
+          "out/report.json": "{\"REPORT_JSON\": true}\n"
+        }
+      },
+      "expected": {
+        "violated": 0,
+        "passed": 3,
+        "verdict": "passed"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "Three predicates, all satisfied. A checker that handles only one kind of instruction would fail this.",
+      "tags": [
+        "multi_predicate",
+        "happy_path"
+      ]
+    },
+    {
+      "case_id": "instr_009_one_of_three_violated",
+      "input": {
+        "instructions": [
+          "Do not modify config/settings.toml",
+          "Add a test for tests/test_app.py",
+          "Keep the output format REPORT_JSON"
+        ],
+        "before": {
+          "config/settings.toml": "debug = false\n"
+        },
+        "after": {
+          "config/settings.toml": "debug = true\n",
+          "tests/test_app.py": "def test_app():\n    assert True\n",
+          "out/report.json": "{\"other\": true}\n"
+        }
+      },
+      "expected": {
+        "violated": 2,
+        "verdict": "violated"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "Two of the three predicates fail. The count must be exact, not \"at least one\".",
+      "tags": [
+        "multi_predicate",
+        "violation"
+      ]
+    }
+  ]
+}

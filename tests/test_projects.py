@@ -437,3 +437,248 @@ def test_requirement_parsing_ignores_unknown_edited_fields():
     assert requirement.count == 2
     assert requirement.comparator == "exactly"
 
+# ---------------------------------------------------------------------------
+# Code review
+# ---------------------------------------------------------------------------
+
+
+GUARDED = "def f(x):\n    if x is None:\n        raise ValueError()\n    return x\n"
+UNGUARDED = "def f(x):\n    return x\n"
+
+
+def test_review_comment_is_refuted_when_a_guard_exists():
+    snapshot = CodeSnapshot(identifier="s", files={"a.py": GUARDED})
+    finding = verify_review_comment(
+        ReviewComment(text="There is no null check on x.", file="a.py", line=1),
+        snapshot,
+    )
+    assert finding.verdict.value == "contradicted"
+
+
+def test_runtime_exception_comment_abstains_without_execution():
+    snapshot = CodeSnapshot(identifier="s", files={"a.py": UNGUARDED})
+    finding = verify_review_comment(
+        ReviewComment(text="This will raise an error.", file="a.py", line=1),
+        snapshot,
+    )
+    assert finding.verdict.value == "uncertain"
+
+
+def test_guard_in_another_function_does_not_refute_a_missing_guard_comment():
+    code = "def other(x):\n    if x is None:\n        raise ValueError()\n\ndef target(y):\n    return y\n"
+    snapshot = CodeSnapshot(identifier="s", files={"a.py": code})
+    finding = verify_review_comment(
+        ReviewComment(text="There is no null check on y.", file="a.py", line=5),
+        snapshot,
+    )
+    assert finding.verdict.value == "supported"
+
+
+def test_guard_after_query_does_not_refute_before_query_comment():
+    code = "def f(cursor, x):\n    cursor.execute(x)\n    if x is None:\n        raise ValueError()\n"
+    snapshot = CodeSnapshot(identifier="s", files={"a.py": code})
+    finding = verify_review_comment(
+        ReviewComment(text="There is no null check on x before the query runs.", file="a.py", line=1),
+        snapshot,
+    )
+    assert finding.verdict.value == "supported"
+
+
+def test_malformed_code_does_not_support_a_missing_guard_accusation():
+    snapshot = CodeSnapshot(identifier="s", files={"a.py": "def f(x):\n    if x is None\n"})
+    finding = verify_review_comment(
+        ReviewComment(text="There is no null check on x.", file="a.py", line=1), snapshot,
+    )
+    assert finding.verdict.value == "uncertain"
+
+
+def test_runtime_claim_is_confirmed_by_actually_running_the_harness():
+    code = "def divide(a, b):\n    return a / b\n"
+    snapshot = CodeSnapshot(identifier="s", files={"math_ops.py": code})
+    finding = verify_runtime_claim(
+        ReviewComment(
+            text="Calling this with a zero denominator will raise an error.",
+            file="math_ops.py",
+            line=1,
+        ),
+        snapshot,
+        "import math_ops\nmath_ops.divide(1, 0)\n",
+    )
+    assert finding.verdict.value == "supported"
+    assert finding.method.value == "executed"
+    assert finding.execution is not None
+    assert finding.execution.raised is True
+
+
+def test_runtime_claim_is_refuted_when_the_harness_does_not_raise():
+    code = "def divide(a, b):\n    if b == 0:\n        return 0\n    return a / b\n"
+    snapshot = CodeSnapshot(identifier="s", files={"math_ops.py": code})
+    finding = verify_runtime_claim(
+        ReviewComment(
+            text="Calling this with a zero denominator will raise an error.",
+            file="math_ops.py",
+            line=1,
+        ),
+        snapshot,
+        "import math_ops\nmath_ops.divide(1, 0)\n",
+    )
+    assert finding.verdict.value == "contradicted"
+
+
+def test_broken_harness_is_unverified_rather_than_evidence():
+    """A harness that cannot import must not manufacture a verdict."""
+    snapshot = CodeSnapshot(identifier="s", files={"app.py": "def go():\n    return 1\n"})
+    finding = verify_runtime_claim(
+        ReviewComment(text="This will raise an error.", file="app.py", line=1),
+        snapshot,
+        "import module_that_does_not_exist_xyz\n",
+    )
+    assert finding.verdict.value == "uncertain"
+
+
+def test_runtime_claim_without_a_harness_stays_unverified():
+    snapshot = CodeSnapshot(identifier="s", files={"app.py": "def go():\n    return 1\n"})
+    finding = verify_runtime_claim(
+        ReviewComment(text="This will raise an error.", file="app.py", line=1),
+        snapshot,
+        "",
+    )
+    assert finding.verdict.value == "uncertain"
+
+
+def test_a_hanging_harness_is_unverified_not_a_verdict():
+    """A timeout produces no observation, so no verdict may be claimed."""
+    snapshot = CodeSnapshot(
+        identifier="s", files={"spin.py": "def spin():\n    while True:\n        pass\n"}
+    )
+    finding = verify_runtime_claim(
+        ReviewComment(text="This will raise an error.", file="spin.py", line=1),
+        snapshot,
+        "import spin\nspin.spin()\n",
+        timeout=2.0,
+    )
+    assert finding.verdict.value == "uncertain"
+    assert finding.execution is not None
+    assert finding.execution.timed_out is True
+
+
+def test_the_harness_cannot_see_the_surrounding_workspace():
+    """Execution must be isolated from the machine it runs on."""
+    from ai_reliability.core.execution import run_harness
+
+    outcome = run_harness(
+        {"mod.py": "x = 1\n"},
+        "import ai_reliability\n",
+    )
+    assert outcome.observed is False
+    assert "harness itself failed" in (outcome.error or "")
+
+
+def test_out_of_range_review_location_is_unverified():
+    snapshot = CodeSnapshot(identifier="s", files={"a.py": UNGUARDED})
+    finding = verify_review_comment(
+        ReviewComment(text="There is no null check on x.", file="a.py", line=50), snapshot,
+    )
+    assert finding.verdict.value == "insufficient_evidence"
+
+
+def test_review_comment_on_a_missing_file_is_unverified():
+    snapshot = CodeSnapshot(identifier="s", files={"a.py": UNGUARDED})
+    finding = verify_review_comment(
+        ReviewComment(text="There is no null check.", file="other.py", line=1),
+        snapshot,
+    )
+    assert finding.verdict.value in ("uncertain", "insufficient_evidence")
+
+
+def test_assertion_extraction_drops_preamble():
+    assertion = extract_assertion("Nit: This will raise an error on empty input.")
+    assert assertion.startswith("This will raise")
+
+
+def test_source_edit_only_reopens_overlapping_claim():
+    report = audit_versions(
+        "Fee: 10\nNotice: 30\n", "Fee: 20\nNotice: 30\n",
+        [EvidenceReference("fee", 0, 7), EvidenceReference("notice", 8, 18)],
+    )
+    assert report["revisit_claim_ids"] == ["fee"]
+    assert report["conclusion"].startswith("changed evidence requires review")
+
+
+def test_source_hash_mismatch_fails_closed_into_review_queue():
+    report = audit_versions("A\n", "B\n", [EvidenceReference("c", 0, 1, "wrong")])
+    assert report["revisit_claim_ids"] == ["c"]
+    assert report["warnings"]
+
+
+def test_study_paraphrase_does_not_become_an_omission_claim():
+    report = audit_coverage(
+        [{"id": "recursion", "label": "recursion"}],
+        "A function calls itself to solve smaller problems.",
+    )
+    assert report["topics"][0]["status"] == "unverified"
+
+
+def test_study_counts_label_and_alias_mentions_without_double_counting():
+    report = audit_coverage(
+        [{"id": "pcr", "label": "polymerase chain reaction", "aliases": ["PCR"]}],
+        "PCR is short for polymerase chain reaction. PCR is common.",
+    )
+    assert report["topics"][0]["mentions"] == 3
+
+
+def test_review_comparison_reports_disagreement_without_changing_fixture():
+    result = compare_review_packet({
+        "cases": [{"case_id": "claim_001_supported", "reviewed_expected": {"verdict": "contradicted"}}]
+    })
+    assert result["reviewed_cases"] == 1
+    assert result["disagreements"][0]["case_id"] == "claim_001_supported"
+    assert result["unreviewed_cases"] == result["total_cases"] - 1
+
+
+def test_review_comparison_accepts_verdict_only_without_requiring_fixture_metadata():
+    result = compare_review_packet({
+        "cases": [{"case_id": "claim_001_supported", "reviewed_expected": {"verdict": "supported"}}]
+    })
+    assert result["reviewed_cases"] == 1
+    assert result["disagreements"] == []
+
+
+def test_review_comparison_surfaces_draft_alternatives_even_when_choice_matches():
+    result = compare_review_packet({
+        "cases": [{"case_id": "claim_004_offtopic_source", "reviewed_expected": {"verdict": "insufficient_evidence"}}]
+    })
+    assert result["disagreements"] == []
+    assert result["ambiguous_drafts"] == [{
+        "case_id": "claim_004_offtopic_source",
+        "field": "verdict",
+        "draft_options": ["insufficient_evidence", "uncertain"],
+    }]
+
+def test_an_insertion_before_the_evidence_queues_the_claim():
+    """An insertion above the span shifts the text the span pointed at."""
+    from ai_reliability.projects.source_versions import EvidenceReference, audit_versions
+
+    before = "SERVICE AGREEMENT\n\n1. Fees\nThe monthly fee is 2,400 EUR.\n"
+    after = "SERVICE AGREEMENT\n\n0. Preamble\nThis agreement is made on 1 January.\n\n1. Fees\nThe monthly fee is 2,400 EUR.\n"
+    start = before.index("The monthly fee is 2,400 EUR.\n")
+    report = audit_versions(
+        before, after,
+        [EvidenceReference(claim_id="fee", start=start, end=start + 30)],
+    )
+    assert report["revisit_claim_ids"] == ["fee"]
+
+
+def test_an_unrelated_edit_does_not_queue_the_claim():
+    from ai_reliability.projects.source_versions import EvidenceReference, audit_versions
+
+    before = "SERVICE AGREEMENT\n\n1. Fees\nThe monthly fee is 2,400 EUR.\n\n2. Support\nSupport is available on business days.\n"
+    after = "SERVICE AGREEMENT\n\n1. Fees\nThe monthly fee is 2,400 EUR.\n\n2. Support\nSupport is available on weekdays.\n"
+    start = before.index("The monthly fee is 2,400 EUR.\n")
+    report = audit_versions(
+        before, after,
+        [EvidenceReference(claim_id="fee", start=start, end=start + 30)],
+    )
+    assert report["revisit_claim_ids"] == []
+
+

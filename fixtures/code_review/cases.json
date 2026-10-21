@@ -1,0 +1,128 @@
+{
+  "cases": [
+    {
+      "case_id": "cr_001_valid_null_warning",
+      "input": {
+        "files": {
+          "db.py": "def get_user(conn, user_id):\n    cursor = conn.cursor()\n    cursor.execute(\"SELECT * FROM users WHERE id = ?\", (user_id,))\n    return cursor.fetchone()"
+        },
+        "comments": [
+          {
+            "text": "There is no null check on user_id before the query runs.",
+            "file": "db.py",
+            "line": 1
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The function has no null guard before the query. This is a static structural claim; no database behavior is assumed.",
+      "tags": [
+        "valid_finding",
+        "static_fact"
+      ]
+    },
+    {
+      "case_id": "cr_002_false_null_warning",
+      "input": {
+        "files": {
+          "db.py": "def get_user(conn, user_id):\n    if user_id is None:\n        raise ValueError(\"user_id is required\")\n    cursor = conn.cursor()\n    cursor.execute(\"SELECT * FROM users WHERE id = ?\", (user_id,))\n    return cursor.fetchone()"
+        },
+        "comments": [
+          {
+            "text": "There is no null check on user_id before the query runs.",
+            "file": "db.py",
+            "line": 1
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The comment cites the function line, but the code has a null guard on line 2 before the query.",
+      "tags": [
+        "false_finding",
+        "hard_negative"
+      ]
+    },
+    {
+      "case_id": "cr_003_missing_guard_valid",
+      "input": {
+        "files": {
+          "db.py": "def get_user(conn, user_id):\n    cursor = conn.cursor()\n    cursor.execute(\"SELECT * FROM users WHERE id = ?\", (user_id,))\n    return cursor.fetchone()"
+        },
+        "comments": [
+          {
+            "text": "There is no null check on user_id before the query runs.",
+            "file": "db.py",
+            "line": 1
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The comment correctly identifies a missing guard, and the code confirms it.",
+      "tags": [
+        "valid_finding"
+      ]
+    },
+    {
+      "case_id": "cr_004_missing_guard_false",
+      "input": {
+        "files": {
+          "db.py": "def get_user(conn, user_id):\n    if user_id is None:\n        raise ValueError(\"user_id is required\")\n    cursor = conn.cursor()\n    cursor.execute(\"SELECT * FROM users WHERE id = ?\", (user_id,))\n    return cursor.fetchone()"
+        },
+        "comments": [
+          {
+            "text": "There is no null check on user_id before the query runs.",
+            "file": "db.py",
+            "line": 1
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The guard is on line 2, just below the cited line. A verifier that only looks at the cited line would miss it.",
+      "tags": [
+        "false_finding",
+        "hard_negative",
+        "guard_elsewhere"
+      ]
+    },
+    {
+      "case_id": "cr_005_unbounded_valid",
+      "input": {
+        "files": {
+          "calc.py": "def total(values):\n    running = 0\n    while True:\n        running += next(values)\n    return running"
+        },
+        "comments": [
+          {
+            "text": "This loop is unbounded.",
+            "file": "calc.py",
+            "line": 1
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The code has a while True loop with no break. This asserts the loop structure, not guaranteed runtime nontermination.",
+      "tags": [
+        "valid_finding"
+      ]
+    }
+  ]
+}

@@ -1,0 +1,191 @@
+{
+  "project": "deliverables",
+  "method": "deterministic",
+  "model_id": "unavailable",
+  "model_calls": 0,
+  "parse_failures": 0,
+  "total_latency_ms": 0.0,
+  "total_cases": 5,
+  "scored_cases": 5,
+  "correct_cases": 5,
+  "label_origins": {
+    "model_drafted": 5
+  },
+  "splits": {
+    "dev": 5
+  },
+  "metrics": [
+    {
+      "name": "accepted_outcome",
+      "numerator": 5,
+      "denominator": 5,
+      "rate": 1.0,
+      "note": "project case accepted the prediction; some labels allow alternatives"
+    },
+    {
+      "name": "false_accusations_on_supported",
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null,
+      "note": "supported claims wrongly called contradicted"
+    },
+    {
+      "name": "false_alarms_on_benign",
+      "numerator": 0,
+      "denominator": 1,
+      "rate": null,
+      "note": "benign cases wrongly flagged"
+    },
+    {
+      "name": "abstentions",
+      "numerator": 0,
+      "denominator": 5,
+      "rate": 0.0,
+      "note": "outcomes that declined to assert"
+    }
+  ],
+  "confusion": {
+    "expected=failed,predicted=failed": 4,
+    "expected=passed,predicted=passed": 1
+  },
+  "notes": [
+    "Labels are not independently human verified; agreement is provisional.",
+    "No held-out test cases were evaluated."
+  ],
+  "results": [
+    {
+      "case_id": "deliverable_hard_001_extra_items",
+      "project": "deliverables",
+      "predicted": {
+        "verdict": "failed",
+        "requirement_count": 1,
+        "passed": 0,
+        "failed": 1,
+        "cannot_verify": 0,
+        "failures": [
+          {
+            "text": "must contain 2 question",
+            "expected": "2",
+            "observed": "3"
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "failed"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Deliverable contract check: failed\n  requirements: 1  passed=0 failed=1 cannot_verify=0\n  [FAIL] must contain 2 question\n         expected 2, observed 3\n         counted 3 question in the deliverable"
+    },
+    {
+      "case_id": "deliverable_hard_002_minimum",
+      "project": "deliverables",
+      "predicted": {
+        "verdict": "passed",
+        "requirement_count": 1,
+        "passed": 1,
+        "failed": 0,
+        "cannot_verify": 0,
+        "failures": []
+      },
+      "expected": {
+        "verdict": "passed"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Deliverable contract check: passed\n  requirements: 1  passed=1 failed=0 cannot_verify=0\n  [PASS] must contain 2 question"
+    },
+    {
+      "case_id": "deliverable_hard_003_second_question_missing_option",
+      "project": "deliverables",
+      "predicted": {
+        "verdict": "failed",
+        "requirement_count": 2,
+        "passed": 1,
+        "failed": 1,
+        "cannot_verify": 0,
+        "failures": [
+          {
+            "text": "must contain 4 option",
+            "expected": "4",
+            "observed": "3"
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "failed"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Deliverable contract check: failed\n  requirements: 2  passed=1 failed=1 cannot_verify=0\n  [PASS] must contain 2 question\n  [FAIL] must contain 4 option\n         expected 4, observed 3\n         counted 3 option in the deliverable"
+    },
+    {
+      "case_id": "deliverable_hard_004_duplicate_option_label",
+      "project": "deliverables",
+      "predicted": {
+        "verdict": "failed",
+        "requirement_count": 2,
+        "passed": 1,
+        "failed": 1,
+        "cannot_verify": 0,
+        "failures": [
+          {
+            "text": "must contain 4 option",
+            "expected": "4",
+            "observed": "3"
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "failed"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Deliverable contract check: failed\n  requirements: 2  passed=1 failed=1 cannot_verify=0\n  [PASS] must contain 1 question\n  [FAIL] must contain 4 option\n         expected 4, observed 3\n         counted 3 option in the deliverable"
+    },
+    {
+      "case_id": "deliverable_hard_005_missing_key",
+      "project": "deliverables",
+      "predicted": {
+        "verdict": "failed",
+        "requirement_count": 2,
+        "passed": 1,
+        "failed": 1,
+        "cannot_verify": 0,
+        "failures": [
+          {
+            "text": "must include an answer key",
+            "expected": "present",
+            "observed": "absent"
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "failed"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Deliverable contract check: failed\n  requirements: 2  passed=1 failed=1 cannot_verify=0\n  [PASS] must contain 1 question\n  [FAIL] must include an answer key\n         expected present, observed absent\n         looked for an answer key section"
+    }
+  ]
+}

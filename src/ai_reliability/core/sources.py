@@ -107,3 +107,113 @@ def _extract_pdf(
 
     status = ExtractionStatus.PARTIAL if warnings else ExtractionStatus.OK
     return full, tuple(warnings), status, len(pages), tuple(page_marks)
+
+
+def load_source(path: str | os.PathLike[str]) -> tuple[Source, str]:
+    """Load a file into a :class:`Source` record and its extracted text.
+
+    The returned text is what the pipeline would actually submit. For PDFs
+    it is page-joined extracted text; for everything else it is the decoded
+    file body.
+    """
+    p = Path(path)
+    media_type = _media_type(p)
+
+    try:
+        data = p.read_bytes()
+    except FileNotFoundError:
+        source = Source(
+            source_id=short_id("src", str(p)),
+            path=str(p),
+            content_hash="",
+            media_type=media_type,
+            extraction_status=ExtractionStatus.FAILED,
+            warnings=("file not found",),
+        )
+        return source, ""
+    except OSError as exc:
+        source = Source(
+            source_id=short_id("src", str(p)),
+            path=str(p),
+            content_hash="",
+            media_type=media_type,
+            extraction_status=ExtractionStatus.FAILED,
+            warnings=(f"unreadable: {type(exc).__name__}: {exc}",),
+        )
+        return source, ""
+
+    digest = sha256_bytes(data)
+
+    page_count = 0
+    page_marks: tuple[int, ...] = ()
+    if media_type is MediaType.PDF:
+        text, warnings, status, page_count, page_marks = _extract_pdf(data)
+    elif media_type is MediaType.UNKNOWN:
+        # Unknown suffix: try UTF-8 decode, and report clearly if it fails.
+        try:
+            text = data.decode("utf-8")
+            warnings: tuple[str, ...] = ("unknown media type; file decoded as utf-8 text",)
+            status = ExtractionStatus.OK
+        except UnicodeDecodeError as exc:
+            text = ""
+            warnings = (f"not decodable as utf-8: {exc}",)
+            status = ExtractionStatus.UNSUPPORTED
+    else:
+        try:
+            text = data.decode("utf-8")
+            warnings = ()
+            status = ExtractionStatus.OK
+        except UnicodeDecodeError as exc:
+            text = data.decode("utf-8", errors="replace")
+            warnings = (f"utf-8 decode replaced invalid bytes: {exc}",)
+            status = ExtractionStatus.OK
+
+    if status is ExtractionStatus.OK and not text.strip():
+        status = ExtractionStatus.EMPTY
+        warnings = tuple(warnings) + ("file is empty",)
+
+    source = Source(
+        source_id=short_id("src", str(p)),
+        path=str(p),
+        content_hash=digest,
+        media_type=media_type,
+        extraction_status=status,
+        warnings=warnings,
+        char_count=len(text),
+        page_count=page_count,
+        page_marks=page_marks,
+    )
+    return source, text
+
+
+def source_from_text(
+    text: str,
+    identifier: str,
+    media_type: MediaType = MediaType.TEXT,
+    version: str | None = None,
+) -> tuple[Source, str]:
+    """Build an in-memory source, used by fixtures that ship as literals."""
+    source = Source(
+        source_id=short_id("src", identifier, sha256_text(text)),
+        identifier=identifier,
+        content_hash=sha256_text(text),
+        version=version,
+        media_type=media_type,
+        extraction_status=ExtractionStatus.OK,
+        char_count=len(text),
+    )
+    return source, text
+
+
+def build_span(source: Source, text: str, start: int, end: int, **kwargs) -> Span:
+    """Create a span whose ``text`` is exactly the slice it points at."""
+    clipped_end = min(end, len(text))
+    clipped_start = max(0, min(start, clipped_end))
+    return Span(
+        span_id=short_id("sp", source.source_id, str(clipped_start), str(clipped_end)),
+        source_id=source.source_id,
+        text=text[clipped_start:clipped_end],
+        start=clipped_start,
+        end=clipped_end,
+        **kwargs,
+    )

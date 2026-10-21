@@ -1,0 +1,10 @@
+{
+  "cases": [
+    {"case_id":"sv_001_changed_fee","input":{"before":"Fee: 10\nNotice: 30\n","after":"Fee: 20\nNotice: 30\n","evidence":[{"claim_id":"fee","start":0,"end":7},{"claim_id":"notice","start":8,"end":18}]},"expected":{"revisit_claim_ids":["fee"]},"label_origin":"synthetic_transform","split":"dev","rationale":"A changed fee line overlaps only the fee evidence."},
+    {"case_id":"sv_002_unchanged","input":{"before":"Fee: 10\n","after":"Fee: 10\n","evidence":[{"claim_id":"fee","start":0,"end":7}]},"expected":{"revisit_claim_ids":[]},"label_origin":"synthetic_transform","split":"dev","rationale":"No source change means no re-review."},
+    {"case_id":"sv_003_unrelated_edit","input":{"before":"Fee: 10\nNotice: 30\n","after":"Fee: 10\nNotice: 60\n","evidence":[{"claim_id":"fee","start":0,"end":7}]},"expected":{"revisit_claim_ids":[]},"label_origin":"synthetic_transform","split":"dev","rationale":"An edit outside the cited span does not invalidate it."},
+    {"case_id":"sv_004_deleted_evidence","input":{"before":"A\nB\n","after":"A\n","evidence":[{"claim_id":"b","start":2,"end":3}]},"expected":{"revisit_claim_ids":["b"]},"label_origin":"synthetic_transform","split":"dev","rationale":"Deletion overlaps the old evidence span."},
+    {"case_id":"sv_005_insert_at_span","input":{"before":"A\nB\n","after":"A\nX\nB\n","evidence":[{"claim_id":"b","start":2,"end":3}]},"expected":{"revisit_claim_ids":["b"]},"label_origin":"synthetic_transform","split":"dev","rationale":"Insertion at the cited span boundary may change context."},
+    {"case_id":"sv_006_wrong_source_hash","input":{"before":"Fee: 10\n","after":"Fee: 20\n","evidence":[{"claim_id":"fee","start":0,"end":7,"source_hash":"wrong"}]},"expected":{"revisit_claim_ids":["fee"]},"label_origin":"synthetic_transform","split":"dev","rationale":"Evidence with a mismatched source hash must be re-reviewed because overlap cannot be trusted."}
+  ]
+}

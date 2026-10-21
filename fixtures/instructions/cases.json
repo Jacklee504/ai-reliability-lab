@@ -1,17 +1,17 @@
 {
   "cases": [
     {
-      "case_id": "instr_001_unchanged_file_respected",
+      "case_id": "instr_010_file_removed_respected",
       "input": {
         "instructions": [
-          "Do not modify config/settings.toml"
+          "Remove tmp/scratch.txt"
         ],
         "before": {
-          "config/settings.toml": "debug = false\n"
+          "tmp/scratch.txt": "scratch\n",
+          "src/app.py": "x = 1\n"
         },
         "after": {
-          "config/settings.toml": "debug = false\n",
-          "src/app.py": "print(1)\n"
+          "src/app.py": "x = 1\n"
         }
       },
       "expected": {
@@ -21,52 +21,55 @@
       },
       "label_origin": "model_drafted",
       "split": "dev",
-      "rationale": "The protected file was not modified. The control case: a checker that reports every violation is useless.",
+      "rationale": "The removable file is gone. This is the control for the file_deleted form.",
       "tags": [
+        "file_deleted",
         "control",
         "happy_path"
       ]
     },
     {
-      "case_id": "instr_002_unchanged_file_violated",
+      "case_id": "instr_011_file_removed_violated",
       "input": {
         "instructions": [
-          "Do not modify config/settings.toml"
+          "Remove tmp/scratch.txt"
         ],
         "before": {
-          "config/settings.toml": "debug = false\n"
+          "tmp/scratch.txt": "scratch\n",
+          "src/app.py": "x = 1\n"
         },
         "after": {
-          "config/settings.toml": "debug = true\n"
+          "tmp/scratch.txt": "scratch\n",
+          "src/app.py": "x = 1\n"
         }
       },
       "expected": {
         "violated": 1,
         "must_violate_containing": [
-          "settings.toml"
+          "scratch.txt"
         ],
         "verdict": "violated"
       },
       "label_origin": "model_drafted",
       "split": "dev",
-      "rationale": "The protected file was modified. The violation must be reported with the file as evidence.",
+      "rationale": "The file that had to be removed is still present.",
       "tags": [
+        "file_deleted",
         "violation",
         "positive"
       ]
     },
     {
-      "case_id": "instr_003_test_file_added",
+      "case_id": "instr_012_no_new_dependencies_respected",
       "input": {
         "instructions": [
-          "Add a test for tests/test_parser.py"
+          "Do not add new requirements*.txt"
         ],
         "before": {
-          "src/parser.py": "def parse():\n    return 1\n"
+          "src/app.py": "x = 1\n"
         },
         "after": {
-          "src/parser.py": "def parse():\n    return 1\n",
-          "tests/test_parser.py": "def test_parse():\n    assert parse() == 1\n"
+          "src/app.py": "x = 1\n"
         }
       },
       "expected": {
@@ -76,55 +79,55 @@
       },
       "label_origin": "model_drafted",
       "split": "dev",
-      "rationale": "The required test file exists and is not empty.",
+      "rationale": "No new file matching the forbidden pattern was created. The control for the file_not_created form.",
       "tags": [
+        "file_not_created",
+        "control",
         "happy_path"
       ]
     },
     {
-      "case_id": "instr_004_test_file_missing",
+      "case_id": "instr_013_no_new_dependencies_violated",
       "input": {
         "instructions": [
-          "Add a test for tests/test_parser.py"
+          "Do not add new requirements*.txt"
         ],
         "before": {
-          "src/parser.py": "def parse():\n    return 1\n"
+          "src/app.py": "x = 1\n"
         },
         "after": {
-          "src/parser.py": "def parse():\n    return 1\n"
+          "src/app.py": "x = 1\n",
+          "docs/requirements_extra.txt": "extra\n"
         }
       },
       "expected": {
         "violated": 1,
         "must_violate_containing": [
-          "test_parser.py"
+          "requirements"
         ],
         "verdict": "violated"
       },
       "label_origin": "model_drafted",
       "split": "dev",
-      "rationale": "The required test was never added. This is the omission the project exists to catch.",
+      "rationale": "A new file matching the forbidden pattern was created even though the instruction said not to.",
       "tags": [
+        "file_not_created",
         "violation",
         "positive"
       ]
     },
     {
-      "case_id": "instr_005_command_run",
+      "case_id": "instr_014_line_limit_respected",
       "input": {
         "instructions": [
-          "Run the linter before finishing."
+          "Keep src/app.py under 5 lines"
         ],
         "before": {
           "src/app.py": "x = 1\n"
         },
         "after": {
-          "src/app.py": "x = 1\n"
-        },
-        "trace": [
-          "python -m pytest",
-          "ruff check ."
-        ]
+          "src/app.py": "x = 1\ny = 2\nz = 3\n"
+        }
       },
       "expected": {
         "violated": 0,
@@ -133,123 +136,96 @@
       },
       "label_origin": "model_drafted",
       "split": "dev",
-      "rationale": "The trace shows the linter ran. The checker reads the trace, not the agent attention.",
+      "rationale": "The file is within the stated line limit. The control for the line_limit form.",
       "tags": [
-        "trace",
+        "line_limit",
+        "control",
         "happy_path"
       ]
     },
     {
-      "case_id": "instr_006_command_not_run",
+      "case_id": "instr_015_line_limit_violated",
       "input": {
         "instructions": [
-          "Run the linter before finishing."
+          "Keep src/app.py under 5 lines"
         ],
         "before": {
           "src/app.py": "x = 1\n"
         },
         "after": {
-          "src/app.py": "x = 1\n"
-        },
-        "trace": [
-          "python -m pytest"
-        ]
+          "src/app.py": "x = 1\ny = 2\nz = 3\nw = 4\nv = 5\nu = 6\n"
+        }
       },
       "expected": {
         "violated": 1,
+        "must_violate_containing": [
+          "lines"
+        ],
         "verdict": "violated"
       },
       "label_origin": "model_drafted",
       "split": "dev",
-      "rationale": "The linter never ran even though the output was submitted.",
+      "rationale": "The file is six lines against a limit of five, so the limit was exceeded.",
       "tags": [
-        "trace",
-        "violation"
+        "line_limit",
+        "violation",
+        "positive"
       ]
     },
     {
-      "case_id": "instr_007_ambiguous_instruction",
+      "case_id": "instr_016_no_secrets_respected",
       "input": {
         "instructions": [
-          "Make the code as good as you can."
+          "Do not hard-code API keys"
         ],
         "before": {
           "src/app.py": "x = 1\n"
         },
         "after": {
-          "src/app.py": "x = 2\n"
-        }
-      },
-      "expected": {
-        "inconclusive_instructions": 1,
-        "verdict": "inconclusive"
-      },
-      "label_origin": "model_drafted",
-      "split": "dev",
-      "rationale": "An instruction that cannot be turned into a predicate must be reported as inconclusive, never as a pass. Claiming compliance here would be a false assurance.",
-      "tags": [
-        "ambiguous",
-        "abstain",
-        "false_accusation_control"
-      ]
-    },
-    {
-      "case_id": "instr_008_mixed_instructions",
-      "input": {
-        "instructions": [
-          "Do not modify config/settings.toml",
-          "Add a test for tests/test_app.py",
-          "Keep the output format REPORT_JSON"
-        ],
-        "before": {
-          "config/settings.toml": "debug = false\n"
-        },
-        "after": {
-          "config/settings.toml": "debug = false\n",
-          "tests/test_app.py": "def test_app():\n    assert True\n",
-          "out/report.json": "{\"REPORT_JSON\": true}\n"
+          "src/app.py": "x = 1\n"
         }
       },
       "expected": {
         "violated": 0,
-        "passed": 3,
+        "passed": 1,
         "verdict": "passed"
       },
       "label_origin": "model_drafted",
       "split": "dev",
-      "rationale": "Three predicates, all satisfied. A checker that handles only one kind of instruction would fail this.",
+      "rationale": "No artifact contains a value matching the forbidden patterns. The control for the no_artifact_contains form.",
       "tags": [
-        "multi_predicate",
+        "no_artifact_contains",
+        "control",
         "happy_path"
       ]
     },
     {
-      "case_id": "instr_009_one_of_three_violated",
+      "case_id": "instr_017_no_secrets_violated",
       "input": {
         "instructions": [
-          "Do not modify config/settings.toml",
-          "Add a test for tests/test_app.py",
-          "Keep the output format REPORT_JSON"
+          "Do not hard-code API keys"
         ],
         "before": {
-          "config/settings.toml": "debug = false\n"
+          "src/app.py": "x = 1\n"
         },
         "after": {
-          "config/settings.toml": "debug = true\n",
-          "tests/test_app.py": "def test_app():\n    assert True\n",
-          "out/report.json": "{\"other\": true}\n"
+          "src/app.py": "x = 1\nAPI_KEY = \"sk-live-abc123\"\n"
         }
       },
       "expected": {
-        "violated": 2,
+        "violated": 1,
+        "must_violate_containing": [
+          "API"
+        ],
         "verdict": "violated"
       },
       "label_origin": "model_drafted",
       "split": "dev",
-      "rationale": "Two of the three predicates fail. The count must be exact, not \"at least one\".",
+      "rationale": "A credential-shaped value was written into a final artifact, which the instruction forbade.",
       "tags": [
-        "multi_predicate",
-        "violation"
+        "no_artifact_contains",
+        "violation",
+        "positive"
       ]
     }
   ]

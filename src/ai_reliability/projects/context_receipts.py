@@ -232,3 +232,201 @@ def _page_lookup(source: Source):
         return page
 
     return page_of
+
+def build_file_receipt(
+    path: str | Path,
+    *,
+    chunk_chars: int = DEFAULT_CHUNK_CHARS,
+    include_file: bool = True,
+) -> FileReceipt:
+    """Build the receipt for one file.
+
+    A file that failed to extract still produces a receipt, and that
+    receipt is the point: the user can see that the pipeline submitted
+    nothing for this file instead of assuming it was summarised.
+    """
+    source, text = load_source(path)
+    warnings = list(source.warnings)
+
+    # The page count comes from the extractor. For a PDF that is the
+    # number of pages the reader saw; for anything else the document is
+    # one page of text, or zero pages when nothing was extracted.
+    if source.page_count:
+        page_count = source.page_count
+    else:
+        page_count = 1 if text.strip() else 0
+
+    sections = split_sections(text) if text.strip() else []
+    statements = segment_statements(text, source) if text.strip() else []
+
+    chunks = chunk_text(
+        text,
+        source,
+        max_chars=chunk_chars,
+        include=include_file,
+        include_reason="selected" if include_file else "excluded_by_caller",
+    )
+
+    included = [c for c in chunks if c.included]
+    included_chars = sum(c.char_count for c in included)
+
+    if source.extraction_status is ExtractionStatus.EMPTY:
+        warnings.append("no text was extracted from this file")
+    if not included:
+        warnings.append("no chunks were selected for submission")
+
+    return FileReceipt(
+        source=source,
+        text=text,
+        chunks=chunks,
+        page_count=page_count,
+        section_count=len(sections),
+        statement_count=len(statements),
+        included_chars=included_chars,
+        included_chunk_ids=[c.chunk_id for c in included],
+        warnings=warnings,
+    )
+
+
+def build_receipt(
+    paths: Iterable[str | Path],
+    *,
+    pipeline: str = "ai-reliability-lab/context-receipt",
+    created_at: str | None = None,
+    chunk_chars: int = DEFAULT_CHUNK_CHARS,
+) -> Receipt:
+    """Build a receipt covering every listed file."""
+    files = [build_file_receipt(p, chunk_chars=chunk_chars) for p in paths]
+    receipt_id = sha256_text(
+        "|".join(f.source.content_hash or f.source.source_id for f in files)
+    )[:12]
+    return Receipt(
+        receipt_id=receipt_id,
+        created_at=created_at,
+        pipeline=pipeline,
+        files=files,
+    )
+
+
+def file_key(file_receipt: FileReceipt) -> str:
+    """Stable key used to match the same logical file across receipts.
+
+    The file *name* is used, not the content hash, because the question the
+    diff answers is "did this file change", which requires recognising that
+    two different files are versions of the same thing. Matching on the
+    name also lets a receipt be compared across directories, which is how
+    a stale-version check is normally run.
+    """
+    source = file_receipt.source
+    reference = source.path or source.identifier or source.source_id
+    return Path(reference).name or reference
+
+
+
+
+def _file_diff(before: FileReceipt, after: FileReceipt) -> list[str]:
+    """Human-readable differences between two file receipts."""
+    lines: list[str] = []
+    a = before.source
+    b = after.source
+
+    if a.content_hash != b.content_hash:
+        lines.append(f"content hash changed: {a.content_hash[:12]} -> {b.content_hash[:12]}")
+    else:
+        lines.append("content hash unchanged")
+    if a.version != b.version:
+        lines.append(f"version changed: {a.version} -> {b.version}")
+    if a.extraction_status != b.extraction_status:
+        lines.append(
+            f"extraction status changed: {a.extraction_status.value} -> {b.extraction_status.value}"
+        )
+    if len(before.text) != len(after.text):
+        lines.append(f"extracted characters: {len(before.text)} -> {len(after.text)}")
+    if before.page_count != after.page_count:
+        lines.append(f"page count: {before.page_count} -> {after.page_count}")
+    if before.section_count != after.section_count:
+        lines.append(f"section count: {before.section_count} -> {after.section_count}")
+    if before.included_chars != after.included_chars:
+        lines.append(
+            f"submitted characters: {before.included_chars} -> {after.included_chars}"
+        )
+    if before.included_chunk_ids != after.included_chunk_ids:
+        removed = set(before.included_chunk_ids) - set(after.included_chunk_ids)
+        added = set(after.included_chunk_ids) - set(before.included_chunk_ids)
+        if removed:
+            lines.append(f"chunks no longer submitted: {sorted(removed)}")
+        if added:
+            lines.append(f"chunks newly submitted: {sorted(added)}")
+    for warning in after.warnings:
+        if warning not in before.warnings:
+            lines.append(f"new warning: {warning}")
+    return lines
+
+
+def diff_receipts(before: Receipt, after: Receipt) -> dict[str, Any]:
+    """Compare two receipts and describe what a user would notice.
+
+    Files are matched by path, so a file that was replaced by a newer
+    version reads as *changed* rather than as one removal plus one
+    addition. That distinction is the whole point of the diff.
+    """
+    before_by_key = {file_key(f): f for f in before.files}
+    after_by_key = {file_key(f): f for f in after.files}
+
+    changes: dict[str, Any] = {}
+    for key in sorted(set(before_by_key) | set(after_by_key)):
+        old = before_by_key.get(key)
+        new = after_by_key.get(key)
+        if old is None and new is not None:
+            changes[key] = {
+                "status": "added",
+                "lines": [f"file added: {new.source.path}"],
+            }
+        elif new is None and old is not None:
+            changes[key] = {
+                "status": "removed",
+                "lines": [f"file removed: {old.source.path}"],
+            }
+        else:
+            assert old is not None and new is not None
+            lines = _file_diff(old, new)
+            unchanged = bool(lines) and lines[0] == "content hash unchanged"
+            changes[key] = {
+                "status": "unchanged" if unchanged else "changed",
+                "lines": lines,
+            }
+
+    return {
+        "before_receipt_id": before.receipt_id,
+        "after_receipt_id": after.receipt_id,
+        "files": changes,
+        "identical": all(c["status"] == "unchanged" for c in changes.values()),
+    }
+
+
+def render_receipt(receipt: Receipt) -> str:
+    """Human-readable rendering of a receipt."""
+    lines = [
+        f"Receipt {receipt.receipt_id}  pipeline={receipt.pipeline}",
+        f"Files: {len(receipt.files)}   warnings: {receipt.total_warnings}",
+    ]
+    for file_receipt in receipt.files:
+        source = file_receipt.source
+        lines.append("")
+        lines.append(f"  {source.path or source.identifier}")
+        lines.append(f"    hash        {source.content_hash[:16] or '(none)'}")
+        lines.append(f"    media type  {source.media_type.value}")
+        lines.append(
+            f"    extraction  {source.extraction_status.value}"
+            f"  pages={file_receipt.page_count} sections={file_receipt.section_count}"
+        )
+        lines.append(
+            f"    characters  extracted={len(file_receipt.text)} submitted={file_receipt.included_chars}"
+        )
+        lines.append(
+            f"    chunks      {len(file_receipt.chunks)}"
+            f" ({len(file_receipt.included_chunk_ids)} submitted)"
+        )
+        for warning in file_receipt.warnings:
+            lines.append(f"    WARNING     {warning}")
+    return "\n".join(lines)

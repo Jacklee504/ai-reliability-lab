@@ -1,6 +1,103 @@
 {
   "cases": [
     {
+      "case_id": "cit_001_direct_support",
+      "input": {
+        "citations": [
+          {
+            "claim": "The monthly service fee is 2,400 EUR.",
+            "passages": [
+              "The monthly service fee is 2,400 EUR per calendar month."
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The cited passage states the claim exactly. The easy positive.",
+      "tags": [
+        "happy_path"
+      ]
+    },
+    {
+      "case_id": "cit_002_keyword_match_wrong_year",
+      "input": {
+        "citations": [
+          {
+            "claim": "The refund deadline is 2025-06-01.",
+            "passages": [
+              "The refund deadline is 2024-03-01. Requests received after the deadline are not processed."
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "Shares every keyword but states a different date. The hard negative that a keyword matcher gets wrong.",
+      "tags": [
+        "hard_negative",
+        "wrong_year"
+      ]
+    },
+    {
+      "case_id": "cit_003_topical_but_insufficient",
+      "input": {
+        "citations": [
+          {
+            "claim": "The monthly service fee is 2,400 EUR per calendar month.",
+            "passages": [
+              "The service fee is described in this agreement."
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The passage is on the right topic and shares the key phrase, but does not state the amount. This is the central case for the project: relevant but not supporting.",
+      "tags": [
+        "hard_negative",
+        "relevant_but_insufficient"
+      ]
+    },
+    {
+      "case_id": "cit_004_partial_support",
+      "input": {
+        "citations": [
+          {
+            "claim": "The notice period is 90 days and the fee is 2,400 EUR.",
+            "passages": [
+              "The monthly service fee is 2,400 EUR per calendar month."
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The citation supports only half the claim. A partial support must not be reported as full support.",
+      "tags": [
+        "hard_negative",
+        "partial_support"
+      ]
+    },
+    {
       "case_id": "cit_005_two_passages_together",
       "input": {
         "citations": [

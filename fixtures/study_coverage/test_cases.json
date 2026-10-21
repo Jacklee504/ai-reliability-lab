@@ -1,30 +1,91 @@
 {
   "cases": [
     {
+      "case_id": "sc_t01_direct_mention",
+      "input": {
+        "topics": [
+          {"id": "hash_tables", "label": "hash tables"}
+        ],
+        "material": "Week 4 covers hash tables, and the exercise builds one from scratch."
+      },
+      "expected": {
+        "mentioned_ids": ["hash_tables"]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The topic label appears verbatim in the material.",
+      "tags": [
+        "positive"
+      ]
+    },
+    {
+      "case_id": "sc_t02_alias_mention",
+      "input": {
+        "topics": [
+          {"id": "pcr", "label": "polymerase chain reaction", "aliases": ["PCR"]}
+        ],
+        "material": "The PCR technique amplifies a small amount of DNA."
+      },
+      "expected": {
+        "mentioned_ids": ["pcr"]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The supplied alias appears in the material, so the topic is mentioned.",
+      "tags": [
+        "alias"
+      ]
+    },
+    {
+      "case_id": "sc_t03_paraphrase_is_not_a_mention",
+      "input": {
+        "topics": [
+          {"id": "recursion", "label": "recursion"}
+        ],
+        "material": "The notes explain how a function calls itself, and how that call stack grows."
+      },
+      "expected": {
+        "mentioned_ids": []
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The material describes recursion without naming it. The checker only proves that a phrase appeared, so a description is not a mention. Reporting a paraphrase as a mention would be a false positive on the tool's own stated contract.",
+      "tags": [
+        "paraphrase",
+        "known_limit",
+        "false_accusation_control"
+      ]
+    },
+    {
+      "case_id": "sc_t04_topic_absent",
+      "input": {
+        "topics": [
+          {"id": "sorting", "label": "sorting"}
+        ],
+        "material": "Week 1 covers variables and Week 2 covers loops. The exercise asks for a function that doubles a number."
+      },
+      "expected": {
+        "mentioned_ids": []
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The topic is not in the material at all, so it is unverified.",
+      "tags": [
+        "negative"
+      ]
+    },
+    {
       "case_id": "sc_t05_partial_topic_list",
       "input": {
         "topics": [
-          {
-            "id": "arrays",
-            "label": "arrays"
-          },
-          {
-            "id": "recursion",
-            "label": "recursion"
-          },
-          {
-            "id": "strings",
-            "label": "strings"
-          }
+          {"id": "arrays", "label": "arrays"},
+          {"id": "recursion", "label": "recursion"},
+          {"id": "strings", "label": "strings"}
         ],
         "material": "This week covers arrays and strings. Recursion is covered next week."
       },
       "expected": {
-        "mentioned_ids": [
-          "arrays",
-          "recursion",
-          "strings"
-        ]
+        "mentioned_ids": ["arrays", "recursion", "strings"]
       },
       "label_origin": "model_drafted",
       "split": "test",
@@ -37,17 +98,12 @@
       "case_id": "sc_t06_repeated_mention_counts_once",
       "input": {
         "topics": [
-          {
-            "id": "loops",
-            "label": "loops"
-          }
+          {"id": "loops", "label": "loops"}
         ],
         "material": "Loops repeat work. The for loop and the while loop are both used. Loops appear again in the exercise."
       },
       "expected": {
-        "mentioned_ids": [
-          "loops"
-        ]
+        "mentioned_ids": ["loops"]
       },
       "label_origin": "model_drafted",
       "split": "test",
@@ -60,17 +116,12 @@
       "case_id": "sc_t07_word_boundary_matters",
       "input": {
         "topics": [
-          {
-            "id": "array",
-            "label": "array"
-          }
+          {"id": "array", "label": "array"}
         ],
         "material": "The coursework covers arrays, not array."
       },
       "expected": {
-        "mentioned_ids": [
-          "array"
-        ]
+        "mentioned_ids": ["array"]
       },
       "label_origin": "model_drafted",
       "split": "test",
@@ -83,10 +134,7 @@
       "case_id": "sc_t08_empty_material",
       "input": {
         "topics": [
-          {
-            "id": "arrays",
-            "label": "arrays"
-          }
+          {"id": "arrays", "label": "arrays"}
         ],
         "material": ""
       },

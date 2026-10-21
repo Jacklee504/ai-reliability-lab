@@ -1,6 +1,141 @@
 {
   "cases": [
     {
+      "case_id": "cr_rt_001_raises_confirmed_by_execution",
+      "input": {
+        "files": {
+          "math_ops.py": "def divide(a, b):\n    return a / b\n"
+        },
+        "comments": [
+          {
+            "text": "Calling this with a zero denominator will raise an error.",
+            "file": "math_ops.py",
+            "line": 1
+          }
+        ],
+        "harness": "import math_ops\nmath_ops.divide(1, 0)\n"
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The harness really does raise ZeroDivisionError, so the runtime claim is confirmed by an observed outcome rather than by reading the code.",
+      "tags": [
+        "runtime",
+        "executed",
+        "positive"
+      ]
+    },
+    {
+      "case_id": "cr_rt_002_raises_refuted_by_execution",
+      "input": {
+        "files": {
+          "math_ops.py": "def divide(a, b):\n    if b == 0:\n        return 0\n    return a / b\n"
+        },
+        "comments": [
+          {
+            "text": "Calling this with a zero denominator will raise an error.",
+            "file": "math_ops.py",
+            "line": 1
+          }
+        ],
+        "harness": "import math_ops\nmath_ops.divide(1, 0)\n"
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The code guards the zero denominator, and the harness confirms the call completes without raising. This is the hard negative for the executable path: without execution the tool would have had to abstain.",
+      "tags": [
+        "runtime",
+        "executed",
+        "hard_negative"
+      ]
+    },
+    {
+      "case_id": "cr_rt_003_division_by_zero_confirmed",
+      "input": {
+        "files": {
+          "math_ops.py": "def divide(a, b):\n    return a / b\n"
+        },
+        "comments": [
+          {
+            "text": "This will divide by zero and crash.",
+            "file": "math_ops.py",
+            "line": 1
+          }
+        ],
+        "harness": "import math_ops\nmath_ops.divide(1, 0)\n"
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The observed exception is ZeroDivisionError, which is exactly what the comment predicted.",
+      "tags": [
+        "runtime",
+        "executed",
+        "positive"
+      ]
+    },
+    {
+      "case_id": "cr_rt_004_division_by_zero_refuted",
+      "input": {
+        "files": {
+          "math_ops.py": "def divide(a, b):\n    if b == 0:\n        return 0\n    return a / b\n"
+        },
+        "comments": [
+          {
+            "text": "This will divide by zero and crash.",
+            "file": "math_ops.py",
+            "line": 1
+          }
+        ],
+        "harness": "import math_ops\nmath_ops.divide(1, 0)\n"
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The harness completes without a division by zero, so the predicted crash did not occur.",
+      "tags": [
+        "runtime",
+        "executed",
+        "hard_negative"
+      ]
+    },
+    {
+      "case_id": "cr_rt_005_returns_none_confirmed",
+      "input": {
+        "files": {
+          "lookup.py": "def find_user(users, user_id):\n    for user in users:\n        if user['id'] == user_id:\n            return user\n    return None\n"
+        },
+        "comments": [
+          {
+            "text": "This returns None when the user is not found.",
+            "file": "lookup.py",
+            "line": 1
+          }
+        ],
+        "harness": "import lookup\n__airl_result__ = lookup.find_user([{'id': 1}], 99)\n"
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The harness observed a None return value, confirming the claim about behaviour that a static reading cannot settle.",
+      "tags": [
+        "runtime",
+        "executed",
+        "positive"
+      ]
+    },
+    {
       "case_id": "cr_rt_006_returns_none_refuted",
       "input": {
         "files": {
@@ -43,10 +178,7 @@
         "harness": "import spin\nspin.spin()\n"
       },
       "expected": {
-        "verdict": [
-          "uncertain",
-          "insufficient_evidence"
-        ]
+        "verdict": ["uncertain", "insufficient_evidence"]
       },
       "label_origin": "model_drafted",
       "split": "dev",
@@ -73,10 +205,7 @@
         "harness": "import nonexistent_module_xyz\n"
       },
       "expected": {
-        "verdict": [
-          "uncertain",
-          "insufficient_evidence"
-        ]
+        "verdict": ["uncertain", "insufficient_evidence"]
       },
       "label_origin": "model_drafted",
       "split": "dev",
@@ -102,10 +231,7 @@
         ]
       },
       "expected": {
-        "verdict": [
-          "uncertain",
-          "insufficient_evidence"
-        ]
+        "verdict": ["uncertain", "insufficient_evidence"]
       },
       "label_origin": "model_drafted",
       "split": "dev",

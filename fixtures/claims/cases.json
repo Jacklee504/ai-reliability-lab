@@ -1,6 +1,153 @@
 {
   "cases": [
     {
+      "case_id": "claim_001_supported",
+      "project": "claims",
+      "input": {
+        "answer": "The monthly service fee is 2,400 EUR.",
+        "sources": [
+          {
+            "identifier": "contract",
+            "text": "The monthly service fee is 2,400 EUR per calendar month. Payment is due within 30 days of the invoice date."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The source states the claim directly. A supported verdict is the easy positive and must not be broken by the abstention rules.",
+      "tags": [
+        "happy_path"
+      ]
+    },
+    {
+      "case_id": "claim_002_contradicted",
+      "project": "claims",
+      "input": {
+        "answer": "The monthly service fee is 2,400 EUR.",
+        "sources": [
+          {
+            "identifier": "contract",
+            "text": "The monthly service fee is 2,800 EUR per calendar month. Payment is due within 30 days of the invoice date."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The source states a different amount. This is a genuine contradiction, not a retrieval miss.",
+      "tags": [
+        "true_contradiction"
+      ]
+    },
+    {
+      "case_id": "claim_003_wrong_year",
+      "project": "claims",
+      "input": {
+        "answer": "The notice period is 90 days.",
+        "sources": [
+          {
+            "identifier": "contract",
+            "text": "Either party may terminate the agreement for convenience with 60 days written notice. Termination for cause requires 30 days written notice."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "A wrong-year or wrong-number claim where the source does state the relevant quantity but with a different value.",
+      "tags": [
+        "wrong_number",
+        "synthetic_transform"
+      ]
+    },
+    {
+      "case_id": "claim_004_offtopic_source",
+      "project": "claims",
+      "input": {
+        "answer": "The processor must notify the controller of any personal data breach within 48 hours.",
+        "sources": [
+          {
+            "identifier": "handbook",
+            "text": "Personal data is processed solely for the purpose of delivering the service. Data is stored within the European Economic Area."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The source discusses the same topic but does not state the notification deadline. This must not become a contradiction. This is the key false-accusation control.",
+      "tags": [
+        "hard_negative",
+        "false_accusation_control"
+      ]
+    },
+    {
+      "case_id": "claim_005_qualifier_all",
+      "project": "claims",
+      "input": {
+        "answer": "All customers receive a refund within 30 days of cancelling.",
+        "sources": [
+          {
+            "identifier": "policy",
+            "text": "One customer received a refund within 30 days of cancelling in March."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "A universal claim is not supported by a single instance and is not contradicted by one either. The abstention rules must downgrade both directions.",
+      "tags": [
+        "hard_negative",
+        "universal_claim",
+        "false_accusation_control"
+      ]
+    },
+    {
+      "case_id": "claim_006_no_source_for_claim",
+      "project": "claims",
+      "input": {
+        "answer": "The office is located in Dublin.",
+        "sources": [
+          {
+            "identifier": "contract",
+            "text": "The monthly service fee is 2,400 EUR per calendar month. Payment is due within 30 days of the invoice date."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "Nothing in the source addresses the location. A retrieval miss must never be reported as a contradiction.",
+      "tags": [
+        "hard_negative",
+        "retrieval_miss",
+        "false_accusation_control"
+      ]
+    },
+    {
       "case_id": "claim_007_mixed_sentence",
       "project": "claims",
       "input": {

@@ -1,6 +1,126 @@
 {
   "cases": [
     {
+      "case_id": "cit_t01_direct_support",
+      "input": {
+        "citations": [
+          {
+            "claim": "The early-career programme runs for 12 months.",
+            "passages": [
+              "The early-career programme runs for 12 months and includes two mentoring sessions per month."
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The cited passage states the duration directly.",
+      "tags": [
+        "positive"
+      ]
+    },
+    {
+      "case_id": "cit_t02_wrong_duration",
+      "input": {
+        "citations": [
+          {
+            "claim": "The early-career programme runs for 12 months.",
+            "passages": [
+              "The early-career programme runs for 18 months and includes two mentoring sessions per month."
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "Every keyword matches and the number is the only difference. This is the case the project exists for.",
+      "tags": [
+        "negative",
+        "hard_negative"
+      ]
+    },
+    {
+      "case_id": "cit_t03_topical_but_no_answer",
+      "input": {
+        "citations": [
+          {
+            "claim": "The early-career programme runs for 12 months.",
+            "passages": [
+              "The early-career programme is open to people in their first two years of employment."
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The passage is on the right subject and does not state the duration.",
+      "tags": [
+        "hard_negative",
+        "false_accusation_control"
+      ]
+    },
+    {
+      "case_id": "cit_t04_two_passages_together",
+      "input": {
+        "citations": [
+          {
+            "claim": "The early-career programme runs for 12 months and includes two mentoring sessions per month.",
+            "passages": [
+              "The early-career programme runs for 12 months.",
+              "The programme includes two mentoring sessions per month."
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "Neither passage supports the claim alone. Both together do.",
+      "tags": [
+        "multi_passage"
+      ]
+    },
+    {
+      "case_id": "cit_t05_wrong_entity",
+      "input": {
+        "citations": [
+          {
+            "claim": "The early-career programme runs for 12 months.",
+            "passages": [
+              "The graduate programme runs for 12 months."
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The number matches but the programme is a different one.",
+      "tags": [
+        "hard_negative",
+        "entity"
+      ]
+    },
+    {
       "case_id": "cit_t06_no_citation",
       "input": {
         "citations": [

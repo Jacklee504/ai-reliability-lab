@@ -1,6 +1,150 @@
 {
   "cases": [
     {
+      "case_id": "ca_001_supported",
+      "input": {
+        "answer": "The monthly service fee is 2,400 EUR.",
+        "sources": [
+          {
+            "identifier": "contract",
+            "text": "The monthly service fee is 2,400 EUR per calendar month. Payment is due within 30 days of the invoice date."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The source states the fee. The control case: a checker that fails everything is useless."
+    },
+    {
+      "case_id": "ca_002_contradicted",
+      "input": {
+        "answer": "The monthly service fee is 2,400 EUR.",
+        "sources": [
+          {
+            "identifier": "contract",
+            "text": "The monthly service fee is 2,800 EUR per calendar month. Payment is due within 30 days of the invoice date."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The source fixes the fee at a different amount, so it is incompatible with the claim."
+    },
+    {
+      "case_id": "ca_003_wrong_year",
+      "input": {
+        "answer": "The notice period is 90 days.",
+        "sources": [
+          {
+            "identifier": "contract",
+            "text": "Either party may terminate the agreement for convenience with 60 days written notice."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The source states a different notice period. Every keyword matches; only the number differs."
+    },
+    {
+      "case_id": "ca_004_offtopic_source",
+      "input": {
+        "answer": "The processor must notify the controller of any personal data breach within 48 hours.",
+        "sources": [
+          {
+            "identifier": "addendum",
+            "text": "Personal data is processed solely for the purpose of delivering the service. Data is stored within the European Economic Area."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": ["insufficient_evidence", "uncertain"]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The source is on the same topic and does not state the notification deadline. This must not become a contradiction. It is the key false-accusation control."
+    },
+    {
+      "case_id": "ca_005_universal_claim",
+      "input": {
+        "answer": "All customers receive a refund within 30 days of cancelling.",
+        "sources": [
+          {
+            "identifier": "policy",
+            "text": "One customer received a refund within 30 days of cancelling in March."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": ["insufficient_evidence", "uncertain"]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "A universal claim is neither supported nor refuted by a single instance."
+    },
+    {
+      "case_id": "ca_006_no_source_for_claim",
+      "input": {
+        "answer": "The office is located in Dublin.",
+        "sources": [
+          {
+            "identifier": "contract",
+            "text": "The monthly service fee is 2,400 EUR per calendar month."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": ["insufficient_evidence", "uncertain"]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "Nothing in the source addresses the location. A retrieval miss must never be reported as a contradiction."
+    },
+    {
+      "case_id": "ca_007_mixed_sentence",
+      "input": {
+        "answer": "The monthly service fee is 2,400 EUR and the notice period is 60 days.",
+        "sources": [
+          {
+            "identifier": "contract",
+            "text": "The monthly service fee is 2,400 EUR per calendar month. Either party may terminate the agreement for convenience with 90 days written notice."
+          }
+        ]
+      },
+      "expected": {
+        "verdicts": ["supported", "contradicted"]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "One sentence carries two claims with different outcomes. The auditor must split them and keep the order."
+    },
+    {
+      "case_id": "ca_008_negation",
+      "input": {
+        "answer": "The customer does not pay late interest on overdue amounts.",
+        "sources": [
+          {
+            "identifier": "contract",
+            "text": "A late payment interest of 1.5 percent per month applies to overdue amounts."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The source says an interest applies, which is the opposite of the negated claim."
+    },
+    {
       "case_id": "ca_009_empty_source",
       "input": {
         "answer": "The monthly service fee is 2,400 EUR.",
@@ -12,10 +156,7 @@
         ]
       },
       "expected": {
-        "verdict": [
-          "insufficient_evidence",
-          "uncertain"
-        ]
+        "verdict": ["insufficient_evidence", "uncertain"]
       },
       "label_origin": "model_drafted",
       "split": "dev",
@@ -33,10 +174,7 @@
         ]
       },
       "expected": {
-        "verdict": [
-          "insufficient_evidence",
-          "uncertain"
-        ]
+        "verdict": ["insufficient_evidence", "uncertain"]
       },
       "label_origin": "model_drafted",
       "split": "dev",
@@ -72,10 +210,7 @@
         ]
       },
       "expected": {
-        "verdict": [
-          "insufficient_evidence",
-          "uncertain"
-        ]
+        "verdict": ["insufficient_evidence", "uncertain"]
       },
       "label_origin": "model_drafted",
       "split": "dev",
@@ -133,10 +268,7 @@
         ]
       },
       "expected": {
-        "verdict": [
-          "insufficient_evidence",
-          "uncertain"
-        ]
+        "verdict": ["insufficient_evidence", "uncertain"]
       },
       "label_origin": "model_drafted",
       "split": "dev",

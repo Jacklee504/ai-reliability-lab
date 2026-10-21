@@ -1,85 +1,8 @@
 {
   "cases": [
-    {
-      "case_id": "claim_hard_001_wrong_entity",
-      "input": {
-        "answer": "Acme Corp's renewal fee is 100 EUR.",
-        "sources": [
-          {
-            "identifier": "contract",
-            "text": "Globex Corp's renewal fee is 100 EUR."
-          }
-        ]
-      },
-      "expected": {
-        "verdict": [
-          "insufficient_evidence",
-          "uncertain"
-        ]
-      },
-      "label_origin": "model_drafted",
-      "split": "dev",
-      "rationale": "A different entity with the same amount is relevant but does not settle Acme's fee."
-    },
-    {
-      "case_id": "claim_hard_002_one_example_not_all",
-      "input": {
-        "answer": "All customers receive 90 days notice.",
-        "sources": [
-          {
-            "identifier": "notice",
-            "text": "One customer received 90 days notice."
-          }
-        ]
-      },
-      "expected": {
-        "verdict": [
-          "insufficient_evidence",
-          "uncertain"
-        ]
-      },
-      "label_origin": "model_drafted",
-      "split": "dev",
-      "rationale": "One instance does not establish a universal statement."
-    },
-    {
-      "case_id": "claim_hard_003_negation",
-      "input": {
-        "answer": "The service does not charge a fee.",
-        "sources": [
-          {
-            "identifier": "fees",
-            "text": "The service charges a fee of 5 EUR."
-          }
-        ]
-      },
-      "expected": {
-        "verdict": "contradicted"
-      },
-      "label_origin": "model_drafted",
-      "split": "dev",
-      "rationale": "The supplied source explicitly states a fee, opposite the answer's negation."
-    },
-    {
-      "case_id": "claim_hard_004_prior_year",
-      "input": {
-        "answer": "The office was in Dublin in 2024.",
-        "sources": [
-          {
-            "identifier": "locations",
-            "text": "The office was in Dublin in 2023."
-          }
-        ]
-      },
-      "expected": {
-        "verdict": [
-          "insufficient_evidence",
-          "uncertain"
-        ]
-      },
-      "label_origin": "model_drafted",
-      "split": "dev",
-      "rationale": "A 2023 location does not establish or refute the 2024 location."
-    }
+    {"case_id":"claim_hard_001_wrong_entity","input":{"answer":"Acme Corp's renewal fee is 100 EUR.","sources":[{"identifier":"contract","text":"Globex Corp's renewal fee is 100 EUR."}]},"expected":{"verdict":["insufficient_evidence","uncertain"]},"label_origin":"model_drafted","split":"dev","rationale":"A different entity with the same amount is relevant but does not settle Acme's fee."},
+    {"case_id":"claim_hard_002_one_example_not_all","input":{"answer":"All customers receive 90 days notice.","sources":[{"identifier":"notice","text":"One customer received 90 days notice."}]},"expected":{"verdict":["insufficient_evidence","uncertain"]},"label_origin":"model_drafted","split":"dev","rationale":"One instance does not establish a universal statement."},
+    {"case_id":"claim_hard_003_negation","input":{"answer":"The service does not charge a fee.","sources":[{"identifier":"fees","text":"The service charges a fee of 5 EUR."}]},"expected":{"verdict":"contradicted"},"label_origin":"model_drafted","split":"dev","rationale":"The supplied source explicitly states a fee, opposite the answer's negation."},
+    {"case_id":"claim_hard_004_prior_year","input":{"answer":"The office was in Dublin in 2024.","sources":[{"identifier":"locations","text":"The office was in Dublin in 2023."}]},"expected":{"verdict":["insufficient_evidence","uncertain"]},"label_origin":"model_drafted","split":"dev","rationale":"A 2023 location does not establish or refute the 2024 location."}
   ]
 }

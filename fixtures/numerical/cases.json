@@ -1,6 +1,130 @@
 {
   "cases": [
     {
+      "case_id": "num_001_correct_read",
+      "input": {
+        "table": "Entity,Metric,2023,2024\nAcme Corp,Revenue,4200000,5100000\nGlobex Inc,Revenue,3800000,3900000\nAcme Corp,Headcount,1200,1350\nGlobex Inc,Headcount,880,905",
+        "format": "csv",
+        "claims": [
+          "Acme Corp revenue in 2024 was 5100000 EUR."
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "A correct read of the right row and column. The easy positive.",
+      "tags": [
+        "happy_path"
+      ]
+    },
+    {
+      "case_id": "num_002_wrong_year",
+      "input": {
+        "table": "Entity,Metric,2023,2024\nAcme Corp,Revenue,4200000,5100000\nGlobex Inc,Revenue,3800000,3900000\nAcme Corp,Headcount,1200,1350\nGlobex Inc,Headcount,880,905",
+        "format": "csv",
+        "claims": [
+          "Acme Corp revenue in 2023 was 5100000 EUR."
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The value is real but belongs to a different year. A text-similarity check would pass this because every token appears in the table.",
+      "tags": [
+        "hard_negative",
+        "wrong_year"
+      ]
+    },
+    {
+      "case_id": "num_003_wrong_row",
+      "input": {
+        "table": "Entity,Metric,2023,2024\nAcme Corp,Revenue,4200000,5100000\nGlobex Inc,Revenue,3800000,3900000\nAcme Corp,Headcount,1200,1350\nGlobex Inc,Headcount,880,905",
+        "format": "csv",
+        "claims": [
+          "Globex Inc revenue in 2024 was 5100000 EUR."
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The value belongs to a different row. A row/column-blind check passes it.",
+      "tags": [
+        "hard_negative",
+        "wrong_row"
+      ]
+    },
+    {
+      "case_id": "num_004_wrong_column",
+      "input": {
+        "table": "Entity,Metric,2023,2024\nAcme Corp,Revenue,4200000,5100000\nGlobex Inc,Revenue,3800000,3900000\nAcme Corp,Headcount,1200,1350\nGlobex Inc,Headcount,880,905",
+        "format": "csv",
+        "claims": [
+          "Acme Corp headcount in 2024 was 5100000."
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The value belongs to a different metric column.",
+      "tags": [
+        "hard_negative",
+        "wrong_column"
+      ]
+    },
+    {
+      "case_id": "num_005_wrong_unit_millions",
+      "input": {
+        "table": "Entity,Metric,2023,2024\nAcme Corp,Revenue,4200000,5100000\nGlobex Inc,Revenue,3800000,3900000\nAcme Corp,Headcount,1200,1350\nGlobex Inc,Headcount,880,905",
+        "format": "csv",
+        "claims": [
+          "Acme Corp revenue in 2024 was 5.1 million EUR."
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "uncertain",
+          "insufficient_evidence"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The claim says 5.1 million and the cell says 5100000. The magnitudes agree once the scale word is applied, but the table states no unit, so the claim supplies a unit the source does not. The verifier now abstains rather than picking a side, and the label was changed to match that rule. The rule was decided before this label was changed, and it is recorded here so the change is visible.",
+      "tags": [
+        "unit",
+        "needs_decision",
+        "resolved_abstain"
+      ],
+      "notes": "Label changed from [supported, contradicted] to a fixed abstention. The unit rule now lives in the code, so the label follows it rather than the other way round."
+    },
+    {
+      "case_id": "num_006_percent_change",
+      "input": {
+        "table": "Entity,Metric,2023,2024\nAcme Corp,Revenue,4200000,5100000\nGlobex Inc,Revenue,3800000,3900000\nAcme Corp,Headcount,1200,1350\nGlobex Inc,Headcount,880,905",
+        "format": "csv",
+        "claims": [
+          "Acme Corp revenue increased by 21.4 percent from 2023 to 2024."
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "A derived claim: (5100000 - 4200000) / 4200000 = 21.43 percent. The verifier must show the arithmetic.",
+      "tags": [
+        "derived",
+        "percent_change"
+      ]
+    },
+    {
       "case_id": "num_007_percent_change_wrong",
       "input": {
         "table": "Entity,Metric,2023,2024\nAcme Corp,Revenue,4200000,5100000\nGlobex Inc,Revenue,3800000,3900000\nAcme Corp,Headcount,1200,1350\nGlobex Inc,Headcount,880,905",

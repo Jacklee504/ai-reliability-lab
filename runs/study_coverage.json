@@ -1,0 +1,212 @@
+{
+  "project": "study_coverage",
+  "method": "deterministic",
+  "model_id": "unavailable",
+  "model_calls": 0,
+  "parse_failures": 0,
+  "total_latency_ms": 0.0,
+  "total_cases": 5,
+  "scored_cases": 5,
+  "correct_cases": 5,
+  "label_origins": {
+    "synthetic_transform": 5
+  },
+  "splits": {
+    "dev": 5
+  },
+  "metrics": [
+    {
+      "name": "accepted_outcome",
+      "numerator": 5,
+      "denominator": 5,
+      "rate": 1.0,
+      "note": "project case accepted the prediction; some labels allow alternatives"
+    },
+    {
+      "name": "false_accusations_on_supported",
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null,
+      "note": "supported claims wrongly called contradicted"
+    },
+    {
+      "name": "false_alarms_on_benign",
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null,
+      "note": "benign cases wrongly flagged"
+    },
+    {
+      "name": "abstentions",
+      "numerator": 0,
+      "denominator": 5,
+      "rate": 0.0,
+      "note": "outcomes that declined to assert"
+    }
+  ],
+  "confusion": {
+    "expected=None,predicted=None": 5
+  },
+  "notes": [
+    "Labels are not independently human verified; agreement is provisional.",
+    "No held-out test cases were evaluated."
+  ],
+  "results": [
+    {
+      "case_id": "sc_001_direct_mention",
+      "project": "study_coverage",
+      "predicted": {
+        "topics": [
+          {
+            "topic_id": "arrays",
+            "label": "arrays",
+            "mentions": 1,
+            "status": "mentioned",
+            "matched_phrase": "arrays"
+          }
+        ],
+        "mentioned_ids": [
+          "arrays"
+        ],
+        "unverified_ids": [],
+        "note": "Mention is a lexical observation, not proof of adequate coverage."
+      },
+      "expected": {
+        "mentioned_ids": [
+          "arrays"
+        ]
+      },
+      "label_origin": "synthetic_transform",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": null
+    },
+    {
+      "case_id": "sc_002_alias",
+      "project": "study_coverage",
+      "predicted": {
+        "topics": [
+          {
+            "topic_id": "pcr",
+            "label": "polymerase chain reaction",
+            "mentions": 1,
+            "status": "mentioned",
+            "matched_phrase": "PCR"
+          }
+        ],
+        "mentioned_ids": [
+          "pcr"
+        ],
+        "unverified_ids": [],
+        "note": "Mention is a lexical observation, not proof of adequate coverage."
+      },
+      "expected": {
+        "mentioned_ids": [
+          "pcr"
+        ]
+      },
+      "label_origin": "synthetic_transform",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": null
+    },
+    {
+      "case_id": "sc_003_missing",
+      "project": "study_coverage",
+      "predicted": {
+        "topics": [
+          {
+            "topic_id": "sorting",
+            "label": "sorting",
+            "mentions": 0,
+            "status": "unverified",
+            "matched_phrase": null
+          }
+        ],
+        "mentioned_ids": [],
+        "unverified_ids": [
+          "sorting"
+        ],
+        "note": "Mention is a lexical observation, not proof of adequate coverage."
+      },
+      "expected": {
+        "mentioned_ids": []
+      },
+      "label_origin": "synthetic_transform",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": null
+    },
+    {
+      "case_id": "sc_004_repetition",
+      "project": "study_coverage",
+      "predicted": {
+        "topics": [
+          {
+            "topic_id": "loops",
+            "label": "loops",
+            "mentions": 2,
+            "status": "mentioned",
+            "matched_phrase": "loops"
+          }
+        ],
+        "mentioned_ids": [
+          "loops"
+        ],
+        "unverified_ids": [],
+        "note": "Mention is a lexical observation, not proof of adequate coverage."
+      },
+      "expected": {
+        "mentioned_ids": [
+          "loops"
+        ]
+      },
+      "label_origin": "synthetic_transform",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": null
+    },
+    {
+      "case_id": "sc_005_paraphrase_unverified",
+      "project": "study_coverage",
+      "predicted": {
+        "topics": [
+          {
+            "topic_id": "recursion",
+            "label": "recursion",
+            "mentions": 0,
+            "status": "unverified",
+            "matched_phrase": null
+          }
+        ],
+        "mentioned_ids": [],
+        "unverified_ids": [
+          "recursion"
+        ],
+        "note": "Mention is a lexical observation, not proof of adequate coverage."
+      },
+      "expected": {
+        "mentioned_ids": []
+      },
+      "label_origin": "synthetic_transform",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": null
+    }
+  ]
+}

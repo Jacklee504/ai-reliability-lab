@@ -430,3 +430,52 @@ class ClaimRunner:
             parse_failures=report.parse_failures,
             notes=report.render(),
         )
+
+
+def build_cases() -> list[EvalCase]:
+    """Load the claim auditor evaluation cases."""
+    from ..core.fixtures import load_project_cases
+
+    return load_project_cases("claims")
+
+
+def build_runner(provider: Any = None) -> ClaimRunner:
+    """Factory used by the project registry."""
+    return ClaimRunner(provider=provider)
+
+
+def build_prompts(fixture_path: str) -> list[tuple[str, str]]:
+    """Build the (purpose, prompt) pairs for a claims fixture.
+
+    The recorder uses this to send exactly the prompts the auditor will
+    later ask, so a recorded cache replays the same evaluation.
+    """
+    import json
+    from pathlib import Path
+
+    from ..core.fixtures import project_fixture_dir
+
+    target = Path(fixture_path)
+    if not target.exists():
+        target = project_fixture_dir("claims") / fixture_path
+    payload = json.loads(target.read_text(encoding="utf-8"))
+
+    prompts: list[tuple[str, str]] = []
+    for case in payload.get("cases", []):
+        answer = case.get("input", {}).get("answer", "")
+        documents = [
+            SourceDocument(
+                identifier=item.get("identifier", f"source_{index}"),
+                text=item.get("text", ""),
+            )
+            for index, item in enumerate(case.get("input", {}).get("sources", []))
+        ]
+        all_spans: list[Span] = []
+        for document in documents:
+            all_spans.extend(document.spans())
+        claims = split_answer_into_claims(answer, settings=ExtractionSettings())
+        for claim in claims:
+            evidence = retrieve(claim.text, all_spans, top_k=4)
+            passages = [span.text for ev in evidence for span in ev.spans]
+            prompts.append(("claim_verdict", build_claim_prompt(claim.text, passages)))
+    return prompts

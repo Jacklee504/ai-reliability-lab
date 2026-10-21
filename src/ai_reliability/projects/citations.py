@@ -423,3 +423,101 @@ def audit_citations(
     if provider is None:
         report.notes.append("no model was used; verdicts came from the deterministic fallback")
     return report
+
+
+# ---------------------------------------------------------------------------
+# Evaluation runner
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class CitationRunner:
+    """Runs a citation audit evaluation case."""
+
+    provider: Any = None
+
+    def evaluate_case(self, case: EvalCase) -> CaseResult:
+        inputs = case.input.get("citations", [])
+        citations = [
+            Citation(
+                claim=item.get("claim", ""),
+                passages=list(item.get("passages", [])),
+                labels=list(item.get("labels", [])),
+            )
+            for item in inputs
+        ]
+
+        report = audit_citations(citations, provider=self.provider)
+
+        expected = case.expected
+        findings = report.findings
+
+        if "verdict" in expected:
+            wanted = expected["verdict"]
+            if isinstance(wanted, list):
+                correct = bool(findings) and all(
+                    f.verdict.verdict.value in wanted for f in findings
+                )
+            else:
+                correct = (
+                    len(findings) == 1 and findings[0].verdict.verdict.value == wanted
+                )
+        else:
+            correct = None
+
+        predicted = {
+            "verdict": findings[0].verdict.verdict.value if len(findings) == 1 else "multiple",
+            "verdicts": [f.verdict.verdict.value for f in findings],
+            "max_topical_overlap": round(
+                max((f.max_topical for f in findings), default=0.0), 4
+            ),
+        }
+
+        return CaseResult(
+            case_id=case.case_id,
+            project=case.project,
+            predicted=predicted,
+            expected=expected,
+            label_origin=case.label_origin,
+            split=case.split,
+            correct=correct,
+            model_calls=report.model_calls,
+            parse_failures=report.parse_failures,
+            notes=report.render(),
+        )
+
+
+def build_cases() -> list[EvalCase]:
+    """Load the citation auditor evaluation cases."""
+    from ..core.fixtures import load_project_cases
+
+    return load_project_cases("citations")
+
+
+def build_runner(provider: Any = None) -> CitationRunner:
+    """Factory used by the project registry."""
+    return CitationRunner(provider=provider)
+
+
+def build_prompts(fixture_path: str) -> list[tuple[str, str]]:
+    """Build the (purpose, prompt) pairs for a citations fixture."""
+    import json
+    from pathlib import Path
+
+    from ..core.fixtures import project_fixture_dir
+
+    target = Path(fixture_path)
+    if not target.exists():
+        target = project_fixture_dir("citations") / fixture_path
+    payload = json.loads(target.read_text(encoding="utf-8"))
+
+    prompts: list[tuple[str, str]] = []
+    for case in payload.get("cases", []):
+        for item in case.get("input", {}).get("citations", []):
+            prompts.append(
+                (
+                    "citation_support",
+                    build_citation_prompt(item.get("claim", ""), list(item.get("passages", []))),
+                )
+            )
+    return prompts

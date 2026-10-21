@@ -1,13 +1,98 @@
 {
   "cases": [
     {
-      "case_id": "ca_001_supported",
+      "case_id": "ca_009_empty_source",
       "input": {
         "answer": "The monthly service fee is 2,400 EUR.",
         "sources": [
           {
             "identifier": "contract",
-            "text": "The monthly service fee is 2,400 EUR per calendar month. Payment is due within 30 days of the invoice date."
+            "text": ""
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "An empty source is a failure mode, not a truth claim."
+    },
+    {
+      "case_id": "ca_010_wrong_entity",
+      "input": {
+        "answer": "The early-career programme runs for 12 months.",
+        "sources": [
+          {
+            "identifier": "handbook",
+            "text": "The graduate programme runs for 12 months."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The number matches but the programme is a different one. A number-and-keyword matcher would call this supported."
+    },
+    {
+      "case_id": "ca_011_metric_mismatch",
+      "input": {
+        "answer": "The number of active users in 2024 was 12,000.",
+        "sources": [
+          {
+            "identifier": "metrics",
+            "text": "The number of paying customers in 2024 was 12,000. The number of active users in 2024 was 48,000."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The passage states the claimed metric directly and states a different value, so it is incompatible with the claim."
+    },
+    {
+      "case_id": "ca_012_compatible_deadline",
+      "input": {
+        "answer": "The refund request must be made before 2024.",
+        "sources": [
+          {
+            "identifier": "policy",
+            "text": "The refund request must be made before 2026."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "A 2026 deadline is compatible with a stricter 2024 deadline, so the source does not contradict the claim. The same logical trap in new clothing."
+    },
+    {
+      "case_id": "ca_013_two_sources_one_silent",
+      "input": {
+        "answer": "The office is located in Dublin.",
+        "sources": [
+          {
+            "identifier": "contract",
+            "text": "The monthly service fee is 2,400 EUR per calendar month."
+          },
+          {
+            "identifier": "register",
+            "text": "The registered office is located at 12 Bridge Street, Dublin."
           }
         ]
       },
@@ -16,52 +101,34 @@
       },
       "label_origin": "model_drafted",
       "split": "dev",
-      "rationale": "The source states the fee. The control case: a checker that fails everything is useless."
+      "rationale": "One of two sources answers the claim. Retrieval has to find the right one among distractors."
     },
     {
-      "case_id": "ca_002_contradicted",
+      "case_id": "ca_014_conditional_claim",
       "input": {
-        "answer": "The monthly service fee is 2,400 EUR.",
+        "answer": "If the customer cancels early, the deposit is forfeited.",
         "sources": [
           {
-            "identifier": "contract",
-            "text": "The monthly service fee is 2,800 EUR per calendar month. Payment is due within 30 days of the invoice date."
+            "identifier": "terms",
+            "text": "If the customer cancels early, the deposit is forfeited. If the customer completes the full term, the deposit is returned."
           }
         ]
       },
       "expected": {
-        "verdict": "contradicted"
+        "verdict": "supported"
       },
       "label_origin": "model_drafted",
       "split": "dev",
-      "rationale": "The source fixes the fee at a different amount, so it is incompatible with the claim."
+      "rationale": "The condition and its consequence are both stated."
     },
     {
-      "case_id": "ca_003_wrong_year",
+      "case_id": "ca_015_paraphrase_not_supported",
       "input": {
-        "answer": "The notice period is 90 days.",
+        "answer": "The customer may end the contract by giving 60 days notice.",
         "sources": [
           {
             "identifier": "contract",
-            "text": "Either party may terminate the agreement for convenience with 60 days written notice."
-          }
-        ]
-      },
-      "expected": {
-        "verdict": "contradicted"
-      },
-      "label_origin": "model_drafted",
-      "split": "dev",
-      "rationale": "The source states a different notice period. Every keyword matches; only the number differs."
-    },
-    {
-      "case_id": "ca_004_offtopic_source",
-      "input": {
-        "answer": "The processor must notify the controller of any personal data breach within 48 hours.",
-        "sources": [
-          {
-            "identifier": "addendum",
-            "text": "Personal data is processed solely for the purpose of delivering the service. Data is stored within the European Economic Area."
+            "text": "Either party may terminate the agreement for convenience with 90 days written notice."
           }
         ]
       },
@@ -73,88 +140,7 @@
       },
       "label_origin": "model_drafted",
       "split": "dev",
-      "rationale": "The source is on the same topic and does not state the notification deadline. This must not become a contradiction. It is the key false-accusation control."
-    },
-    {
-      "case_id": "ca_005_universal_claim",
-      "input": {
-        "answer": "All customers receive a refund within 30 days of cancelling.",
-        "sources": [
-          {
-            "identifier": "policy",
-            "text": "One customer received a refund within 30 days of cancelling in March."
-          }
-        ]
-      },
-      "expected": {
-        "verdict": [
-          "insufficient_evidence",
-          "uncertain"
-        ]
-      },
-      "label_origin": "model_drafted",
-      "split": "dev",
-      "rationale": "A universal claim is neither supported nor refuted by a single instance."
-    },
-    {
-      "case_id": "ca_006_no_source_for_claim",
-      "input": {
-        "answer": "The office is located in Dublin.",
-        "sources": [
-          {
-            "identifier": "contract",
-            "text": "The monthly service fee is 2,400 EUR per calendar month."
-          }
-        ]
-      },
-      "expected": {
-        "verdict": [
-          "insufficient_evidence",
-          "uncertain"
-        ]
-      },
-      "label_origin": "model_drafted",
-      "split": "dev",
-      "rationale": "Nothing in the source addresses the location. A retrieval miss must never be reported as a contradiction."
-    },
-    {
-      "case_id": "ca_007_mixed_sentence",
-      "input": {
-        "answer": "The monthly service fee is 2,400 EUR and the notice period is 60 days.",
-        "sources": [
-          {
-            "identifier": "contract",
-            "text": "The monthly service fee is 2,400 EUR per calendar month. Either party may terminate the agreement for convenience with 90 days written notice."
-          }
-        ]
-      },
-      "expected": {
-        "verdicts": [
-          "supported",
-          "contradicted"
-        ]
-      },
-      "label_origin": "model_drafted",
-      "split": "dev",
-      "rationale": "One sentence carries two claims with different outcomes. The auditor must split them and keep the order."
-    },
-    {
-      "case_id": "ca_008_negation",
-      "input": {
-        "answer": "The customer does not pay late interest on overdue amounts.",
-        "sources": [
-          {
-            "identifier": "contract",
-            "text": "A late payment interest of 1.5 percent per month applies to overdue amounts."
-          }
-        ]
-      },
-      "expected": {
-        "verdict": "contradicted"
-      },
-      "label_origin": "model_drafted",
-      "split": "dev",
-      "rationale": "The source says an interest applies, which is the opposite of the negated claim."
+      "rationale": "The source states 90 days, not 60, so the claim is incompatible even though the wording differs. The number is what decides it."
     }
   ]
 }

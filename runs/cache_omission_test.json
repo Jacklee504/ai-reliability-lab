@@ -1,0 +1,17 @@
+{
+  "model": "minimax-m3.1-flash:cloud",
+  "responses": {
+    "omission_material::dca5090b5cb00d350d456d60cb88981aa5d0585ca5cba930aa0c7560ceb0c0e6": "{\"important\":true,\"reason\":\"The summary omits the 90-day backup deletion obligation, which is directly relevant to data retention.\"}",
+    "omission_material::e13f951a545453498482c87b3b6356945c714ffa2a04a06943af4d9e8152db49": "{\"important\":false,\"reason\":\"Support availability on business days is unrelated to the data retention obligations summarized.\"}",
+    "omission_material::f5913f77272079d7eb38cf61219d00611f0f53af8b4f96d98ecf8548a7cd5fe4": "{\"important\":true,\"reason\":\"The statement specifies the customer-record retention period, which is essential to summarizing the data retention obligations.\"}",
+    "omission_material::2010c472cea0e4ea31f3c5795490bc33d0877a50e16445699286c393d4dc2c42": "{\"important\":false,\"reason\":\"Emergency support availability is unrelated to the service's data retention obligations.\"}",
+    "omission_material::d8077eca3e368a74400b216bc699b441b7fc20df1977985ac56f270245fbb0df": "{\"important\":true,\"reason\":\"The summary omits the key support availability restriction that support is provided only on business days.\"}",
+    "omission_material::94919e102a049734cb95e0afe2afdfbaa1103126329bd68829b49aa8e19b5797": "{\"important\":true,\"reason\":\"The 90-day backup-deletion period is a material data-support arrangement and is not covered by the summary.\"}",
+    "omission_material::a3d0389c09ff1aa67f4ac296ec7becfc59820fb01cec03aa05541c98a52126fb": "{\"important\":true,\"reason\":\"The 24-hour availability of emergency support is a key support arrangement omitted from the summary.\"}",
+    "omission_material::1c521818674bfb8a41e884baad98db9be62d29295d17fc6b0068a5a21798a679": "{\"important\":true,\"reason\":\"The 24-month post-termination customer-record retention period is a material service arrangement that the summary omits and could leave readers unaware of.\"}",
+    "omission_material::89b8d69d2fac2900cf2432fd9bf4718ea6a6ba5cf02b1031029899194824a613": "{\"important\":true,\"reason\":\"It states the specific retention period for customer records, which is essential to summarizing data retention obligations.\"}",
+    "omission_material::1e6887d0e44e1200b61a61af258dd4b66f586d588fb870c6f1fd272571a35eaa": "{\"important\":false,\"reason\":\"The definition of “Service” is contextual background and is already reflected in the summary’s reference to the subscription service.\"}",
+    "omission_material::47c633e5ea84070e3820e687d622e73ed90d38f86ff7e7c466b1cc86f97619fb": "{\"important\":true,\"reason\":\"The 4 percent surcharge for emergency support is a potential cost the customer may incur and is not covered by the summary.\"}",
+    "omission_material::ce9497488f6c35ce0edb510e925e7bf24f34872a12eaae1cfb0def0d310e63e9": "{\"important\":false,\"reason\":\"The statement describes emergency support availability but provides no information about costs the customer may incur.\"}"
+  }
+}

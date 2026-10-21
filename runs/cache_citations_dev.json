@@ -1,0 +1,13 @@
+{
+  "model": "minimax-m3.1-flash:cloud",
+  "responses": {
+    "citation_support::adee3535390aa6c2ccde5ee56078ea57a8995d8ddc86035a297b0c6cb2fdbbf4": "{\"verdict\":\"supported\",\"explanation\":\"The passage explicitly states that the monthly service fee is 2,400 EUR per calendar month.\",\"key_phrase\":\"The monthly service fee is 2,400 EUR per calendar month.\"}",
+    "citation_support::e55add59ee344b01019c7036168fe66fe773630c3087c3eb9404cd4330e6881f": "{\"verdict\":\"contradicted\",\"explanation\":\"The cited passage states that the refund deadline is 2024-03-01, which is incompatible with the claimed deadline of 2025-06-01.\",\"key_phrase\":\"The refund deadline is 2024-03-01.\"}",
+    "citation_support::6f7f4d98343d7a0593f63bd876ff8dfb286d2892b557bf5d4e9e456a1e6db4fd": "{\"verdict\":\"insufficient_evidence\",\"explanation\":\"The passage does not state the amount or monthly billing basis of the service fee.\",\"key_phrase\":\"The service fee is described in this agreement.\"}",
+    "citation_support::81e304a7018173b932b2436f8fcddf2aa0f1ce970783ab43710fd1c882a874d9": "{\"verdict\":\"insufficient_evidence\",\"explanation\":\"The passage states the 2,400 EUR fee but does not state a 90-day notice period.\",\"key_phrase\":\"monthly service fee is 2,400 EUR per calendar month\"}",
+    "citation_support::fff1970dfa3b0b91f5d03676c8d458ca2b093aa5fbcde04fbe69ad01999610bd": "{\"verdict\":\"supported\",\"explanation\":\"The passages together state that the agreement has a 24-month initial term and may be terminated with 90 days' written notice.\",\"key_phrase\":\"initial term of 24 months; 90 days written notice\"}",
+    "citation_support::288daa0d5a10445e3b3bfed2135a6c8f701e2d1f2a1236eef478935b48f8a3c0": "{\"verdict\":\"insufficient_evidence\",\"explanation\":\"The passage reports the same revenue figure and year for Globex Inc, not Acme Corp.\",\"key_phrase\":\"Globex Inc reported revenue of 4.2 million EUR in 2024\"}",
+    "citation_support::c2fb5d76fa99802639a5010c63e4349d7d74c4bf8c8400f161ac9b60ead9fe0a": "{\"verdict\":\"insufficient_evidence\",\"explanation\":\"No passage was cited, so there is no evidence that the processor must notify the controller within 48 hours.\",\"key_phrase\":\"\"}"
+  },
+  "failed_prompts": []
+}

@@ -1,0 +1,26 @@
+{
+  "model": "minimax-m3.1-flash:cloud",
+  "responses": {
+    "naive_binary::1049ffe3f0ba402877d8ff8f1378bd7ec3307d51c398a3f4e37d5d661295f6fb": "Yes.",
+    "naive_verdict::ded983f8e5037475969b8eecebcb35bc1bd9501c75cb7d9fef226796fc558242": "Supported",
+    "naive_binary::c915e204c44e16d0a0b7423db26c82ba3117c1c55e35786640e60f1675c21d55": "No.",
+    "naive_verdict::5b7a35d71857a6f2a184df9e5439e93d56545821413a3253f370412f3c782265": "Contradicted",
+    "naive_binary::e6427cdafab288f8ef28f3776c48f85cfa78b506ef66656c07690159343439fb": "No.",
+    "naive_verdict::32361b7779601ee114833acae904c873686fd185f16a96f938472cc79c9023ba": "Not enough information",
+    "naive_binary::4a892cd56017796d75067a852e64786f2dc31cfbe9d6127c171f4d0962afdc57": "Yes.",
+    "naive_verdict::aac11a83b3bc2c470d05b1865a4c97ca44c164b3916dc36f65db4aa7a0b10175": "Supported",
+    "naive_binary::8ec469e4e2ab365a860044059131c20c4f94fb35cfa01ffad0d090d8bda93863": "Yes.",
+    "naive_verdict::bbf1a047c1e5a5c5db115bfb8e268b4941bf00858d7439f100bf6a111d491c78": "Supported",
+    "naive_binary::120c74310d62d1d162f3bd9494b51c09d44c14ceb7746c4a32c2dcecf8c68690": "No.",
+    "naive_verdict::752ffd0537e968351497235ec79848f6162f8ad06f5fa7699f5131fb08ab94c5": "not enough information",
+    "naive_binary::85e60b3c8d2c57ab3be7d005b2626c8c56b740e72a75e7be8d922aee63a5d7f1": "No.",
+    "naive_verdict::32f0c0cd7122a66b0bbff5a4b960c639c44623335182aa4f6724b4ea1d8536b7": "not enough information",
+    "naive_binary::9e481aa0aadaf0a106edf4a947f2fae0dd37546d426ae4eb3c8ff3be874d9905": "No.",
+    "naive_verdict::74564b9a182d3440a8a5470130145d7691efd274a1e7fe972114f6339e8a7e25": "Contradicted",
+    "naive_binary::c1aea284d90fff20514d8ee50b10e0693920023dca0531d1fb5c8a5de39992f4": "No.",
+    "naive_verdict::024a929fb7642687eac49bc27b2052b78729bba67270758aa1a1575b07c43ee7": "Contradicted",
+    "naive_binary::311d01401d95d1e87b1f5c4243be2ea0213dce9b240128e0b142911b5c3fa336": "No.",
+    "naive_verdict::1cf643301a1ce616676bd91c6c0f9abf9537787a7dfbafe9fb6dcfc3387bbc37": "Contradicted"
+  },
+  "failed_prompts": []
+}

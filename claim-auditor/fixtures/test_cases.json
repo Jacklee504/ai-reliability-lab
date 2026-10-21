@@ -1,13 +1,98 @@
 {
   "cases": [
     {
-      "case_id": "ca_t01_supported",
+      "case_id": "ca_t06_negation_preserved",
+      "input": {
+        "answer": "The supplier does not charge for data export.",
+        "sources": [
+          {
+            "identifier": "pricing",
+            "text": "The supplier charges 50 EUR for each data export."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The source says a charge applies, which is the opposite of the negated claim."
+    },
+    {
+      "case_id": "ca_t07_two_claims_two_outcomes",
+      "input": {
+        "answer": "The support plan costs 99 EUR per month and the onboarding fee is 500 EUR.",
+        "sources": [
+          {
+            "identifier": "pricing",
+            "text": "The standard support plan costs 99 EUR per month. There is no onboarding fee."
+          }
+        ]
+      },
+      "expected": {
+        "verdicts": [
+          "supported",
+          "contradicted"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "One sentence carries two claims with opposite outcomes."
+    },
+    {
+      "case_id": "ca_t08_empty_source",
       "input": {
         "answer": "The annual licence fee is 1,200 EUR.",
         "sources": [
           {
             "identifier": "licence",
-            "text": "The annual licence fee is 1,200 EUR per subscription year. The licence renews automatically unless cancelled."
+            "text": ""
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "An empty source is a failure mode, not a truth claim."
+    },
+    {
+      "case_id": "ca_t09_entity_mismatch",
+      "input": {
+        "answer": "Initech signed the agreement on 3 March 2024.",
+        "sources": [
+          {
+            "identifier": "register",
+            "text": "Globex signed the agreement on 3 March 2024. Umbrella signed the agreement on 11 June 2024."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The date matches exactly but the entity does not."
+    },
+    {
+      "case_id": "ca_t10_two_sources_one_answers",
+      "input": {
+        "answer": "The office is located in Dublin.",
+        "sources": [
+          {
+            "identifier": "contract",
+            "text": "The monthly service fee is 2,400 EUR per calendar month."
+          },
+          {
+            "identifier": "register",
+            "text": "The registered office is located at 12 Bridge Street, Dublin."
           }
         ]
       },
@@ -16,85 +101,7 @@
       },
       "label_origin": "model_drafted",
       "split": "test",
-      "rationale": "The source states the fee and the year."
-    },
-    {
-      "case_id": "ca_t02_contradicted_amount",
-      "input": {
-        "answer": "The annual licence fee is 1,200 EUR.",
-        "sources": [
-          {
-            "identifier": "licence",
-            "text": "The annual licence fee is 1,450 EUR per subscription year. The licence renews automatically unless cancelled."
-          }
-        ]
-      },
-      "expected": {
-        "verdict": "contradicted"
-      },
-      "label_origin": "model_drafted",
-      "split": "test",
-      "rationale": "The source fixes the fee at a different amount."
-    },
-    {
-      "case_id": "ca_t03_contradicted_period",
-      "input": {
-        "answer": "The support plan costs 99 EUR per month.",
-        "sources": [
-          {
-            "identifier": "pricing",
-            "text": "The standard support plan costs 99 EUR per year. The premium support plan costs 249 EUR per year."
-          }
-        ]
-      },
-      "expected": {
-        "verdict": "contradicted"
-      },
-      "label_origin": "model_drafted",
-      "split": "test",
-      "rationale": "The amount matches but the billing period conflicts."
-    },
-    {
-      "case_id": "ca_t04_topical_but_silent",
-      "input": {
-        "answer": "The service is available in Ireland and France.",
-        "sources": [
-          {
-            "identifier": "coverage",
-            "text": "The service is operated from data centres in Ireland and Germany."
-          }
-        ]
-      },
-      "expected": {
-        "verdict": [
-          "insufficient_evidence",
-          "uncertain"
-        ]
-      },
-      "label_origin": "model_drafted",
-      "split": "test",
-      "rationale": "The passage names two countries but not the two in the claim. It is on the same topic and does not settle the claim."
-    },
-    {
-      "case_id": "ca_t05_universal_claim",
-      "input": {
-        "answer": "Every support ticket is answered within 24 hours.",
-        "sources": [
-          {
-            "identifier": "sla",
-            "text": "Priority one support tickets are answered within 24 hours. Lower priority tickets may take up to three business days."
-          }
-        ]
-      },
-      "expected": {
-        "verdict": [
-          "insufficient_evidence",
-          "uncertain"
-        ]
-      },
-      "label_origin": "model_drafted",
-      "split": "test",
-      "rationale": "A passage about one priority class does not settle a claim about every ticket."
+      "rationale": "One of two sources answers the claim. Retrieval has to find the right one among distractors."
     }
   ]
 }

@@ -396,3 +396,195 @@ def cmd_review_export(args: argparse.Namespace) -> int:
     Path(args.out).write_text(json.dumps(packet, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
     print(f"exported {len(cases)} blinded cases to {args.out}")
     return 0
+
+
+def compare_review_packet(packet: dict[str, Any]) -> dict[str, Any]:
+    """Compare filled blind labels without modifying the fixture files."""
+    originals = {case.case_id: case for case in _review_cases()}
+    reviewed = 0
+    disagreements = []
+    ambiguous_drafts = []
+    unknown = []
+    seen = set()
+    for item in packet.get("cases", []):
+        case_id = item.get("case_id")
+        if case_id in seen:
+            raise ValueError(f"duplicate review case ID: {case_id}")
+        seen.add(case_id)
+        if case_id not in originals:
+            unknown.append(case_id)
+            continue
+        answer = item.get("reviewed_expected")
+        if answer is None:
+            continue
+        if not isinstance(answer, dict):
+            raise ValueError(f"reviewed_expected must be an object for {case_id}")
+        if not answer:
+            raise ValueError(f"reviewed_expected must not be empty for {case_id}")
+        reviewed += 1
+        draft = originals[case_id].expected
+        differences = {}
+        for key, value in answer.items():
+            draft_value = draft.get(key)
+            if isinstance(draft_value, list) and not isinstance(value, list):
+                if value in draft_value:
+                    ambiguous_drafts.append({"case_id": case_id, "field": key, "draft_options": draft_value})
+                    continue
+            if value != draft_value:
+                differences[key] = {"reviewed": value, "draft": draft_value}
+        if differences:
+            disagreements.append({
+                "case_id": case_id,
+                "reviewed_expected": answer,
+                "draft_expected": draft,
+                "differences": differences,
+            })
+    return {
+        "total_cases": len(originals), "reviewed_cases": reviewed,
+        "unreviewed_cases": len(originals) - reviewed,
+        "disagreements": disagreements, "unknown_case_ids": unknown,
+        "ambiguous_drafts": ambiguous_drafts,
+        "note": "Only reviewer-supplied fields are compared; fixture labels and label_origin were not changed.",
+    }
+
+
+def cmd_review_compare(args: argparse.Namespace) -> int:
+    packet = json.loads(Path(args.packet).read_text(encoding="utf-8"))
+    print(json.dumps(compare_review_packet(packet), indent=2, ensure_ascii=False))
+    return 0
+
+
+# --------------------------------------------------------------------------
+# parser
+# --------------------------------------------------------------------------
+
+
+def build_parser() -> argparse.ArgumentParser:
+    parser = argparse.ArgumentParser(
+        prog="airl",
+        description="Tools for checking what an AI system received, said, and was allowed to do.",
+    )
+    sub = parser.add_subparsers(dest="command", required=True)
+
+    p = sub.add_parser("audit", help="run a project audit")
+    p_sub = p.add_subparsers(dest="audit", required=True)
+
+    r = p_sub.add_parser("receipt", help="file-context receipt (no model calls)")
+    r.add_argument("files", nargs="+")
+    r.add_argument("--out", default=None, help="write the JSON receipt here")
+    r.add_argument("--created-at", default=None)
+    r.add_argument("--json", action="store_true", help="print the JSON receipt")
+    r.set_defaults(func=cmd_receipt)
+    r.set_defaults(func=cmd_receipt)
+
+    dl = p_sub.add_parser("deliverable", help="deliverable contract checker")
+    dl.add_argument("request", help="the user request, or a path to a file holding it")
+    dl.add_argument(
+        "--deliverable",
+        default=None,
+        help="the generated output, or a path to a file holding it",
+    )
+    dl.add_argument("--requirements", help="JSON file with an edited requirements list")
+    dl.add_argument("--json", action="store_true", help="print JSON")
+    dl.set_defaults(func=cmd_deliverable)
+
+    rq = p_sub.add_parser(
+        "requirements",
+        help="extract the requirement list for review and editing",
+    )
+    rq.add_argument("request", help="the user request, or a path to a file holding it")
+    rq.add_argument(
+        "--out",
+        default=None,
+        help="write the editable requirement list here (recheck with --requirements)",
+    )
+    rq.set_defaults(func=cmd_requirements)
+
+    d = p_sub.add_parser("receipt-diff", help="compare two receipts")
+    d.add_argument("--before", nargs="+", required=True)
+    d.add_argument("--after", nargs="+", required=True)
+    d.add_argument("--created-at", default=None)
+    d.add_argument("--json", action="store_true")
+    d.set_defaults(func=cmd_receipt_diff)
+
+    e = p_sub.add_parser("eval", help="run the evaluation suite for a project")
+    e.add_argument("project", choices=PROJECT_NAMES)
+    e.add_argument("--split", choices=[s.value for s in Split], default=None)
+    e.add_argument("--fixture", help="evaluate an alternate cases JSON file in the project fixture directory")
+    e.add_argument("--method", default=None, help="override the method label")
+    e.add_argument(
+        "--baseline-kind", choices=("naive_binary", "naive_verdict"),
+        default="naive_binary", help="judge prompt used by the baselines project",
+    )
+    e.add_argument("--out", default=None, help="write the run JSON here")
+    e.add_argument("--json", action="store_true")
+    _add_model_flags(e)
+    e.set_defaults(func=cmd_eval)
+
+    c = sub.add_parser("compare-runs", help="diff two stored evaluation runs")
+    c.add_argument("left")
+    c.add_argument("right")
+    c.set_defaults(func=cmd_compare)
+
+    doc = sub.add_parser("doctor", help="check the model endpoint")
+    _add_model_flags(doc)
+    doc.set_defaults(func=cmd_doctor)
+
+    rec = sub.add_parser("record", help="record model responses into a cache file")
+    rec.add_argument("project", nargs="?", default="claims", help="project whose prompts to send")
+    rec.add_argument("fixture", help="fixture file with the prompts to send")
+    rec.add_argument("--out", default="runs/model_cache.json", help="cache file to write")
+    rec.add_argument("--model", default=None)
+    rec.add_argument("--endpoint", default=None)
+    rec.add_argument("--timeout", type=int, default=180)
+    rec.add_argument(
+        "--retries",
+        type=int,
+        default=3,
+        help="how many times to retry a failed call before giving up",
+    )
+    rec.add_argument(
+        "--retry-delay",
+        type=float,
+        default=5.0,
+        help="seconds to wait between retries",
+    )
+    rec.set_defaults(func=cmd_record)
+
+    pm = sub.add_parser("prompts", help="print the prompts for a fixture")
+    pm.add_argument("project", nargs="?", default="claims", help="project whose prompts to build")
+    pm.add_argument("fixture", help="fixture file with the cases")
+    pm.set_defaults(func=cmd_prompts)
+
+    pr = sub.add_parser("projects", help="list project status")
+    pr.set_defaults(func=cmd_projects)
+
+    review = sub.add_parser("review-export", help="export inputs without expected labels or predictions")
+    review.add_argument("--out", required=True)
+    review.set_defaults(func=cmd_review_export)
+
+    compare = sub.add_parser("review-compare", help="compare filled blind labels with draft labels")
+    compare.add_argument("packet")
+    compare.set_defaults(func=cmd_review_compare)
+
+    return parser
+
+
+def main(argv: list[str] | None = None) -> int:
+    parser = build_parser()
+    args = parser.parse_args(argv)
+    try:
+        return int(args.func(args) or 0)
+    except KeyboardInterrupt:  # pragma: no cover
+        print("interrupted", file=sys.stderr)
+        return 130
+    except FileNotFoundError as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+    except (ValueError, ProviderError) as exc:
+        print(f"error: {exc}", file=sys.stderr)
+        return 2
+
+
+if __name__ == "__main__":  # pragma: no cover
+    raise SystemExit(main())

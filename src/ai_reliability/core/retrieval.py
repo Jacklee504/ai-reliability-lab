@@ -143,3 +143,95 @@ def build_index(spans: list[Span]) -> list[IndexedSpan]:
 
 def _number_tokens(text: str) -> set[str]:
     return set(re.findall(r"\d[\d,.]*", text.lower()))
+
+
+def lexical_score(claim_text: str, entry: IndexedSpan) -> float:
+    """Score a claim against one indexed span.
+
+    Combines IDF-weighted token overlap with a bonus for matching
+    numeric tokens, which matters for the numerical verifier and for
+    catching wrong-year errors that share every keyword.
+    """
+    query = tokenize(claim_text)
+    if not query:
+        return 0.0
+    query_counts = Counter(query)
+    score = 0.0
+    for token, count in query_counts.items():
+        weight = entry.tokens.get(token, 0.0)
+        if weight:
+            score += min(count, 2) * weight
+    if score == 0.0:
+        return 0.0
+
+    # Normalise by query length and a mild length penalty.
+    norm = score / (math.sqrt(len(query)) * 1.0)
+    penalty = 1.0 / (1.0 + 0.002 * entry.length)
+    score = norm * penalty
+
+    claim_numbers = _number_tokens(claim_text)
+    if claim_numbers:
+        span_numbers = _number_tokens(entry.span.text)
+        overlap = claim_numbers & span_numbers
+        if overlap:
+            score *= 1.25
+        elif span_numbers:
+            # Same topic, different numbers: a year swap, say. This is a
+            # signal to keep the span as evidence, not to drop it.
+            score *= 0.95
+    return score
+
+
+def retrieve(
+    claim_text: str,
+    spans: list[Span],
+    *,
+    top_k: int = 5,
+    min_score: float = 0.0,
+) -> list[Evidence]:
+    """Retrieve the most likely evidence spans for a claim.
+
+    Returns evidence records with retrieval scores. A retrieval score only
+    means "this passage is topically related"; it is never a verdict.
+    """
+    if not spans:
+        return []
+    index = build_index(spans)
+    scored = [(lexical_score(claim_text, entry), entry) for entry in index]
+    scored.sort(key=lambda pair: pair[0], reverse=True)
+    selected = [pair for pair in scored[:top_k] if pair[0] > min_score]
+    if not selected:
+        return []
+    return [
+        Evidence(
+            evidence_id=short_id("ev", claim_text, entry.span.span_id, f"{score:.6f}"),
+            claim_id="",
+            spans=(entry.span,),
+            retrieval_score=round(score, 6),
+            method="lexical",
+        )
+        for score, entry in selected
+    ]
+
+
+def topical_overlap(claim_text: str, passage_text: str) -> float:
+    """Cheap topical similarity used as the citation-auditor baseline.
+
+    High topical overlap with low entailment is the signature of a
+    relevant-but-insufficient citation, which is the hard negative this
+    project has to detect.
+    """
+    claim_tokens = set(tokenize(claim_text))
+    passage_tokens = set(tokenize(passage_text))
+    if not claim_tokens or not passage_tokens:
+        return 0.0
+    return len(claim_tokens & passage_tokens) / len(claim_tokens)
+
+
+def numeric_conflict(claim_text: str, passage_text: str) -> bool:
+    """True when both texts carry numbers but share none of them."""
+    claim_numbers = _number_tokens(claim_text)
+    passage_numbers = _number_tokens(passage_text)
+    if not claim_numbers or not passage_numbers:
+        return False
+    return not (claim_numbers & passage_numbers)

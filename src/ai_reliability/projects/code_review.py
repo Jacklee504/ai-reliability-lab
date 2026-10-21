@@ -265,3 +265,236 @@ def _bound_present(text: str) -> bool:
         if isinstance(node.iter, ast.Call) and isinstance(node.iter.func, ast.Name) and node.iter.func.id == "range":
             return True
     return False
+
+
+def verify_review_comment(
+    comment: ReviewComment,
+    snapshot: CodeSnapshot,
+) -> ReviewFinding:
+    """Check a review comment against static facts in a code snapshot."""
+    assertion = extract_assertion(comment.text)
+    finding = ReviewFinding(comment=comment, assertion=assertion)
+
+    if comment.file and comment.file not in snapshot.files:
+        finding.verdict = Verdict.INSUFFICIENT
+        finding.explanation = (
+            "the commented file %r is not in the snapshot, so the comment"
+            " cannot be checked" % comment.file
+        )
+        return finding
+
+    file_text = snapshot.file_text(comment.file)
+    if not file_text and len(snapshot.files) == 1:
+        file_text = next(iter(snapshot.files.values()))
+
+    if not file_text:
+        finding.verdict = Verdict.INSUFFICIENT
+        finding.explanation = "the commented file is not in the snapshot"
+        return finding
+
+    lines = _lines_with_numbers(file_text)
+    if comment.line is not None and not (1 <= comment.line <= len(lines)):
+        finding.verdict = Verdict.INSUFFICIENT
+        finding.explanation = "the cited line is outside the supplied file"
+        return finding
+    try:
+        ast.parse(file_text)
+    except SyntaxError:
+        finding.verdict = Verdict.UNCERTAIN
+        finding.explanation = "the supplied Python file cannot be parsed for a static check"
+        return finding
+
+    # No executable outcome: judge from the code, and say how far the
+    # code goes.
+    if _MISSING_GUARD.search(assertion):
+        subject_match = re.search(r"\bon\s+(\w+)\b", assertion, re.IGNORECASE)
+        subject = subject_match.group(1) if subject_match else None
+        if subject is None:
+            finding.verdict = Verdict.UNCERTAIN
+            finding.explanation = "the comment does not identify which value needs a guard"
+            return finding
+        if _guard_present(file_text, subject, comment.line or 1):
+            finding.verdict = Verdict.CONTRADICTED
+            finding.explanation = (
+                "the code contains a guard of the kind the comment says is missing"
+            )
+        else:
+            finding.verdict = Verdict.SUPPORTED
+            finding.explanation = "the code contains no such guard"
+        start = comment.line or 1
+        finding.evidence = [_span_for_lines(
+            snapshot.identifier, comment.file, lines, start, min(start + 6, len(lines)),
+        )]
+        return finding
+
+    if _UNBOUNDED.search(assertion):
+        if _unbounded_present(file_text):
+            finding.verdict = Verdict.SUPPORTED
+            finding.explanation = "the code has a while True loop without a break"
+        elif _bound_present(file_text):
+            finding.verdict = Verdict.CONTRADICTED
+            finding.explanation = "the code has an explicit finite iterator"
+        else:
+            finding.verdict = Verdict.UNCERTAIN
+            finding.explanation = "the code does not clearly show an unbounded construct"
+        start = comment.line or 1
+        finding.evidence = [_span_for_lines(
+            snapshot.identifier, comment.file, lines, start, min(start + 6, len(lines)),
+        )]
+        return finding
+
+    if _TOCTOU.search(assertion):
+        finding.verdict = Verdict.UNCERTAIN
+        finding.explanation = (
+            "a concurrency claim cannot be settled by reading this function alone;"
+            " the caller and the test would be needed"
+        )
+        start = comment.line or 1
+        finding.evidence = [_span_for_lines(
+            snapshot.identifier, comment.file, lines, start, min(start + 6, len(lines)),
+        )]
+        return finding
+
+    if _NULL_ASSERT.search(assertion):
+        finding.verdict = Verdict.UNCERTAIN
+        finding.explanation = "a null-triggered exception was not executed or proven by this static check"
+        start = comment.line or 1
+        finding.evidence = [_span_for_lines(
+            snapshot.identifier, comment.file, lines, start, min(start + 6, len(lines)),
+        )]
+        return finding
+
+    finding.verdict = Verdict.UNCERTAIN
+    finding.explanation = (
+        "no checker is implemented for this kind of assertion, so the comment"
+        " is unverified rather than refuted"
+    )
+    start = comment.line or 1
+    finding.evidence = [_span_for_lines(
+        snapshot.identifier, comment.file, lines, start, min(start + 3, len(lines)),
+    )]
+    return finding
+
+
+def extract_runtime_assertion(comment: str) -> RuntimeAssertion | None:
+    """Recognise a runtime claim and the behaviour it predicts.
+
+    Returns ``None`` when the comment makes no runtime claim that a
+    harness could settle.
+    """
+    assertion = extract_assertion(comment)
+    if _DIVIDES.search(assertion):
+        return RuntimeAssertion(kind="divides_by_zero", expectation=assertion)
+    if _RETURNS_NONE.search(assertion):
+        return RuntimeAssertion(kind="returns_none", expectation=assertion)
+    if _RAISES.search(assertion):
+        return RuntimeAssertion(kind="raises", expectation=assertion)
+    return None
+
+
+def verify_runtime_claim(
+    comment: ReviewComment,
+    snapshot: CodeSnapshot,
+    harness: str,
+    *,
+    timeout: float = 10.0,
+) -> ReviewFinding:
+    """Check a runtime claim by actually running the reviewer's harness.
+
+    The harness is the reviewer's code. The tool runs it in a separate
+    process and compares the *observed* behaviour with what the comment
+    predicted. A timeout, a crash in the harness, or a harness that
+    reports nothing all produce "unverified", never a verdict.
+    """
+    assertion = extract_assertion(comment.text)
+    finding = ReviewFinding(comment=comment, assertion=assertion)
+
+    runtime = extract_runtime_assertion(comment.text)
+    if runtime is None:
+        finding.verdict = Verdict.UNCERTAIN
+        finding.explanation = (
+            "the comment makes no runtime claim that a harness could settle"
+        )
+        return finding
+
+    if not harness or not harness.strip():
+        finding.verdict = Verdict.UNCERTAIN
+        finding.explanation = (
+            "no executable harness was supplied for this comment, so the"
+            " runtime claim is unverified"
+        )
+        return finding
+
+    outcome = run_harness(snapshot.files, harness, timeout=timeout)
+    finding.execution = outcome
+
+    if not outcome.observed:
+        finding.verdict = Verdict.UNCERTAIN
+        finding.explanation = (
+            "the harness did not produce a usable result (%s), so the"
+            " runtime claim is unverified" % (outcome.error or "unknown reason")
+        )
+        return finding
+
+    if runtime.kind == "raises":
+        if outcome.raised:
+            finding.verdict = Verdict.SUPPORTED
+            finding.explanation = (
+                "executing the harness raised %s, which is what the comment"
+                " predicted" % (outcome.exception_type or "an exception")
+            )
+        else:
+            finding.verdict = Verdict.CONTRADICTED
+            finding.explanation = (
+                "the harness ran to completion without raising, so the"
+                " predicted error did not occur"
+            )
+        finding.method = Method.EXECUTED
+        return finding
+
+    if runtime.kind == "returns_none":
+        returned = outcome.extra.get("returned_none")
+        if returned is None:
+            finding.verdict = Verdict.UNCERTAIN
+            finding.explanation = (
+                "the harness did not report a return value, so the claim"
+                " about the return value is unverified"
+            )
+            return finding
+        if returned:
+            finding.verdict = Verdict.SUPPORTED
+            finding.explanation = "the harness observed a None return value"
+        else:
+            finding.verdict = Verdict.CONTRADICTED
+            finding.explanation = "the harness observed a non-None return value"
+        finding.method = Method.EXECUTED
+        return finding
+
+    if runtime.kind == "divides_by_zero":
+        if outcome.raised and outcome.exception_type in {
+            "ZeroDivisionError",
+            "DivisionByZero",
+        }:
+            finding.verdict = Verdict.SUPPORTED
+            finding.explanation = (
+                "executing the harness raised %s, which is what the comment"
+                " predicted" % outcome.exception_type
+            )
+        elif outcome.raised:
+            finding.verdict = Verdict.UNCERTAIN
+            finding.explanation = (
+                "the harness raised %s, which is not the predicted"
+                " division by zero" % outcome.exception_type
+            )
+            return finding
+        else:
+            finding.verdict = Verdict.CONTRADICTED
+            finding.explanation = (
+                "the harness ran to completion without a division by zero"
+            )
+        finding.method = Method.EXECUTED
+        return finding
+
+    finding.verdict = Verdict.UNCERTAIN
+    finding.explanation = "no runtime checker is implemented for this claim"
+    return finding

@@ -296,3 +296,70 @@ def build_metrics(report: EvaluationReport) -> list[MetricBlock]:
         )
     )
     return metrics
+
+
+def compare_runs(
+    left: dict[str, Any],
+    right: dict[str, Any],
+    *,
+    key: str = "verdict",
+) -> dict[str, Any]:
+    """Compare two stored runs and list cases whose verdict changed."""
+    left_results = {r["case_id"]: r for r in left.get("results", [])}
+    right_results = {r["case_id"]: r for r in right.get("results", [])}
+
+    changed: list[dict[str, Any]] = []
+    only_left = sorted(set(left_results) - set(right_results))
+    only_right = sorted(set(right_results) - set(left_results))
+
+    for case_id in sorted(set(left_results) & set(right_results)):
+        before = left_results[case_id]
+        after = right_results[case_id]
+        old = before.get("predicted", {}).get(key)
+        new = after.get("predicted", {}).get(key)
+        if old != new:
+            changed.append(
+                {
+                    "case_id": case_id,
+                    "before": old,
+                    "after": new,
+                    "before_correct": before.get("correct"),
+                    "after_correct": after.get("correct"),
+                    "regression": bool(before.get("correct")) and not bool(after.get("correct")),
+                    "improvement": (not before.get("correct")) and bool(after.get("correct")),
+                }
+            )
+
+    return {
+        "left": left.get("method"),
+        "right": right.get("method"),
+        "changed_count": len(changed),
+        "regressions": [c for c in changed if c["regression"]],
+        "improvements": [c for c in changed if c["improvement"]],
+        "changed": changed,
+        "only_in_left": only_left,
+        "only_in_right": only_right,
+    }
+
+
+def load_run(path: str | Path) -> dict[str, Any]:
+    return json.loads(Path(path).read_text(encoding="utf-8"))
+
+
+def save_run(report: EvaluationReport | dict[str, Any], path: str | Path) -> Path:
+    target = Path(path)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    payload = report.to_dict() if isinstance(report, EvaluationReport) else report
+    target.write_text(json.dumps(payload, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    return target
+
+
+def split_cases(cases: list[EvalCase], split: Split) -> list[EvalCase]:
+    return [c for c in cases if c.split is split]
+
+
+def group_by_origin(results: list[CaseResult]) -> dict[str, list[CaseResult]]:
+    grouped: dict[str, list[CaseResult]] = defaultdict(list)
+    for result in results:
+        grouped[result.label_origin.value].append(result)
+    return dict(grouped)

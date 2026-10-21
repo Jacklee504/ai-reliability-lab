@@ -347,3 +347,70 @@ class OllamaProvider:
 
     def call_records(self) -> list[dict[str, Any]]:
         return [c.to_dict() for c in self.calls]
+
+
+class FakeProvider:
+    """Deterministic provider for tests and offline runs.
+
+    Responses are looked up by ``purpose`` (and optionally by a key
+    embedded in the prompt). The default returns a JSON object that
+    satisfies the lab's verdict shape, so a test can assert on parsing
+    behaviour without a network dependency.
+    """
+
+    def __init__(
+        self,
+        model_id: str = "fake-model",
+        responses: dict[str, str] | None = None,
+        default_response: str | None = None,
+    ):
+        self.model_id = model_id
+        self.responses = dict(responses or {})
+        self.default_response = default_response
+        self.calls: list[ModelCall] = []
+        self.prompts: list[str] = []
+
+    def _lookup(self, prompt: str, purpose: str) -> str:
+        if purpose in self.responses:
+            return self.responses[purpose]
+        for key, value in self.responses.items():
+            if key and key in prompt:
+                return value
+        if self.default_response is not None:
+            return self.default_response
+        return json.dumps(
+            {
+                "verdict": "uncertain",
+                "explanation": "fake provider default",
+                "evidence": [],
+            }
+        )
+
+    def generate(
+        self,
+        prompt: str,
+        *,
+        system: str | None = None,
+        purpose: str = "generic",
+        prompt_version: str = "v1",
+        temperature: float = 0.0,
+        json_mode: bool = False,
+        timeout: float = 180.0,
+    ) -> ModelResult:
+        started = time.perf_counter()
+        self.prompts.append(prompt)
+        text = self._lookup(prompt, purpose)
+        call = ModelCall(
+            call_id=f"fake_{len(self.calls)}",
+            model_id=self.model_id,
+            prompt_version=prompt_version,
+            purpose=purpose,
+            latency_ms=(time.perf_counter() - started) * 1000,
+            ok=bool(text.strip()),
+            response_chars=len(text),
+        )
+        self.calls.append(call)
+        return ModelResult(text=text, call=call)
+
+    def call_records(self) -> list[dict[str, Any]]:
+        return [c.to_dict() for c in self.calls]

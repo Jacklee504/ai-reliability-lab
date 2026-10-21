@@ -1,0 +1,425 @@
+{
+  "project": "context_receipts",
+  "method": "conservative-lexical-baseline",
+  "model_id": "unavailable",
+  "model_calls": 0,
+  "parse_failures": 0,
+  "total_latency_ms": 0.0,
+  "total_cases": 7,
+  "scored_cases": 7,
+  "correct_cases": 7,
+  "label_origins": {
+    "model_drafted": 7
+  },
+  "splits": {
+    "dev": 7
+  },
+  "metrics": [
+    {
+      "name": "accepted_outcome",
+      "numerator": 7,
+      "denominator": 7,
+      "rate": 1.0,
+      "note": "project case accepted the prediction; some labels allow alternatives"
+    },
+    {
+      "name": "false_accusations_on_supported",
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null,
+      "note": "supported claims wrongly called contradicted"
+    },
+    {
+      "name": "false_alarms_on_benign",
+      "numerator": 0,
+      "denominator": 7,
+      "rate": 0.0,
+      "note": "benign cases wrongly flagged"
+    },
+    {
+      "name": "abstentions",
+      "numerator": 0,
+      "denominator": 7,
+      "rate": 0.0,
+      "note": "outcomes that declined to assert"
+    }
+  ],
+  "confusion": {
+    "expected=passed,predicted=passed": 7
+  },
+  "notes": [
+    "Labels are not independently human verified; agreement is provisional.",
+    "No held-out test cases were evaluated."
+  ],
+  "results": [
+    {
+      "case_id": "receipt_001_text_extracted",
+      "project": "context_receipts",
+      "predicted": {
+        "verdict": "passed",
+        "problems": [],
+        "details": {
+          "contract.txt": {
+            "receipt_version": "1.0",
+            "source": {
+              "source_id": "src_97722c41",
+              "path": "/Users/jacklee/Other/Me/Projects/Misc/ai-reliability-lab/fixtures/context_receipts/v1/contract.txt",
+              "identifier": null,
+              "content_hash": "76a93f0220c18c44f0a958ac0c65899c4c6348fa621015a2389d6aba10115f01",
+              "version": null,
+              "captured_at": null,
+              "media_type": "text/plain",
+              "extraction_status": "ok",
+              "warnings": [],
+              "char_count": 1127
+            },
+            "page_count": 1,
+            "section_count": 5,
+            "statement_count": 16,
+            "extracted_char_count": 1127,
+            "included_char_count": 1020,
+            "included_chunk_ids": [
+              "src_97722c41#c000"
+            ],
+            "warnings": [],
+            "chunks": [
+              {
+                "chunk_id": "src_97722c41#c000",
+                "source_id": "src_97722c41",
+                "text": "Version: 2.0\nEffective date: 2024-03-01\nThe monthly service fee is 2,400 EUR per calendar month.\nInvoices are issued on the first working day of each month.\nPayment is due within 30 days of the invoice date.\nA late payment interest of 1.5 percent per month applies to overdue amounts.\nThe agreement runs for an initial term of 24 months.\nEither party may terminate the agreement for convenience with 90 days written notice.\nTermination for cause requires 30 days written notice and an opportunity to cure.\nAfter termination the customer must return or destroy all copies of the software.\nPersonal data is processed solely for the purpose of delivering the service.\nThe processor must notify the controller of any personal data breach within 48 hours.\nData is stored within the European Economic Area.\nTotal liability is capped at the fees paid in the 12 months preceding the claim.\nThe cap does not apply to intentional misconduct or breach of confidentiality.\nNeither party is liable for indirect or consequential loss.",
+                "start": 26,
+                "end": 1126,
+                "char_count": 1020,
+                "content_hash": "03750fad1e134534923cd258b0e42d451b8fc159a91b455429c1d5fa082d599e",
+                "page": null,
+                "section": null,
+                "included": true,
+                "include_reason": "selected"
+              }
+            ]
+          }
+        }
+      },
+      "expected": {
+        "verdict": "passed",
+        "extraction_status": "ok",
+        "submitted_char_count_gt": 500,
+        "section_count_gte": 4,
+        "chunk_count_gte": 1,
+        "no_warnings": true
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": null
+    },
+    {
+      "case_id": "receipt_002_empty_file",
+      "project": "context_receipts",
+      "predicted": {
+        "verdict": "passed",
+        "problems": [],
+        "details": {
+          "empty_page.txt": {
+            "receipt_version": "1.0",
+            "source": {
+              "source_id": "src_2d27ab65",
+              "path": "/Users/jacklee/Other/Me/Projects/Misc/ai-reliability-lab/fixtures/context_receipts/empty_page.txt",
+              "identifier": null,
+              "content_hash": "e3b0c44298fc1c149afbf4c8996fb92427ae41e4649b934ca495991b7852b855",
+              "version": null,
+              "captured_at": null,
+              "media_type": "text/plain",
+              "extraction_status": "empty",
+              "warnings": [
+                "file is empty"
+              ],
+              "char_count": 0
+            },
+            "page_count": 0,
+            "section_count": 0,
+            "statement_count": 0,
+            "extracted_char_count": 0,
+            "included_char_count": 0,
+            "included_chunk_ids": [],
+            "warnings": [
+              "file is empty",
+              "no text was extracted from this file",
+              "no chunks were selected for submission"
+            ],
+            "chunks": []
+          }
+        }
+      },
+      "expected": {
+        "verdict": "passed",
+        "extraction_status": "empty",
+        "submitted_char_count_eq": 0,
+        "warning_containing": "empty"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": null
+    },
+    {
+      "case_id": "receipt_003_missing_file",
+      "project": "context_receipts",
+      "predicted": {
+        "verdict": "passed",
+        "problems": [],
+        "details": {
+          "does_not_exist.txt": {
+            "receipt_version": "1.0",
+            "source": {
+              "source_id": "src_747d796a",
+              "path": "does_not_exist.txt",
+              "identifier": null,
+              "content_hash": "",
+              "version": null,
+              "captured_at": null,
+              "media_type": "text/plain",
+              "extraction_status": "failed",
+              "warnings": [
+                "file not found"
+              ],
+              "char_count": 0
+            },
+            "page_count": 0,
+            "section_count": 0,
+            "statement_count": 0,
+            "extracted_char_count": 0,
+            "included_char_count": 0,
+            "included_chunk_ids": [],
+            "warnings": [
+              "file not found",
+              "no chunks were selected for submission"
+            ],
+            "chunks": []
+          }
+        }
+      },
+      "expected": {
+        "verdict": "passed",
+        "extraction_status": "failed",
+        "submitted_char_count_eq": 0,
+        "warning_containing": "not found"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": null
+    },
+    {
+      "case_id": "receipt_004_unsupported_media",
+      "project": "context_receipts",
+      "predicted": {
+        "verdict": "passed",
+        "problems": [],
+        "details": {
+          "unreadable.bin": {
+            "receipt_version": "1.0",
+            "source": {
+              "source_id": "src_938ea1c1",
+              "path": "/Users/jacklee/Other/Me/Projects/Misc/ai-reliability-lab/fixtures/context_receipts/unreadable.bin",
+              "identifier": null,
+              "content_hash": "dc237b1e7b3971a4731bf7dd3840d2ca4051b4618a669d94011ef8f1e51b806c",
+              "version": null,
+              "captured_at": null,
+              "media_type": "application/octet-stream",
+              "extraction_status": "ok",
+              "warnings": [
+                "unknown media type; file decoded as utf-8 text"
+              ],
+              "char_count": 23
+            },
+            "page_count": 1,
+            "section_count": 1,
+            "statement_count": 1,
+            "extracted_char_count": 23,
+            "included_char_count": 22,
+            "included_chunk_ids": [
+              "src_938ea1c1#c000"
+            ],
+            "warnings": [
+              "unknown media type; file decoded as utf-8 text"
+            ],
+            "chunks": [
+              {
+                "chunk_id": "src_938ea1c1#c000",
+                "source_id": "src_938ea1c1",
+                "text": "NOT-A-REAL-BINARY-FILE",
+                "start": 0,
+                "end": 22,
+                "char_count": 22,
+                "content_hash": "c89f882d1490bb3dd28271e1f27ab8a4ed7cde811901decc5699f9edc43843db",
+                "page": null,
+                "section": null,
+                "included": true,
+                "include_reason": "selected"
+              }
+            ]
+          }
+        }
+      },
+      "expected": {
+        "verdict": "passed",
+        "submitted_char_count_gt": 0,
+        "warning_containing": "unknown media type"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": null
+    },
+    {
+      "case_id": "receipt_005_stale_version_detectable",
+      "project": "context_receipts",
+      "predicted": {
+        "verdict": "passed",
+        "problems": [],
+        "details": {
+          "diff": {
+            "before_receipt_id": "893573fd5fcd",
+            "after_receipt_id": "8234e62e1821",
+            "files": {
+              "contract.txt": {
+                "status": "changed",
+                "lines": [
+                  "content hash changed: 76a93f0220c1 -> a0161faebf11",
+                  "extracted characters: 1127 -> 1248",
+                  "submitted characters: 1020 -> 1141",
+                  "chunks no longer submitted: ['src_97722c41#c000']",
+                  "chunks newly submitted: ['src_529d31a5#c000']"
+                ]
+              }
+            },
+            "identical": false
+          }
+        }
+      },
+      "expected": {
+        "verdict": "passed",
+        "identical": false,
+        "diff_must_include": [
+          "content hash changed",
+          "submitted characters"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": null
+    },
+    {
+      "case_id": "receipt_006_same_version_not_flagged",
+      "project": "context_receipts",
+      "predicted": {
+        "verdict": "passed",
+        "problems": [],
+        "details": {
+          "diff": {
+            "before_receipt_id": "893573fd5fcd",
+            "after_receipt_id": "893573fd5fcd",
+            "files": {
+              "contract.txt": {
+                "status": "unchanged",
+                "lines": [
+                  "content hash unchanged"
+                ]
+              }
+            },
+            "identical": true
+          }
+        }
+      },
+      "expected": {
+        "verdict": "passed",
+        "identical": true
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": null
+    },
+    {
+      "case_id": "receipt_007_reproducible",
+      "project": "context_receipts",
+      "predicted": {
+        "verdict": "passed",
+        "problems": [],
+        "details": {
+          "contract.txt": {
+            "receipt_version": "1.0",
+            "source": {
+              "source_id": "src_529d31a5",
+              "path": "/Users/jacklee/Other/Me/Projects/Misc/ai-reliability-lab/fixtures/context_receipts/v2/contract.txt",
+              "identifier": null,
+              "content_hash": "a0161faebf1197ca33691aa12679380a91f2e01078ad0cf35ddd5e75d78894d4",
+              "version": null,
+              "captured_at": null,
+              "media_type": "text/plain",
+              "extraction_status": "ok",
+              "warnings": [],
+              "char_count": 1248
+            },
+            "page_count": 1,
+            "section_count": 5,
+            "statement_count": 18,
+            "extracted_char_count": 1248,
+            "included_char_count": 1141,
+            "included_chunk_ids": [
+              "src_529d31a5#c000"
+            ],
+            "warnings": [],
+            "chunks": [
+              {
+                "chunk_id": "src_529d31a5#c000",
+                "source_id": "src_529d31a5",
+                "text": "Version: 3.0\nEffective date: 2025-01-15\nThe monthly service fee is 2,800 EUR per calendar month.\nInvoices are issued on the first working day of each month.\nPayment is due within 15 days of the invoice date.\nA late payment interest of 1.5 percent per month applies to overdue amounts.\nThe agreement runs for an initial term of 12 months.\nEither party may terminate the agreement for convenience with 60 days written notice.\nTermination for cause requires 30 days written notice and an opportunity to cure.\nAfter termination the customer must return or destroy all copies of the software.\nPersonal data is processed solely for the purpose of delivering the service.\nThe processor must notify the controller of any personal data breach within 24 hours.\nData is stored within the European Economic Area.\nData processing takes place only in Ireland.\nTotal liability is capped at the fees paid in the 24 months preceding the claim.\nThe cap does not apply to intentional misconduct or breach of confidentiality.\nNeither party is liable for indirect or consequential loss.\nLiability for data protection breaches is capped separately at 500,000 EUR.",
+                "start": 26,
+                "end": 1247,
+                "char_count": 1141,
+                "content_hash": "e10b8729b3a327b744faec056ab52689b9cdf1fcbad16df29ec71ac4d1477026",
+                "page": null,
+                "section": null,
+                "included": true,
+                "include_reason": "selected"
+              }
+            ]
+          }
+        }
+      },
+      "expected": {
+        "verdict": "passed",
+        "submitted_char_count_gt": 1000,
+        "chunk_count_gte": 1
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": null
+    }
+  ]
+}

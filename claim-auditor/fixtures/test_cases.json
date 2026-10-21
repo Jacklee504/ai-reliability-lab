@@ -1,0 +1,100 @@
+{
+  "cases": [
+    {
+      "case_id": "ca_t01_supported",
+      "input": {
+        "answer": "The annual licence fee is 1,200 EUR.",
+        "sources": [
+          {
+            "identifier": "licence",
+            "text": "The annual licence fee is 1,200 EUR per subscription year. The licence renews automatically unless cancelled."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The source states the fee and the year."
+    },
+    {
+      "case_id": "ca_t02_contradicted_amount",
+      "input": {
+        "answer": "The annual licence fee is 1,200 EUR.",
+        "sources": [
+          {
+            "identifier": "licence",
+            "text": "The annual licence fee is 1,450 EUR per subscription year. The licence renews automatically unless cancelled."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The source fixes the fee at a different amount."
+    },
+    {
+      "case_id": "ca_t03_contradicted_period",
+      "input": {
+        "answer": "The support plan costs 99 EUR per month.",
+        "sources": [
+          {
+            "identifier": "pricing",
+            "text": "The standard support plan costs 99 EUR per year. The premium support plan costs 249 EUR per year."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The amount matches but the billing period conflicts."
+    },
+    {
+      "case_id": "ca_t04_topical_but_silent",
+      "input": {
+        "answer": "The service is available in Ireland and France.",
+        "sources": [
+          {
+            "identifier": "coverage",
+            "text": "The service is operated from data centres in Ireland and Germany."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The passage names two countries but not the two in the claim. It is on the same topic and does not settle the claim."
+    },
+    {
+      "case_id": "ca_t05_universal_claim",
+      "input": {
+        "answer": "Every support ticket is answered within 24 hours.",
+        "sources": [
+          {
+            "identifier": "sla",
+            "text": "Priority one support tickets are answered within 24 hours. Lower priority tickets may take up to three business days."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "A passage about one priority class does not settle a claim about every ticket."
+    }
+  ]
+}

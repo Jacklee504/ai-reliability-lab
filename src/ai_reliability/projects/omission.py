@@ -283,3 +283,181 @@ def segment_source(text: str, identifier: str) -> list[SourceStatement]:
             )
         )
     return out
+
+
+def _is_covered(statement_text: str, summary: str, threshold: float) -> bool:
+    """Decide whether the summary already covers a source statement.
+
+    Coverage is lexical: the summary must contain the statement's
+    distinctive terms. A statement whose only content words are missing
+    from the summary is a candidate omission.
+    """
+    statement_words = {
+        w for w in re.findall(r"[a-z0-9]+", statement_text.lower()) if len(w) > 3
+    }
+    if not statement_words:
+        return True
+    summary_words = set(re.findall(r"[a-z0-9]+", summary.lower()))
+    overlap = len(statement_words & summary_words) / len(statement_words)
+    return overlap >= threshold
+
+
+def score_relevance(
+    statement_text: str,
+    purpose_keywords: set[str],
+    material_markers: list[str],
+) -> float:
+    """Score how relevant an uncovered statement is to the stated purpose.
+
+    This is the deterministic baseline for importance. It combines:
+
+    * how many purpose keywords the statement carries,
+    * whether the statement looks like an obligation or limitation,
+    * a penalty for statements that look like background material.
+    """
+    lowered = statement_text.lower()
+    hits = sum(1 for keyword in purpose_keywords if keyword in lowered)
+
+    keyword_score = min(1.0, hits / 3.0)
+    marker_score = min(1.0, len(material_markers) / 2.0)
+    background_penalty = 0.4 if _is_background(statement_text) else 0.0
+
+    score = 0.55 * keyword_score + 0.45 * marker_score - background_penalty
+    return max(0.0, min(1.0, score))
+
+
+def build_omission_prompt(
+    purpose: str,
+    statement: str,
+    summary: str = "",
+) -> str:
+    """Build the prompt that asks the model whether a statement is material.
+
+    The prompt names three things: the reader purpose, the summary, and
+    the source statement under consideration. All three must be present:
+    without the statement the model cannot judge it, and without the
+    summary the model cannot tell whether it was already covered.
+    """
+    return (
+        "You are given a document, a summary of it, and the reader's purpose "
+        "for the summary.\n"
+        "\n"
+        "Decide whether the source statement below is IMPORTANT to that "
+        "purpose and is not covered by the summary.\n"
+        "\n"
+        "A statement is important if omitting it could mislead a reader who "
+        "relied on the summary for that purpose. A statement that is merely "
+        "background, or a detail the purpose does not care about, is not "
+        "important even though it was left out.\n"
+        "\n"
+        "Answer with JSON only:\n"
+        '{"important": true|false, "reason": "one sentence"}\n'
+        "\n"
+        f"PURPOSE:\n{purpose}\n"
+        "\n"
+        f"SUMMARY:\n{summary or "(the summary was not supplied)"}\n"
+        "\n"
+        f"SOURCE STATEMENT:\n{statement}\n"
+    )
+
+
+def _ask_model(provider: Provider, purpose: str, statement: str, summary: str = ""):
+    """Ask the model whether an uncovered statement is material."""
+    prompt = build_omission_prompt(purpose, statement, summary)
+    try:
+        result: ModelResult = provider.generate(
+            prompt,
+            purpose="omission_material",
+            prompt_version=PROMPT_VERSION,
+            temperature=0.0,
+            json_mode=True,
+        )
+    except ProviderError as exc:
+        return None, f"provider error: {exc}"
+
+    try:
+        parsed = parse_json_block(result.text, raw=result.text)
+    except ParseError as exc:
+        return None, f"parse failure: {exc}"
+
+    if not isinstance(parsed, dict):
+        return None, "model did not return an object"
+    return parsed, None
+
+
+def audit_omissions(
+    source_text: str,
+    summary: str,
+    purpose: str,
+    provider: Provider | None = None,
+    *,
+    coverage_threshold: float = 0.6,
+    source_identifier: str = "source",
+    top_k: int = 4,
+) -> OmissionReport:
+    """Find source statements the summary left out that the purpose cares about.
+
+    The report lists every uncovered statement with a relevance score, and
+    marks the ones the model judged material. It does not claim the
+    summary is deficient; it points at candidates.
+    """
+    statements = segment_source(source_text, source_identifier)
+    keywords = _purpose_keywords(purpose)
+    report = OmissionReport(
+        purpose=purpose,
+        total_statements=len(statements),
+        model_id=getattr(provider, "model_id", None),
+    )
+
+    candidates: list[OmissionCandidate] = []
+    for statement in statements:
+        covered = _is_covered(statement.text, summary, coverage_threshold)
+        markers = _material_markers(statement.text)
+        relevance = score_relevance(statement.text, keywords, markers)
+        candidate = OmissionCandidate(
+            statement=statement,
+            relevance=relevance,
+            material_markers=markers,
+            covered=covered,
+            reason="" if covered else "source statement is not present in the summary",
+        )
+        candidates.append(candidate)
+        if covered:
+            report.covered_count += 1
+
+    report.candidates = candidates
+
+    uncovered = [c for c in candidates if not c.covered]
+    # Sort by relevance, most relevant first. The sort is stable, so
+    # statements with equal relevance keep their document order.
+    uncovered.sort(key=lambda c: c.relevance, reverse=True)
+
+    if provider is not None:
+        for candidate in uncovered[:top_k]:
+            parsed, error = _ask_model(provider, purpose, candidate.statement.text, summary)
+            if parsed is None:
+                if error and not error.startswith("provider error:"):
+                    report.parse_failures += 1
+                continue
+            report.model_calls += 1
+            important = parsed.get("important")
+            candidate.model_material = bool(important) if important is not None else None
+            candidate.model_judgement = str(parsed.get("reason", "")).strip() or None
+            if candidate.model_material and candidate.relevance < 0.3:
+                candidate.relevance = min(1.0, candidate.relevance + 0.25)
+                candidate.reason = (
+                    f"{candidate.reason}; the model judged this material for the "
+                    "stated purpose"
+                )
+    else:
+        report.notes.append(
+            "no model was used; candidates are ranked by the deterministic "
+            "relevance score only"
+        )
+
+    report.notes.append(
+        "candidates are potential omissions, not confirmed ones; the auditor "
+        "compares the supplied summary with the supplied source and does not "
+        "know what the generating application read"
+    )
+    return report

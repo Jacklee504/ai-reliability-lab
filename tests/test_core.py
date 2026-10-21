@@ -317,3 +317,82 @@ def test_retrieval_summary_reports_recall_and_rank():
         assert block["cases"] == len(cases)
         assert 0 <= block["recall_at_k"] <= block["recall_denominator"]
         assert block["mean_reciprocal_rank"] is not None
+
+
+# --------------------------------------------------------------------------
+# verdicts
+# --------------------------------------------------------------------------
+
+
+def test_cannot_contradict_without_evidence():
+    record = make_verdict("c1", Verdict.CONTRADICTED, explanation="wrong")
+    assert record.verdict is Verdict.INSUFFICIENT
+    assert record.explanation
+
+
+def test_universal_claim_is_not_contradicted_by_a_single_instance():
+    verdict, note = apply_abstention_rules(
+        Verdict.CONTRADICTED,
+        claim_is_universal=True,
+        evidence_text="One customer received a refund in March.",
+        claim_text="All customers receive a refund.",
+    )
+    assert verdict is Verdict.UNCERTAIN
+    assert note
+
+
+def test_universal_claim_is_not_supported_by_a_single_instance():
+    verdict, note = apply_abstention_rules(
+        Verdict.SUPPORTED,
+        claim_is_universal=True,
+        evidence_text="One customer received a refund in March.",
+        claim_text="All customers receive a refund.",
+    )
+    assert verdict is Verdict.UNCERTAIN
+
+
+def test_shall_does_not_accidentally_count_as_all():
+    verdict, _note = apply_abstention_rules(
+        Verdict.SUPPORTED,
+        claim_is_universal=True,
+        evidence_text="One customer shall receive a refund.",
+        claim_text="All customers receive a refund.",
+    )
+    assert verdict is Verdict.UNCERTAIN
+
+
+def test_contradiction_without_any_evidence_becomes_insufficient():
+    verdict, _note = apply_abstention_rules(
+        Verdict.CONTRADICTED,
+        claim_is_universal=False,
+        evidence_text="",
+        claim_text="The fee is 2,400 EUR.",
+    )
+    assert verdict is Verdict.INSUFFICIENT
+
+
+def test_matching_verdict_keeps_its_method():
+    record = make_verdict("c1", Verdict.SUPPORTED, method=Method.MODEL, model_id="m")
+    assert record.method is Method.MODEL
+    assert record.model_id == "m"
+
+
+def test_missing_explicit_model_cache_fails_closed(tmp_path):
+    with pytest.raises(ProviderError, match="does not exist"):
+        load_cache(tmp_path / "missing.json", expected_model_id="m")
+
+
+def test_model_cache_cannot_be_attributed_to_another_model(tmp_path):
+    path = tmp_path / "cache.json"
+    path.write_text(json.dumps({"model": "first", "responses": {"k": "yes"}}), encoding="utf-8")
+    with pytest.raises(ProviderError, match="different model"):
+        load_cache(path, expected_model_id="second")
+
+
+def test_configured_cache_miss_never_falls_through_to_network(tmp_path, monkeypatch):
+    path = tmp_path / "cache.json"
+    path.write_text(json.dumps({"model": "m", "responses": {}}), encoding="utf-8")
+    monkeypatch.setenv("AIRL_MODEL_CACHE", str(path))
+    provider = OllamaProvider(model_id="m")
+    with pytest.raises(ProviderError, match="no network call made"):
+        provider.generate("not cached", purpose="test")

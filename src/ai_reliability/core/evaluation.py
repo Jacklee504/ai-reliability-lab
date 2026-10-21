@@ -167,3 +167,132 @@ class EvaluationReport:
         for note in self.notes:
             lines.append(f"Note: {note}")
         return "\n".join(lines)
+
+
+def run_evaluation(
+    project: str,
+    cases: Iterable[EvalCase],
+    runner: CaseRunner,
+    *,
+    method: str = "deterministic",
+    model_id: str | None = None,
+    score_key: str = "verdict",
+    notes: Iterable[str] = (),
+) -> EvaluationReport:
+    """Run every case and build an :class:`EvaluationReport`."""
+    report = EvaluationReport(project=project, method=method, model_id=model_id)
+    confusion_counts: Counter = Counter()
+    origins: Counter = Counter()
+    splits: Counter = Counter()
+
+    for case in cases:
+        result = runner.evaluate_case(case)
+        result.expected = dict(case.expected)
+        result.label_origin = case.label_origin
+        result.split = case.split
+        if result.correct is None:
+            result.correct = score_case(result.predicted, case.expected, key=score_key)
+        report.results.append(result)
+
+        if result.correct is not None:
+            confusion_counts[confusion(
+                str(result.predicted.get(score_key)),
+                str(case.expected.get(score_key)),
+            )] += 1
+        origins[case.label_origin.value] += 1
+        splits[case.split.value] += 1
+        report.model_calls += result.model_calls
+        report.parse_failures += result.parse_failures
+        report.total_latency_ms += result.latency_ms
+
+    report.confusion = dict(confusion_counts)
+    report.label_origins = dict(origins)
+    report.splits = dict(splits)
+    report.notes.extend(notes)
+    report.metrics = build_metrics(report)
+    if report.label_origins.get(LabelOrigin.HUMAN_VERIFIED.value, 0) != report.total:
+        report.notes.append("Labels are not independently human verified; agreement is provisional.")
+    if report.splits.get(Split.TEST.value, 0) == 0:
+        report.notes.append("No held-out test cases were evaluated.")
+    return report
+
+
+def _expected_verdicts(expected: dict[str, Any]) -> set[str]:
+    """Normalise an expected verdict, which may be a list of alternatives."""
+    value = expected.get("verdict")
+    if value is None:
+        return set()
+    if isinstance(value, list):
+        return {str(v) for v in value}
+    return {str(value)}
+
+
+def build_metrics(report: EvaluationReport) -> list[MetricBlock]:
+    """Derive the standard metric set from raw results.
+
+    The false-accusation metric is computed over cases whose expected
+    label is a *supported* claim; the false-alarm metric is computed over
+    cases whose expected label is a *no-finding* case. Both are reported
+    as counts, with a rate only when the denominator is large enough.
+    """
+    metrics: list[MetricBlock] = []
+    scored = [r for r in report.results if r.correct is not None]
+    metrics.append(
+        MetricBlock(
+            name="accepted_outcome",
+            numerator=sum(1 for r in scored if r.correct),
+            denominator=len(scored),
+            note="project case accepted the prediction; some labels allow alternatives",
+        )
+    )
+
+    # Only cases that expect exactly "supported" count towards the
+    # false-accusation denominator. A case whose expected value is a list
+    # such as ["supported", "contradicted"] is a multi-outcome case, not
+    # a "the source supports this" case, and mixing it in would inflate
+    # the false-accusation rate with cases that are not accusations at all.
+    supported_cases = [
+        r for r in report.results if r.expected.get("verdict") == "supported"
+    ]
+    false_accusations = [
+        r for r in supported_cases if r.predicted.get("verdict") == "contradicted"
+    ]
+    metrics.append(
+        MetricBlock(
+            name="false_accusations_on_supported",
+            numerator=len(false_accusations),
+            denominator=len(supported_cases),
+            note="supported claims wrongly called contradicted",
+        )
+    )
+
+    no_finding_cases = [
+        r for r in report.results
+        if r.expected.get("verdict") in ("no_finding", "passed")
+    ]
+    false_alarms = [
+        r for r in no_finding_cases
+        if r.predicted.get("verdict") not in {"no_finding", "passed"}
+    ]
+    metrics.append(
+        MetricBlock(
+            name="false_alarms_on_benign",
+            numerator=len(false_alarms),
+            denominator=len(no_finding_cases),
+            note="benign cases wrongly flagged",
+        )
+    )
+
+    abstained = [
+        r for r in report.results
+        if r.predicted.get("verdict") in {"insufficient_evidence", "uncertain", "cannot_verify"}
+    ]
+    metrics.append(
+        MetricBlock(
+            name="abstentions",
+            numerator=len(abstained),
+            denominator=len(report.results),
+            note="outcomes that declined to assert",
+        )
+    )
+    return metrics

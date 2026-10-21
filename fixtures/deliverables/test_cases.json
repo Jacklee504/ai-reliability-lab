@@ -1,46 +1,62 @@
 {
   "cases": [
     {
-      "case_id": "deliv_t01_meets_every_requirement",
+      "case_id": "deliv_t06_semantic_requirement",
       "input": {
-        "request": "Write 3 questions across 3 chapters, four options each, with an answer key.",
-        "deliverable": "CHAPTER 1\nQ1) What is 2+2?\nA) 3\nB) 4\nC) 5\nD) 6\n\nCHAPTER 2\nQ2) Capital of France?\nA) Rome\nB) Paris\nC) Madrid\nD) Berlin\n\nCHAPTER 3\nQ3) Capital of Spain?\nA) Lisbon\nB) Madrid\nC) Rome\nD) Athens\n\nANSWER KEY\n1. B\n2. B\n3. B"
+        "request": "Explain how compound interest works.",
+        "deliverable": "Compound interest is interest calculated on the initial principal and on the accumulated interest from previous periods."
       },
       "expected": {
-        "verdict": "passed",
-        "failed": 0,
-        "requirement_count_gte": 3
+        "verdict": "cannot_verify"
       },
       "label_origin": "model_drafted",
       "split": "test",
-      "rationale": "The deliverable meets every requirement the request stated. The control case.",
+      "rationale": "The only requirement needs semantic judgement, so it is reported as cannot_verify rather than guessed at.",
       "tags": [
-        "happy_path",
-        "control"
+        "semantic",
+        "abstain"
       ]
     },
     {
-      "case_id": "deliv_t02_wrong_question_count",
+      "case_id": "deliv_t07_missing_answer_key",
       "input": {
-        "request": "Write 3 questions across 3 chapters, four options each, with an answer key.",
-        "deliverable": "CHAPTER 1\nQ1) What is 2+2?\nA) 3\nB) 4\nC) 5\nD) 6\n\nCHAPTER 2\nQ2) Capital of France?\nA) Rome\nB) Paris\nC) Madrid\nD) Berlin\n\nANSWER KEY\n1. B\n2. B"
+        "request": "Write 1 question across 1 chapter, four options each, with an answer key.",
+        "deliverable": "CHAPTER 1\nQ1) What is 2+2?\nA) 3\nB) 4\nC) 5\nD) 6"
       },
       "expected": {
         "verdict": "failed",
         "failed_gte": 1,
-        "must_detect_failure_containing": "question"
+        "must_detect_failure_containing": "answer key"
       },
       "label_origin": "model_drafted",
       "split": "test",
-      "rationale": "Three questions were asked for and two were produced. The answer key also has only two entries, which agrees with the shortfall. The first version of this fixture had three question lines with two key entries; the tool counted three and the fixture was wrong, so the fixture was corrected rather than the tool.",
+      "rationale": "The counts are right but the answer key is missing.",
       "tags": [
-        "wrong_count"
+        "missing_section"
       ]
     },
     {
-      "case_id": "deliv_t03_missing_named_section",
+      "case_id": "deliv_t08_requirement_not_invented",
       "input": {
-        "request": "Write 1 question across 1 chapter, four options each, with an answer key, and include a section titled Appendix.",
+        "request": "Write 1 question across 1 chapter, four options each, with an answer key.",
+        "deliverable": "CHAPTER 1\nQ1) What is 2+2?\nA) 3\nB) 4\nC) 5\nD) 6\n\nANSWER KEY\n1. B"
+      },
+      "expected": {
+        "verdict": "passed",
+        "failed": 0
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The request asked for nothing else, so a checker that invents a requirement such as 'include an explanation' would fail a correct deliverable. The tool must not manufacture requirements.",
+      "tags": [
+        "no_invented_requirements",
+        "false_accusation_control"
+      ]
+    },
+    {
+      "case_id": "deliv_t09_wrong_format",
+      "input": {
+        "request": "Write 1 question across 1 chapter, four options each, with an answer key, in markdown.",
         "deliverable": "CHAPTER 1\nQ1) What is 2+2?\nA) 3\nB) 4\nC) 5\nD) 6\n\nANSWER KEY\n1. B"
       },
       "expected": {
@@ -49,46 +65,9 @@
       },
       "label_origin": "model_drafted",
       "split": "test",
-      "rationale": "A named section the user asked for is absent.",
+      "rationale": "The request asked for markdown and the deliverable carries no markdown structure.",
       "tags": [
-        "missing_section",
-        "named"
-      ]
-    },
-    {
-      "case_id": "deliv_t04_wrong_option_count",
-      "input": {
-        "request": "Write 1 question across 1 chapter, four options each, with an answer key.",
-        "deliverable": "CHAPTER 1\nQ1) What is 2+2?\nA) 3\nB) 4\nC) 5\n\nANSWER KEY\n1. B"
-      },
-      "expected": {
-        "verdict": "failed",
-        "failed_gte": 1,
-        "must_detect_failure_containing": "option"
-      },
-      "label_origin": "model_drafted",
-      "split": "test",
-      "rationale": "Only three options were given where four were asked for.",
-      "tags": [
-        "wrong_count",
-        "options"
-      ]
-    },
-    {
-      "case_id": "deliv_t05_vague_request",
-      "input": {
-        "request": "Make it good.",
-        "deliverable": "Here is a summary of the document."
-      },
-      "expected": {
-        "verdict": "cannot_verify",
-        "requirement_count": 0
-      },
-      "label_origin": "model_drafted",
-      "split": "test",
-      "rationale": "A vague request yields no requirements, and reporting 'passed' for a vague request would be a false assurance.",
-      "tags": [
-        "abstain"
+        "wrong_format"
       ]
     }
   ]

@@ -687,3 +687,122 @@ def verify_numeric_claim(
         verdict=Verdict.UNCERTAIN,
         explanation="the claim's operation could not be determined",
     )
+
+
+def _has_metric_column(table: Table) -> bool:
+    """True when the table has a dedicated metric column."""
+    return any(
+        h.strip().lower() in {"metric", "measure", "kpi", "value"} for h in table.headers
+    )
+
+
+def _comparison_columns(table: Table, claim: NumericClaim) -> tuple[int, int]:
+    """Find the two columns a derived claim compares.
+
+    A claim like "from 2023 to 2024" names both periods, so the columns
+    are looked up directly. A claim that names only one period falls back
+    to the year immediately before it.
+    """
+    years = [int(match.group(0)) for match in _YEAR_RE.finditer(claim.text)]
+    if len(years) >= 2:
+        earlier_year, later_year = min(years[0], years[1]), max(years[0], years[1])
+    elif years:
+        earlier_year, later_year = years[0] - 1, years[0]
+    else:
+        return -1, -1
+
+    earlier = -1
+    later = -1
+    leading = 2 if _has_metric_column(table) else 1
+    for index, header in enumerate(table.headers):
+        if index < leading:
+            continue
+        header_year = _YEAR_RE.search(header)
+        if not header_year:
+            continue
+        year = int(header_year.group(0))
+        if year == earlier_year:
+            earlier = index
+        elif year == later_year:
+            later = index
+    return earlier, later
+
+
+def _find_period_column(table: Table, period: str | None, earlier: bool = False) -> int:
+    """Find a period column, optionally an earlier one than the given period."""
+    if not period:
+        return -1
+    match = _YEAR_RE.search(period)
+    if not match:
+        return -1
+    year = int(match.group(0))
+    target = year - 1 if earlier else year
+    for index, header in enumerate(table.headers):
+        header_year = _YEAR_RE.search(header)
+        if header_year and int(header_year.group(0)) == target:
+            return index
+    return -1
+
+
+# ---------------------------------------------------------------------------
+# Evaluation runner
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class NumericalRunner:
+    """Runs a numerical claim verification case."""
+
+    provider: Any = None
+
+    def evaluate_case(self, case: EvalCase) -> CaseResult:
+        inputs = case.input
+        table_text = inputs.get("table", "")
+        table = parse_table(table_text, identifier=inputs.get("table_id", "table"),
+                            fmt=inputs.get("format", "auto"))
+        claims = inputs.get("claims", [])
+
+        findings = [verify_numeric_claim(claim, table) for claim in claims]
+        expected = case.expected
+
+        if "verdict" in expected:
+            wanted = expected["verdict"]
+            if isinstance(wanted, list):
+                correct = bool(findings) and all(f.verdict.value in wanted for f in findings)
+            else:
+                correct = len(findings) == 1 and findings[0].verdict.value == wanted
+        else:
+            correct = None
+
+        predicted = {
+            "verdict": findings[0].verdict.value if len(findings) == 1 else "multiple",
+            "verdicts": [f.verdict.value for f in findings],
+            "arithmetic": [f.arithmetic for f in findings],
+            "cells_used": [f.cells_used for f in findings],
+        }
+
+        return CaseResult(
+            case_id=case.case_id,
+            project=case.project,
+            predicted=predicted,
+            expected=expected,
+            label_origin=case.label_origin,
+            split=case.split,
+            correct=correct,
+            notes="\n".join(
+                f"{f.claim.text}: {f.verdict.value} - {f.explanation} {f.arithmetic}"
+                for f in findings
+            ),
+        )
+
+
+def build_cases() -> list[EvalCase]:
+    """Load the numerical verifier evaluation cases."""
+    from ..core.fixtures import load_project_cases
+
+    return load_project_cases("numerical")
+
+
+def build_runner(provider: Any = None) -> NumericalRunner:
+    """Factory used by the project registry."""
+    return NumericalRunner(provider=provider)

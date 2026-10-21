@@ -1,0 +1,441 @@
+{
+  "project": "numerical",
+  "method": "conservative-lexical-baseline",
+  "model_id": "unavailable",
+  "model_calls": 0,
+  "parse_failures": 0,
+  "total_latency_ms": 0.0,
+  "total_cases": 11,
+  "scored_cases": 11,
+  "correct_cases": 11,
+  "label_origins": {
+    "model_drafted": 11
+  },
+  "splits": {
+    "dev": 11
+  },
+  "metrics": [
+    {
+      "name": "accepted_outcome",
+      "numerator": 11,
+      "denominator": 11,
+      "rate": 1.0,
+      "note": "project case accepted the prediction; some labels allow alternatives"
+    },
+    {
+      "name": "false_accusations_on_supported",
+      "numerator": 0,
+      "denominator": 3,
+      "rate": null,
+      "note": "supported claims wrongly called contradicted"
+    },
+    {
+      "name": "false_alarms_on_benign",
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null,
+      "note": "benign cases wrongly flagged"
+    },
+    {
+      "name": "abstentions",
+      "numerator": 2,
+      "denominator": 11,
+      "rate": 0.1818,
+      "note": "outcomes that declined to assert"
+    }
+  ],
+  "confusion": {
+    "expected=supported,predicted=supported": 3,
+    "expected=contradicted,predicted=contradicted": 5,
+    "expected=['supported', 'contradicted'],predicted=contradicted": 1,
+    "expected=['uncertain', 'insufficient_evidence'],predicted=uncertain": 1,
+    "expected=['uncertain', 'insufficient_evidence'],predicted=insufficient_evidence": 1
+  },
+  "notes": [
+    "Labels are not independently human verified; agreement is provisional.",
+    "No held-out test cases were evaluated."
+  ],
+  "results": [
+    {
+      "case_id": "num_001_correct_read",
+      "project": "numerical",
+      "predicted": {
+        "verdict": "supported",
+        "verdicts": [
+          "supported"
+        ],
+        "arithmetic": [
+          "5100000.0  = 5100000.0, claim says 5100000.0"
+        ],
+        "cells_used": [
+          [
+            {
+              "row_label": "Acme Corp",
+              "column_header": "2024",
+              "raw": "5100000",
+              "value": 5100000.0,
+              "unit": ""
+            }
+          ]
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Acme Corp revenue in 2024 was 5100000 EUR.: supported - the cell at row 0 column 3 reads '5100000' 5100000.0  = 5100000.0, claim says 5100000.0"
+    },
+    {
+      "case_id": "num_002_wrong_year",
+      "project": "numerical",
+      "predicted": {
+        "verdict": "contradicted",
+        "verdicts": [
+          "contradicted"
+        ],
+        "arithmetic": [
+          "4200000.0  = 4200000.0, claim says 5100000.0"
+        ],
+        "cells_used": [
+          [
+            {
+              "row_label": "Acme Corp",
+              "column_header": "2023",
+              "raw": "4200000",
+              "value": 4200000.0,
+              "unit": ""
+            }
+          ]
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Acme Corp revenue in 2023 was 5100000 EUR.: contradicted - the cell at row 0 column 2 reads '4200000', not 5100000.0 4200000.0  = 4200000.0, claim says 5100000.0"
+    },
+    {
+      "case_id": "num_003_wrong_row",
+      "project": "numerical",
+      "predicted": {
+        "verdict": "contradicted",
+        "verdicts": [
+          "contradicted"
+        ],
+        "arithmetic": [
+          "3900000.0  = 3900000.0, claim says 5100000.0"
+        ],
+        "cells_used": [
+          [
+            {
+              "row_label": "Globex Inc",
+              "column_header": "2024",
+              "raw": "3900000",
+              "value": 3900000.0,
+              "unit": ""
+            }
+          ]
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Globex Inc revenue in 2024 was 5100000 EUR.: contradicted - the cell at row 1 column 3 reads '3900000', not 5100000.0 3900000.0  = 3900000.0, claim says 5100000.0"
+    },
+    {
+      "case_id": "num_004_wrong_column",
+      "project": "numerical",
+      "predicted": {
+        "verdict": "contradicted",
+        "verdicts": [
+          "contradicted"
+        ],
+        "arithmetic": [
+          "1350.0  = 1350.0, claim says 5100000.0"
+        ],
+        "cells_used": [
+          [
+            {
+              "row_label": "Acme Corp",
+              "column_header": "2024",
+              "raw": "1350",
+              "value": 1350.0,
+              "unit": ""
+            }
+          ]
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Acme Corp headcount in 2024 was 5100000.: contradicted - the cell at row 2 column 3 reads '1350', not 5100000.0 1350.0  = 1350.0, claim says 5100000.0"
+    },
+    {
+      "case_id": "num_005_wrong_unit_millions",
+      "project": "numerical",
+      "predicted": {
+        "verdict": "contradicted",
+        "verdicts": [
+          "contradicted"
+        ],
+        "arithmetic": [
+          "5100000.0  = 5100000.0, claim says 5.1"
+        ],
+        "cells_used": [
+          [
+            {
+              "row_label": "Acme Corp",
+              "column_header": "2024",
+              "raw": "5100000",
+              "value": 5100000.0,
+              "unit": ""
+            }
+          ]
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "supported",
+          "contradicted"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Acme Corp revenue in 2024 was 5.1 million EUR.: contradicted - the cell at row 0 column 3 reads '5100000', not 5.1 5100000.0  = 5100000.0, claim says 5.1"
+    },
+    {
+      "case_id": "num_006_percent_change",
+      "project": "numerical",
+      "predicted": {
+        "verdict": "supported",
+        "verdicts": [
+          "supported"
+        ],
+        "arithmetic": [
+          "(5100000.0 - 4200000.0) / 4200000.0 * 100 = 21.4%"
+        ],
+        "cells_used": [
+          [
+            {
+              "row_label": "Acme Corp",
+              "column_header": "2023",
+              "raw": "4200000",
+              "value": 4200000.0,
+              "unit": ""
+            },
+            {
+              "row_label": "Acme Corp",
+              "column_header": "2024",
+              "raw": "5100000",
+              "value": 5100000.0,
+              "unit": ""
+            }
+          ]
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Acme Corp revenue increased by 21.4 percent from 2023 to 2024.: supported - the computed change matches the claimed 21.4% (5100000.0 - 4200000.0) / 4200000.0 * 100 = 21.4%"
+    },
+    {
+      "case_id": "num_007_percent_change_wrong",
+      "project": "numerical",
+      "predicted": {
+        "verdict": "contradicted",
+        "verdicts": [
+          "contradicted"
+        ],
+        "arithmetic": [
+          "(5100000.0 - 4200000.0) / 4200000.0 * 100 = 21.4%"
+        ],
+        "cells_used": [
+          [
+            {
+              "row_label": "Acme Corp",
+              "column_header": "2023",
+              "raw": "4200000",
+              "value": 4200000.0,
+              "unit": ""
+            },
+            {
+              "row_label": "Acme Corp",
+              "column_header": "2024",
+              "raw": "5100000",
+              "value": 5100000.0,
+              "unit": ""
+            }
+          ]
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Acme Corp revenue increased by 30 percent from 2023 to 2024.: contradicted - the computed change is 21.4%, not 30.0% (5100000.0 - 4200000.0) / 4200000.0 * 100 = 21.4%"
+    },
+    {
+      "case_id": "num_008_markdown_table",
+      "project": "numerical",
+      "predicted": {
+        "verdict": "supported",
+        "verdicts": [
+          "supported"
+        ],
+        "arithmetic": [
+          "1500.0  = 1500.0, claim says 1500.0"
+        ],
+        "cells_used": [
+          [
+            {
+              "row_label": "North",
+              "column_header": "Q2 2024",
+              "raw": "1500",
+              "value": 1500.0,
+              "unit": ""
+            }
+          ]
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "North Q2 2024 was 1500.: supported - the cell at row 0 column 2 reads '1500' 1500.0  = 1500.0, claim says 1500.0"
+    },
+    {
+      "case_id": "num_009_markdown_wrong_quarter",
+      "project": "numerical",
+      "predicted": {
+        "verdict": "contradicted",
+        "verdicts": [
+          "contradicted"
+        ],
+        "arithmetic": [
+          "1200.0  = 1200.0, claim says 1500.0"
+        ],
+        "cells_used": [
+          [
+            {
+              "row_label": "North",
+              "column_header": "Q1 2024",
+              "raw": "1200",
+              "value": 1200.0,
+              "unit": ""
+            }
+          ]
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "North Q1 2024 was 1500.: contradicted - the cell at row 0 column 1 reads '1200', not 1500.0 1200.0  = 1200.0, claim says 1500.0"
+    },
+    {
+      "case_id": "num_010_ambiguous_claim",
+      "project": "numerical",
+      "predicted": {
+        "verdict": "uncertain",
+        "verdicts": [
+          "uncertain"
+        ],
+        "arithmetic": [
+          ""
+        ],
+        "cells_used": [
+          []
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "uncertain",
+          "insufficient_evidence"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Revenue was 5100000.: uncertain - the claim does not identify a row, a column, or a period, so no cell can be selected "
+    },
+    {
+      "case_id": "num_011_empty_table",
+      "project": "numerical",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "arithmetic": [
+          ""
+        ],
+        "cells_used": [
+          []
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "uncertain",
+          "insufficient_evidence"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Acme Corp revenue in 2024 was 5100000.: insufficient_evidence - the table is empty or could not be parsed "
+    }
+  ]
+}

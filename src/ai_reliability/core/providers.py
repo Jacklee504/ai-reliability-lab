@@ -207,3 +207,143 @@ def load_cache(
     if not isinstance(responses, dict):
         raise ProviderError("model cache has no responses object")
     return {str(k): str(v) for k, v in responses.items()}
+
+
+class OllamaProvider:
+    """Adapter for a local (or remote) Ollama HTTP endpoint.
+
+    No API key is used. The endpoint defaults to the local Ollama server
+    and can be pointed anywhere via ``url`` or ``AIRL_OLLAMA_URL``.
+    """
+
+    def __init__(
+        self,
+        model_id: str | None = None,
+        url: str | None = None,
+        *,
+        think: bool = False,
+        default_timeout: float = 180.0,
+    ):
+        self.url = (url or os.environ.get(ENV_ENDPOINT) or DEFAULT_OLLAMA_URL).rstrip("/")
+        self.model_id = model_id or os.environ.get(ENV_MODEL) or DEFAULT_MODEL
+        self.think = think
+        self.default_timeout = default_timeout
+        self.cache_only = bool(os.environ.get(ENV_CACHE))
+        self.cache: dict[str, str] = load_cache(expected_model_id=self.model_id)
+        self.cache_hits = 0
+        self.calls: list[ModelCall] = []
+
+    def _endpoint(self, path: str) -> str:
+        return f"{self.url}{path}"
+
+    def _post(self, path: str, payload: dict[str, Any], timeout: float) -> dict[str, Any]:
+        body = json.dumps(payload).encode("utf-8")
+        request = urllib.request.Request(
+            self._endpoint(path),
+            data=body,
+            headers={"Content-Type": "application/json"},
+            method="POST",
+        )
+        try:
+            with urllib.request.urlopen(request, timeout=timeout) as response:
+                return json.loads(response.read().decode("utf-8"))
+        except urllib.error.HTTPError as exc:  # pragma: no cover - network path
+            detail = exc.read().decode("utf-8", errors="replace")[:500]
+            raise ProviderError(f"HTTP {exc.code} from {path}: {detail}") from exc
+        except urllib.error.URLError as exc:  # pragma: no cover - network path
+            raise ProviderError(f"cannot reach {self._endpoint(path)}: {exc.reason}") from exc
+        except json.JSONDecodeError as exc:  # pragma: no cover - network path
+            raise ProviderError(f"non-JSON response from {path}: {exc}") from exc
+
+    def list_models(self) -> list[dict[str, Any]]:
+        """Return the models the endpoint reports, or an empty list."""
+        try:
+            with urllib.request.urlopen(self._endpoint("/api/tags"), timeout=10) as response:
+                data = json.loads(response.read().decode("utf-8"))
+        except Exception:
+            return []
+        return list(data.get("models", []))
+
+    def generate(
+        self,
+        prompt: str,
+        *,
+        system: str | None = None,
+        purpose: str = "generic",
+        prompt_version: str = "v1",
+        temperature: float = 0.0,
+        json_mode: bool = False,
+        timeout: float | None = None,
+    ) -> ModelResult:
+        started = time.perf_counter()
+        key = cache_key(purpose, prompt)
+        if key in self.cache:
+            self.cache_hits += 1
+            text = self.cache[key]
+            call = ModelCall(
+                call_id=f"cache_{len(self.calls)}",
+                model_id=self.model_id,
+                prompt_version=prompt_version,
+                purpose=purpose,
+                latency_ms=(time.perf_counter() - started) * 1000,
+                ok=bool(text.strip()),
+                prompt_chars=len(prompt) + (len(system) if system else 0),
+                response_chars=len(text),
+                extra={"served_from_cache": True},
+            )
+            self.calls.append(call)
+            return ModelResult(text=text, call=call)
+
+        if self.cache_only:
+            raise ProviderError(f"model cache miss for purpose {purpose!r}; no network call made")
+
+        messages: list[dict[str, str]] = []
+        if system:
+            messages.append({"role": "system", "content": system})
+        messages.append({"role": "user", "content": prompt})
+
+        options: dict[str, Any] = {"temperature": temperature}
+        if json_mode:
+            options["format"] = "json"
+
+        payload: dict[str, Any] = {
+            "model": self.model_id,
+            "messages": messages,
+            "stream": False,
+            "think": self.think,
+            "options": options,
+        }
+
+        call = ModelCall(
+            call_id=f"call_{int(started * 1000)}",
+            model_id=self.model_id,
+            prompt_version=prompt_version,
+            purpose=purpose,
+            latency_ms=0.0,
+            ok=False,
+            prompt_chars=len(prompt) + (len(system) if system else 0),
+        )
+        try:
+            data = self._post("/api/chat", payload, timeout or self.default_timeout)
+        except ProviderError as exc:
+            call.latency_ms = (time.perf_counter() - started) * 1000
+            call.error = str(exc)
+            self.calls.append(call)
+            raise
+
+        message = data.get("message") or {}
+        text = message.get("content") or ""
+        call.latency_ms = (time.perf_counter() - started) * 1000
+        call.ok = bool(text.strip())
+        call.response_chars = len(text)
+        call.prompt_eval_count = data.get("prompt_eval_count")
+        call.eval_count = data.get("eval_count")
+        call.extra = {
+            "total_duration_ns": data.get("total_duration"),
+            "done_reason": data.get("done_reason"),
+        }
+        self.calls.append(call)
+        return ModelResult(text=text, call=call)
+
+    def call_records(self) -> list[dict[str, Any]]:
+        return [c.to_dict() for c in self.calls]

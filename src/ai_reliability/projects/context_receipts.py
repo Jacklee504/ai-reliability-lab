@@ -430,3 +430,151 @@ def render_receipt(receipt: Receipt) -> str:
         for warning in file_receipt.warnings:
             lines.append(f"    WARNING     {warning}")
     return "\n".join(lines)
+
+
+def render_diff(diff: dict[str, Any]) -> str:
+    """Human-readable rendering of a receipt diff."""
+    lines = [
+        f"Receipt diff: {diff['before_receipt_id']} -> {diff['after_receipt_id']}",
+    ]
+    if diff["identical"]:
+        lines.append("  No differences: the same text was submitted both times.")
+        return "\n".join(lines)
+    for key, change in diff["files"].items():
+        lines.append(f"  {key}  [{change['status']}]")
+        for line in change["lines"]:
+            lines.append(f"    {line}")
+    return "\n".join(lines)
+
+
+# ---------------------------------------------------------------------------
+# Evaluation runner
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class ReceiptRunner:
+    """Runs a receipt evaluation case.
+
+    Receipt cases are checked on *receipt properties* rather than on
+    verdicts: extraction status, how much text was submitted, which
+    warnings appeared, and, for diff cases, which kinds of change the
+    diff reported.
+    """
+
+    def evaluate_case(self, case: EvalCase) -> CaseResult:
+        payload = case.input
+        expected = case.expected
+        files = payload.get("files", [])
+        resolved = [self._resolve(f) for f in files]
+
+        details: dict[str, Any] = {}
+        problems: list[str] = []
+
+        if payload.get("diff_against"):
+            before = build_receipt([self._resolve(f) for f in payload["diff_against"]])
+            after = build_receipt(resolved)
+            diff = diff_receipts(before, after)
+            details["diff"] = diff
+            self._check_diff(expected, diff, problems)
+        else:
+            for path in resolved:
+                receipt = build_file_receipt(path)
+                details[Path(path).name] = receipt.to_dict()
+                self._check_file(expected, receipt, problems)
+
+        return CaseResult(
+            case_id=case.case_id,
+            project=case.project,
+            predicted={
+                "verdict": "passed" if not problems else "failed",
+                "problems": problems,
+                "details": details,
+            },
+            expected=expected,
+            label_origin=case.label_origin,
+            split=case.split,
+            correct=not problems,
+            notes="; ".join(problems) if problems else None,
+        )
+
+    @staticmethod
+    def _resolve(path: str) -> str:
+        candidate = Path(path)
+        if candidate.exists():
+            return str(candidate)
+        in_fixtures = project_fixture_dir("context_receipts") / path
+        if in_fixtures.exists():
+            return str(in_fixtures)
+        return str(path)
+
+    @staticmethod
+    def _check_file(expected: dict[str, Any], receipt: FileReceipt, problems: list[str]) -> None:
+        source = receipt.source
+        if "extraction_status" in expected:
+            if source.extraction_status.value != expected["extraction_status"]:
+                problems.append(
+                    f"extraction_status was {source.extraction_status.value},"
+                    f" expected {expected['extraction_status']}"
+                )
+        if "submitted_char_count_gt" in expected:
+            if receipt.included_chars <= expected["submitted_char_count_gt"]:
+                problems.append(
+                    f"submitted_char_count {receipt.included_chars}"
+                    f" is not greater than {expected['submitted_char_count_gt']}"
+                )
+        if "submitted_char_count_eq" in expected:
+            if receipt.included_chars != expected["submitted_char_count_eq"]:
+                problems.append(
+                    f"submitted_char_count {receipt.included_chars}"
+                    f" != {expected['submitted_char_count_eq']}"
+                )
+        if "warning_containing" in expected:
+            blob = " ".join(receipt.warnings).lower()
+            if expected["warning_containing"].lower() not in blob:
+                problems.append(
+                    f"no warning containing {expected['warning_containing']!r};"
+                    f" warnings were {receipt.warnings}"
+                )
+        if expected.get("no_warnings") and receipt.warnings:
+            problems.append(f"expected no warnings, got {receipt.warnings}")
+        if "chunk_count_gte" in expected:
+            if len(receipt.included_chunk_ids) < expected["chunk_count_gte"]:
+                problems.append(
+                    f"chunk count {len(receipt.included_chunk_ids)}"
+                    f" < {expected['chunk_count_gte']}"
+                )
+        if "section_count_gte" in expected:
+            if receipt.section_count < expected["section_count_gte"]:
+                problems.append(
+                    f"section count {receipt.section_count} < {expected['section_count_gte']}"
+                )
+        if "content_hash_prefix" in expected:
+            if not source.content_hash.startswith(expected["content_hash_prefix"]):
+                problems.append(
+                    f"content hash {source.content_hash[:16]}"
+                    f" does not start with {expected['content_hash_prefix']}"
+                )
+
+    @staticmethod
+    def _check_diff(expected: dict[str, Any], diff: dict[str, Any], problems: list[str]) -> None:
+        blob = str(diff).lower()
+        for needle in expected.get("diff_must_include", []):
+            if needle.lower() not in blob:
+                problems.append(f"diff did not mention {needle!r}")
+        if expected.get("identical") is True and not diff["identical"]:
+            problems.append("expected identical receipts, but they differ")
+        if expected.get("identical") is False and diff["identical"]:
+            problems.append("expected differing receipts, but they are identical")
+
+
+def build_cases() -> list[EvalCase]:
+    """Load the receipt project's evaluation cases."""
+    from ..core.fixtures import load_project_cases
+
+    return load_project_cases("context_receipts")
+
+
+def build_runner(provider: Any = None) -> ReceiptRunner:
+    """Factory used by the project registry."""
+    return ReceiptRunner()

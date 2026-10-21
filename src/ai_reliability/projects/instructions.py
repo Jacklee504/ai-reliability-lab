@@ -246,3 +246,133 @@ class ComplianceReport:
         for note in self.notes:
             lines.append(f"  note: {note}")
         return "\n".join(lines)
+
+def parse_instructions(instructions: list[str]) -> tuple[list[Predicate], list[str]]:
+    """Turn repository instructions into predicates.
+
+    Returns (predicates, unparsed). An instruction that no pattern
+    recognises is returned in ``unparsed`` so the caller can report it as
+    inconclusive rather than dropping it silently.
+    """
+    predicates: list[Predicate] = []
+    unparsed: list[str] = []
+    counter = 0
+
+    def add(**kwargs: Any) -> None:
+        nonlocal counter
+        counter += 1
+        kwargs["predicate_id"] = "pred_%02d" % counter
+        predicates.append(Predicate(**kwargs))
+
+    for instruction in instructions:
+        text = instruction.strip()
+        if not text:
+            continue
+        matched = False
+
+        match = _REMOVE_FILE.search(text)
+        if match:
+            add(kind="file_deleted", target=match.group(1), source_quote=text)
+            matched = True
+
+        match = _UNCHANGED.search(text)
+        if match:
+            add(kind="file_unchanged", target=match.group(1), source_quote=text)
+            matched = True
+
+        match = _MAX_LINES.search(text)
+        if match:
+            file_match = _MAX_LINES_FILE.search(text)
+            add(
+                kind="line_limit",
+                target=file_match.group(1) if file_match else "",
+                value=match.group(1),
+                source_quote=text,
+            )
+            matched = True
+
+        match = _NO_FORBIDDEN.search(text)
+        if match:
+            add(kind="no_artifact_contains", value="secret", source_quote=text)
+            matched = True
+
+        match = _ADD_TEST_FOR.search(text)
+        if match:
+            add(kind="file_exists", target=match.group(1), source_quote=text)
+            matched = True
+
+        match = _CONTAINS.search(text)
+        if match:
+            add(kind="file_contains", value=match.group(1).strip(), source_quote=text)
+            matched = True
+
+        match = _RUN_COMMAND.search(text)
+        if match:
+            add(kind="command_run", target=match.group(1).strip(), source_quote=text)
+            matched = True
+
+        if not matched:
+            match = _MUST_EXIST.search(text)
+            if match:
+                add(kind="file_exists", target=match.group(1), source_quote=text)
+                matched = True
+
+        if not matched:
+            match = _NO_NEW_FILE.search(text)
+            if match:
+                add(kind="file_not_created", target=match.group(1), source_quote=text)
+                matched = True
+
+        if not matched:
+            unparsed.append(text)
+
+    return predicates, unparsed
+
+
+def _command_matches(target: str, command: str) -> bool:
+    """Does a trace command satisfy a command instruction?
+
+    The instruction names a tool in prose ("the linter") and the trace
+    names the actual command ("ruff check ."). The matcher maps the
+    instruction word to the keywords that would satisfy it, and falls
+    back to a literal substring match.
+    """
+    lowered_target = target.strip().lower()
+    lowered_command = command.lower()
+    for alias, keywords in _COMMAND_ALIASES.items():
+        if alias in lowered_target:
+            return any(keyword in lowered_command for keyword in keywords)
+    return lowered_target in lowered_command
+
+
+def _match_path(pattern: str, paths: list[str]) -> str | None:
+    """Return the first path matching a glob-style pattern.
+
+    A pattern with a wildcard is matched against the file name and
+    against the whole path, so "requirements*.txt" matches
+    "docs/requirements_extra.txt" and "*requirements*" matches
+    anything with that substring. A pattern with no wildcard is
+    matched as a path suffix, which is how a human reads
+    "do not add requirements.txt".
+    """
+    if not pattern:
+        return None
+    if "*" in pattern or "?" in pattern:
+        body = re.escape(pattern).replace(r"\*", ".*").replace(r"\?", ".")
+        name_regex = re.compile("^" + body + "$", re.IGNORECASE)
+        path_regex = re.compile(body, re.IGNORECASE)
+    else:
+        name_regex = None
+        path_regex = re.compile(r"(?:^|/)" + re.escape(pattern) + r"$", re.IGNORECASE)
+    for path in paths:
+        name = path.rsplit("/", 1)[-1]
+        if name_regex is not None:
+            if name_regex.search(name) or path_regex.search(path):
+                return path
+        elif path_regex.search(path):
+            return path
+    return None
+
+
+def _hash_content(text: str) -> str:
+    return hashlib.sha256(text.encode("utf-8")).hexdigest()

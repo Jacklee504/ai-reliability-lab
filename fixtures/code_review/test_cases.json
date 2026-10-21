@@ -1,0 +1,131 @@
+{
+  "cases": [
+    {
+      "case_id": "cr_t01_missing_guard_valid",
+      "input": {
+        "files": {
+          "repo.py": "def read_config(conn, path):\n    cursor = conn.cursor()\n    cursor.execute(\"SELECT value FROM config WHERE path = ?\", (path,))\n    return cursor.fetchone()\n"
+        },
+        "comments": [
+          {
+            "text": "There is no null check on path before the query runs.",
+            "file": "repo.py",
+            "line": 1
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The function has no guard before the query, so the comment is technically true.",
+      "tags": [
+        "valid_finding",
+        "static_fact"
+      ]
+    },
+    {
+      "case_id": "cr_t02_guard_present_refutes",
+      "input": {
+        "files": {
+          "repo.py": "def read_config(conn, path):\n    if path is None:\n        raise ValueError(\"path is required\")\n    cursor = conn.cursor()\n    cursor.execute(\"SELECT value FROM config WHERE path = ?\", (path,))\n    return cursor.fetchone()\n"
+        },
+        "comments": [
+          {
+            "text": "There is no null check on path before the query runs.",
+            "file": "repo.py",
+            "line": 1
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The code has a null guard on the line below the cited line. The verifier must look at the function, not only the cited line.",
+      "tags": [
+        "false_finding",
+        "hard_negative"
+      ]
+    },
+    {
+      "case_id": "cr_t03_unbounded_valid",
+      "input": {
+        "files": {
+          "loop.py": "def drain(values):\n    total = 0\n    while True:\n        total += next(values)\n    return total\n"
+        },
+        "comments": [
+          {
+            "text": "This loop is unbounded.",
+            "file": "loop.py",
+            "line": 1
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "A while True loop with no break is statically unbounded.",
+      "tags": [
+        "valid_finding"
+      ]
+    },
+    {
+      "case_id": "cr_t04_bounded_refutes",
+      "input": {
+        "files": {
+          "loop.py": "def drain(values):\n    total = 0\n    for value in range(10):\n        total += value\n    return total\n"
+        },
+        "comments": [
+          {
+            "text": "This loop is unbounded.",
+            "file": "loop.py",
+            "line": 1
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The loop iterates over an explicit finite range.",
+      "tags": [
+        "false_finding",
+        "hard_negative"
+      ]
+    },
+    {
+      "case_id": "cr_t05_wrong_file_unverified",
+      "input": {
+        "files": {
+          "repo.py": "def f(x):\n    return x\n"
+        },
+        "comments": [
+          {
+            "text": "There is no null check on x.",
+            "file": "other.py",
+            "line": 1
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "uncertain",
+          "insufficient_evidence"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The commented file is not in the snapshot, so the comment cannot be checked in either direction.",
+      "tags": [
+        "unverified",
+        "abstain"
+      ]
+    }
+  ]
+}

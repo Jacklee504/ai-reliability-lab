@@ -1,0 +1,314 @@
+{
+  "project": "claims",
+  "method": "hybrid",
+  "model_id": "minimax-m3.1-flash:cloud",
+  "model_calls": 12,
+  "parse_failures": 0,
+  "total_latency_ms": 0.0,
+  "total_cases": 11,
+  "scored_cases": 11,
+  "correct_cases": 11,
+  "label_origins": {
+    "model_drafted": 11
+  },
+  "splits": {
+    "dev": 11
+  },
+  "metrics": [
+    {
+      "name": "accepted_outcome",
+      "numerator": 11,
+      "denominator": 11,
+      "rate": 1.0,
+      "note": "project case accepted the prediction; some labels allow alternatives"
+    },
+    {
+      "name": "false_accusations_on_supported",
+      "numerator": 0,
+      "denominator": 1,
+      "rate": null,
+      "note": "supported claims wrongly called contradicted"
+    },
+    {
+      "name": "false_alarms_on_benign",
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null,
+      "note": "benign cases wrongly flagged"
+    },
+    {
+      "name": "abstentions",
+      "numerator": 5,
+      "denominator": 11,
+      "rate": 0.4545,
+      "note": "outcomes that declined to assert"
+    }
+  ],
+  "confusion": {
+    "expected=supported,predicted=supported": 1,
+    "expected=contradicted,predicted=contradicted": 4,
+    "expected=['insufficient_evidence', 'uncertain'],predicted=insufficient_evidence": 4,
+    "expected=['supported', 'contradicted'],predicted=multiple": 1,
+    "expected=['insufficient_evidence', 'uncertain'],predicted=uncertain": 1
+  },
+  "notes": [
+    "Labels are not independently human verified; agreement is provisional.",
+    "No held-out test cases were evaluated."
+  ],
+  "results": [
+    {
+      "case_id": "claim_001_supported",
+      "project": "claims",
+      "predicted": {
+        "verdict": "supported",
+        "verdicts": [
+          "supported"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [supported] The monthly service fee is 2,400 EUR.\n      The passage explicitly states that the monthly service fee is 2,400 EUR per calendar month.\n      evidence: The monthly service fee is 2,400 EUR per calendar month."
+    },
+    {
+      "case_id": "claim_002_contradicted",
+      "project": "claims",
+      "predicted": {
+        "verdict": "contradicted",
+        "verdicts": [
+          "contradicted"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [contradicted] The monthly service fee is 2,400 EUR.\n      The passage states that the monthly service fee is 2,800 EUR, not 2,400 EUR.\n      evidence: The monthly service fee is 2,800 EUR per calendar month."
+    },
+    {
+      "case_id": "claim_003_wrong_year",
+      "project": "claims",
+      "predicted": {
+        "verdict": "contradicted",
+        "verdicts": [
+          "contradicted"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [contradicted] The notice period is 90 days.\n      The passage specifies notice periods of 30 days for termination for cause and 60 days for termination for convenience, not 90 days.\n      evidence: Termination for cause requires 30 days written notice.\n      evidence: Either party may terminate the agreement for convenience with 60 days written notice."
+    },
+    {
+      "case_id": "claim_004_offtopic_source",
+      "project": "claims",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [insufficient_evidence] The processor must notify the controller of any personal data breach within 48 hours.\n      The passages discuss data storage location and processing purpose but do not address breach notification or a 48-hour deadline.\n      evidence: Data is stored within the European Economic Area.\n      evidence: Personal data is processed solely for the purpose of delivering the service."
+    },
+    {
+      "case_id": "claim_005_qualifier_all",
+      "project": "claims",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [insufficient_evidence] All customers receive a refund within 30 days of cancelling.\n      The passage confirms a refund for one customer but does not establish that all customers receive a refund within 30 days.\n      evidence: One customer received a refund within 30 days of cancelling in March."
+    },
+    {
+      "case_id": "claim_006_no_source_for_claim",
+      "project": "claims",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [insufficient_evidence] The office is located in Dublin.\n      No passage provides information about the office location."
+    },
+    {
+      "case_id": "claim_007_mixed_sentence",
+      "project": "claims",
+      "predicted": {
+        "verdict": "multiple",
+        "verdicts": [
+          "supported",
+          "contradicted"
+        ],
+        "claim_count": 2
+      },
+      "expected": {
+        "verdict": [
+          "supported",
+          "contradicted"
+        ],
+        "verdicts": [
+          "supported",
+          "contradicted"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 2,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 2 claim(s)\n  [supported] The monthly service fee is 2,400 EUR\n      Passage 1 explicitly states that the monthly service fee is 2,400 EUR per calendar month.\n      evidence: The monthly service fee is 2,400 EUR per calendar month.\n  [contradicted] the notice period is 60 days.\n      The passage specifies a 90-day written notice period, which is incompatible with the claim that the notice period is 60 days.\n      evidence: Either party may terminate the agreement for convenience with 90 days written notice."
+    },
+    {
+      "case_id": "claim_008_negation",
+      "project": "claims",
+      "predicted": {
+        "verdict": "contradicted",
+        "verdicts": [
+          "contradicted"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [contradicted] The customer does not pay late interest on overdue amounts.\n      The passage states that late payment interest applies to overdue amounts, directly contradicting the claim that the customer does not pay such interest.\n      evidence: A late payment interest of 1.5 percent per month applies to overdue amounts."
+    },
+    {
+      "case_id": "claim_009_empty_source",
+      "project": "claims",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [insufficient_evidence] The monthly service fee is 2,400 EUR.\n      No passage provides information about the monthly service fee."
+    },
+    {
+      "case_id": "claim_010_before_2024_qualifier",
+      "project": "claims",
+      "predicted": {
+        "verdict": "uncertain",
+        "verdicts": [
+          "uncertain"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [uncertain] Applicants must re-enrol before 2024.\n      The passage permits re-enrolment until before 2025, whereas the claim requires re-enrolment before 2024. (universal claim not refuted: the passage does not address the universal scope)\n      evidence: Applicants must re-enrol before 2025."
+    },
+    {
+      "case_id": "claim_011_fixed_date_contradiction",
+      "project": "claims",
+      "predicted": {
+        "verdict": "contradicted",
+        "verdicts": [
+          "contradicted"
+        ],
+        "claim_count": 1
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 1,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Claim audit: 1 claim(s)\n  [contradicted] The refund deadline is 2025-06-01.\n      Passage 1 states a different refund deadline, 2024-03-01, which is incompatible with 2025-06-01.\n      evidence: The refund deadline is 2024-03-01.\n      evidence: Requests received after the deadline are not processed."
+    }
+  ]
+}

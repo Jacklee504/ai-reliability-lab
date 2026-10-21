@@ -376,3 +376,321 @@ def _match_path(pattern: str, paths: list[str]) -> str | None:
 
 def _hash_content(text: str) -> str:
     return hashlib.sha256(text.encode("utf-8")).hexdigest()
+
+
+def evaluate_predicates(
+    predicates: list[Predicate],
+    before: dict[str, str],
+    after: dict[str, str],
+    trace: list[str] | None = None,
+) -> list[PredicateResult]:
+    """Evaluate predicates against the before and after file states.
+
+    ``before`` and ``after`` map a path to its content. ``trace`` is the
+    list of commands the agent ran, used by the ``command_run`` predicate.
+    """
+    results: list[PredicateResult] = []
+    commands = trace or []
+
+    for predicate in predicates:
+        if predicate.kind == "file_unchanged":
+            if predicate.target not in after:
+                results.append(PredicateResult(
+                    predicate=predicate,
+                    status=CheckStatus.CANNOT_VERIFY,
+                    detail="%s is not present in the final artifacts" % predicate.target,
+                ))
+                continue
+            if predicate.target not in before:
+                results.append(PredicateResult(
+                    predicate=predicate,
+                    status=CheckStatus.CANNOT_VERIFY,
+                    detail="%s was not in the starting state, so it cannot be"
+                           " shown to be unchanged" % predicate.target,
+                ))
+                continue
+            if _hash_content(before[predicate.target]) == _hash_content(after[predicate.target]):
+                results.append(PredicateResult(
+                    predicate=predicate,
+                    status=CheckStatus.PASSED,
+                    evidence="%s content hash is unchanged" % predicate.target,
+                ))
+            else:
+                results.append(PredicateResult(
+                    predicate=predicate,
+                    status=CheckStatus.FAILED,
+                    evidence="%s differs between the starting and final states"
+                           % predicate.target,
+                    detail="%s was modified even though the instruction said"
+                           " not to modify it" % predicate.target,
+                ))
+            continue
+
+        if predicate.kind == "file_exists":
+            if predicate.target in after and after[predicate.target].strip():
+                results.append(PredicateResult(
+                    predicate=predicate,
+                    status=CheckStatus.PASSED,
+                    evidence="%s exists and is not empty" % predicate.target,
+                ))
+            else:
+                results.append(PredicateResult(
+                    predicate=predicate,
+                    status=CheckStatus.FAILED,
+                    evidence="%s is absent or empty" % predicate.target,
+                    detail="the instruction required %s and it is not in the"
+                           " final artifacts" % predicate.target,
+                ))
+            continue
+
+        if predicate.kind == "file_contains":
+            blob = "\n".join(after.values())
+            if predicate.value and predicate.value.lower() in blob.lower():
+                results.append(PredicateResult(
+                    predicate=predicate,
+                    status=CheckStatus.PASSED,
+                    evidence="%r appears in the final artifacts" % predicate.value,
+                ))
+            else:
+                results.append(PredicateResult(
+                    predicate=predicate,
+                    status=CheckStatus.FAILED,
+                    evidence="%r does not appear in the final artifacts" % predicate.value,
+                    detail="the required output format is missing",
+                ))
+            continue
+
+        if predicate.kind == "file_deleted":
+            if predicate.target in after:
+                results.append(PredicateResult(
+                    predicate=predicate,
+                    status=CheckStatus.FAILED,
+                    evidence="%s is still present in the final artifacts" % predicate.target,
+                    detail="the instruction required %s to be removed" % predicate.target,
+                ))
+            else:
+                results.append(PredicateResult(
+                    predicate=predicate,
+                    status=CheckStatus.PASSED,
+                    evidence="%s is absent from the final artifacts" % predicate.target,
+                ))
+            continue
+
+        if predicate.kind == "file_not_created":
+            pattern = predicate.target
+            if not pattern:
+                results.append(PredicateResult(
+                    predicate=predicate,
+                    status=CheckStatus.CANNOT_VERIFY,
+                    detail="the instruction does not name a file pattern to forbid",
+                ))
+                continue
+            new_files = sorted(set(after) - set(before))
+            matched = _match_path(pattern, new_files)
+            if matched:
+                results.append(PredicateResult(
+                    predicate=predicate,
+                    status=CheckStatus.FAILED,
+                    evidence="new file %s matches the forbidden pattern %r" % (matched, pattern),
+                    detail="the instruction forbade adding this file",
+                ))
+            else:
+                results.append(PredicateResult(
+                    predicate=predicate,
+                    status=CheckStatus.PASSED,
+                    evidence="no newly created file matches %r" % pattern,
+                ))
+            continue
+
+        if predicate.kind == "line_limit":
+            limit = int(predicate.value) if predicate.value.isdigit() else 0
+            if limit <= 0:
+                results.append(PredicateResult(
+                    predicate=predicate,
+                    status=CheckStatus.CANNOT_VERIFY,
+                    detail="the instruction does not state a usable line limit",
+                ))
+                continue
+            targets = (
+                [predicate.target]
+                if predicate.target and predicate.target in after
+                else sorted(after)
+            )
+            over = [
+                (path, len(after[path].splitlines()))
+                for path in targets
+                if len(after[path].splitlines()) > limit
+            ]
+            if over:
+                path, count = over[0]
+                results.append(PredicateResult(
+                    predicate=predicate,
+                    status=CheckStatus.FAILED,
+                    evidence="%s has %d lines, which is over the limit of %d" % (path, count, limit),
+                    detail="the line limit was exceeded",
+                ))
+            else:
+                results.append(PredicateResult(
+                    predicate=predicate,
+                    status=CheckStatus.PASSED,
+                    evidence="no file exceeds the limit of %d lines" % limit,
+                ))
+            continue
+
+        if predicate.kind == "no_artifact_contains":
+            hits: list[tuple[str, str]] = []
+            for path, content in sorted(after.items()):
+                for secret_re in _SECRET_PATTERNS:
+                    match = secret_re.search(content)
+                    if match:
+                        hits.append((path, match.group(0)[:40]))
+                        break
+            if hits:
+                path, sample = hits[0]
+                results.append(PredicateResult(
+                    predicate=predicate,
+                    status=CheckStatus.FAILED,
+                    evidence="%s contains a value matching the forbidden pattern: %s" % (path, sample),
+                    detail="the instruction forbade including this kind of value",
+                ))
+            else:
+                results.append(PredicateResult(
+                    predicate=predicate,
+                    status=CheckStatus.PASSED,
+                    evidence="no artifact contains a value matching the forbidden patterns",
+                ))
+            continue
+
+        if predicate.kind == "command_run":
+            hit = next((c for c in commands if _command_matches(predicate.target, c)), None)
+            if hit:
+                results.append(PredicateResult(
+                    predicate=predicate,
+                    status=CheckStatus.PASSED,
+                    evidence="trace contains %r" % hit,
+                ))
+            else:
+                results.append(PredicateResult(
+                    predicate=predicate,
+                    status=CheckStatus.FAILED,
+                    evidence="no command matching %r in the trace" % predicate.target,
+                    detail="the required command does not appear in the agent trace",
+                ))
+            continue
+
+        results.append(PredicateResult(
+            predicate=predicate,
+            status=CheckStatus.CANNOT_VERIFY,
+            detail="no checker is implemented for this predicate kind",
+        ))
+
+    return results
+
+
+def check_compliance(
+    instructions: list[str],
+    before: dict[str, str],
+    after: dict[str, str],
+    trace: list[str] | None = None,
+) -> ComplianceReport:
+    """Replay a candidate output against a set of instructions."""
+    predicates, unparsed = parse_instructions(instructions)
+    results = evaluate_predicates(predicates, before, after, trace)
+
+    notes: list[str] = []
+    if unparsed:
+        notes.append(
+            "%d instruction(s) could not be turned into a predicate and are"
+            " reported as inconclusive" % len(unparsed)
+        )
+    notes.append(
+        "this checks the artifacts, not the agent attention; a satisfied"
+        " predicate does not prove the instruction was read"
+    )
+    return ComplianceReport(
+        predicates=predicates,
+        results=results,
+        unparsed_instructions=unparsed,
+        notes=notes,
+    )
+
+# ---------------------------------------------------------------------------
+# Evaluation runner
+# ---------------------------------------------------------------------------
+
+
+@dataclass
+class InstructionRunner:
+    """Runs an instruction compliance evaluation case."""
+
+    provider: Any = None
+
+    def evaluate_case(self, case: EvalCase) -> CaseResult:
+        report = check_compliance(
+            list(case.input.get("instructions", [])),
+            dict(case.input.get("before", {})),
+            dict(case.input.get("after", {})),
+            list(case.input.get("trace", [])),
+        )
+
+        expected = case.expected
+        checks: list[bool] = []
+
+        if "violated" in expected:
+            checks.append(len(report.violated) == expected["violated"])
+        if "violated_gte" in expected:
+            checks.append(len(report.violated) >= expected["violated_gte"])
+        if "passed" in expected:
+            checks.append(len(report.satisfied) == expected["passed"])
+        if "inconclusive_instructions" in expected:
+            checks.append(
+                len(report.unparsed_instructions) == expected["inconclusive_instructions"]
+            )
+        if "must_violate_containing" in expected:
+            blob = " ".join(
+                v["predicate"]["source_quote"] for v in report.to_dict()["violations"]
+            ).lower()
+            for needle in expected["must_violate_containing"]:
+                checks.append(needle.lower() in blob)
+        if "verdict" in expected:
+            actual = "violated" if report.violated else (
+                "inconclusive" if report.inconclusive or report.unparsed_instructions
+                else "passed"
+            )
+            checks.append(actual == expected["verdict"])
+
+        correct = all(checks) if checks else None
+
+        predicted = {
+            "verdict": "violated" if report.violated else (
+                "inconclusive" if report.inconclusive or report.unparsed_instructions
+                else "passed"
+            ),
+            "violated": len(report.violated),
+            "passed": len(report.satisfied),
+            "cannot_verify": len(report.inconclusive),
+            "unparsed_instruction_count": len(report.unparsed_instructions),
+        }
+
+        return CaseResult(
+            case_id=case.case_id,
+            project=case.project,
+            predicted=predicted,
+            expected=expected,
+            label_origin=case.label_origin,
+            split=case.split,
+            correct=correct,
+            notes=report.render(),
+        )
+
+
+def build_cases() -> list[EvalCase]:
+    """Load the instruction compliance evaluation cases."""
+    from ..core.fixtures import load_project_cases
+
+    return load_project_cases("instructions")
+
+
+def build_runner(provider: Any = None) -> InstructionRunner:
+    """Factory used by the project registry."""
+    return InstructionRunner(provider=provider)

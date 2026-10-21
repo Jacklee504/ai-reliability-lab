@@ -332,3 +332,63 @@ class Finding:
             "model_id": self.model_id,
             "key_phrase": self.key_phrase,
         }
+
+
+@dataclass
+class EvalCase:
+    """One evaluation case: an input, an expected outcome, and provenance."""
+
+    case_id: str
+    project: str
+    input: dict[str, Any]
+    expected: dict[str, Any]
+    label_origin: LabelOrigin = LabelOrigin.UNKNOWN
+    split: Split = Split.TEST
+    rationale: str = ""
+    tags: tuple[str, ...] = ()
+    notes: str | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "case_id": self.case_id,
+            "project": self.project,
+            "input": self.input,
+            "expected": self.expected,
+            "label_origin": self.label_origin.value,
+            "split": self.split.value,
+            "rationale": self.rationale,
+            "tags": list(self.tags),
+            "notes": self.notes,
+        }
+
+
+@dataclass
+class CaseResult:
+    """What the method actually produced for one evaluation case."""
+
+    case_id: str
+    project: str
+    predicted: dict[str, Any]
+    expected: dict[str, Any]
+    label_origin: LabelOrigin = LabelOrigin.UNKNOWN
+    split: Split = Split.TEST
+    correct: bool | None = None
+    model_calls: int = 0
+    latency_ms: float = 0.0
+    parse_failures: int = 0
+    notes: str | None = None
+
+    def to_dict(self) -> dict[str, Any]:
+        return {
+            "case_id": self.case_id,
+            "project": self.project,
+            "predicted": self.predicted,
+            "expected": self.expected,
+            "label_origin": self.label_origin.value,
+            "split": self.split.value,
+            "correct": self.correct,
+            "model_calls": self.model_calls,
+            "latency_ms": self.latency_ms,
+            "parse_failures": self.parse_failures,
+            "notes": self.notes,
+        }

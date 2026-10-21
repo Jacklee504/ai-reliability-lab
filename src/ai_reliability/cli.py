@@ -225,3 +225,174 @@ def cmd_eval(args: argparse.Namespace) -> int:
         if args.out:
             print(f"\nrun written to {args.out}")
     return 0
+
+
+def cmd_compare(args: argparse.Namespace) -> int:
+    from .core.evaluation import compare_runs
+
+    left = load_run(args.left)
+    right = load_run(args.right)
+    result = compare_runs(left, right)
+    print(json.dumps(result, indent=2, ensure_ascii=False, default=str))
+    return 0
+
+
+def cmd_doctor(args: argparse.Namespace) -> int:
+    provider = _provider(args)
+    ok, detail = provider_available(provider)
+    payload: dict[str, Any] = {
+        "provider": type(provider).__name__,
+        "model_id": getattr(provider, "model_id", None),
+        "endpoint": os.environ.get(ENV_ENDPOINT, "http://127.0.0.1:11434"),
+        "reachable": None if getattr(provider, "cache_only", False) else ok,
+        "cache_ready": ok if getattr(provider, "cache_only", False) else None,
+        "detail": detail,
+    }
+    if ok and hasattr(provider, "list_models") and not getattr(provider, "cache_only", False):
+        payload["models"] = [
+            {
+                "name": m.get("name"),
+                "context_length": (m.get("details") or {}).get("context_length"),
+                "size": (m.get("details") or {}).get("parameter_size"),
+            }
+            for m in provider.list_models()
+        ]
+    print(json.dumps(payload, indent=2, ensure_ascii=False, default=str))
+    return 0 if ok else 1
+
+
+def cmd_record(args: argparse.Namespace) -> int:
+    """Record model responses for a set of prompts into a cache file.
+
+    The prompts are built by the project that needs them, then each one
+    is sent to the endpoint. This exists so a model-assisted evaluation
+    can be replayed later without an endpoint, and so a reviewer can see
+    exactly what the model was asked and what it said.
+    """
+    from .core.providers import ProviderError, cache_key
+
+    import importlib
+
+    module = importlib.import_module(f"ai_reliability.projects.{args.project}")
+    builder = getattr(module, "build_prompts")
+
+    prompts: list[tuple[str, str]] = list(builder(args.fixture))
+    provider = build_provider(model_id=args.model, url=args.endpoint)
+    responses: dict[str, str] = {}
+    failures: list[str] = []
+    for purpose, prompt in prompts:
+        # A cloud relay can drop a connection mid-run. A retry keeps one
+        # flaky call from discarding an otherwise complete recording, and
+        # the retry is recorded so the run is not mistaken for a clean
+        # first pass.
+        result = None
+        last_error = ""
+        for attempt in range(1, args.retries + 1):
+            try:
+                result = provider.generate(
+                    prompt, purpose=purpose, prompt_version="record-v1",
+                    json_mode=purpose not in {"naive_binary", "naive_verdict"},
+                    timeout=args.timeout,
+                )
+                break
+            except ProviderError as exc:
+                last_error = str(exc)
+                print(
+                    f"call failed (attempt {attempt}/{args.retries}): {exc}",
+                    file=sys.stderr,
+                )
+                if attempt < args.retries:
+                    time.sleep(args.retry_delay)
+        if result is None:
+            failures.append(f"{purpose}: {last_error}")
+            continue
+        key = cache_key(purpose, prompt)
+        responses[key] = result.text
+        print(f"recorded {key[:24]} ({len(result.text)} chars)")
+
+    target = Path(args.out)
+    target.parent.mkdir(parents=True, exist_ok=True)
+    existing: dict[str, str] = {}
+    if target.exists():
+        try:
+            existing = json.loads(target.read_text(encoding="utf-8")).get("responses", {})
+        except Exception:
+            existing = {}
+    existing.update(responses)
+    target.write_text(
+        json.dumps(
+            {
+                "model": provider.model_id,
+                "responses": existing,
+                "failed_prompts": failures,
+            },
+            indent=2,
+            ensure_ascii=False,
+        ) + "\n",
+        encoding="utf-8",
+    )
+    print("cache written to " + str(target) + " (" + str(len(existing)) + " responses)")
+    if failures:
+        print(
+            "%d prompt(s) failed after %d attempt(s) each and are NOT in the cache"
+            % (len(failures), args.retries),
+            file=sys.stderr,
+        )
+        return 1
+    return 0
+
+
+def cmd_prompts(args: argparse.Namespace) -> int:
+    """Print the prompts a project would send, one JSON object per line.
+
+    Used with the record command so a caller can inspect or replay the
+    exact prompts without running the auditor.
+    """
+    import importlib
+
+    module = importlib.import_module(f"ai_reliability.projects.{args.project}")
+    builder = getattr(module, "build_prompts")
+
+    for purpose, prompt in builder(args.fixture):
+        print(json.dumps({"purpose": purpose, "prompt": prompt}, ensure_ascii=False))
+    return 0
+
+
+def cmd_projects(args: argparse.Namespace) -> int:
+    from .projects.registry import project_status
+
+    print(json.dumps(project_status(), indent=2, ensure_ascii=False, default=str))
+    return 0
+
+
+def _review_cases():
+    """Collect primary, optional, and separate hard-case fixtures."""
+    from .projects.eval_regression import COVERED_PROJECTS, build_cases
+    from .core.fixtures import load_cases
+
+    cases = build_cases([*COVERED_PROJECTS, "source_versions", "study_coverage"])
+    for project in ("claims", "citations", "deliverables", "code_review"):
+        cases.extend(load_cases(project, "hard_cases.json"))
+    return cases
+
+
+def cmd_review_export(args: argparse.Namespace) -> int:
+    """Export blinded cases for independent human review."""
+    cases = _review_cases()
+    packet = {
+        "instructions": (
+            "For each case, inspect only the input and write your own expected outcome "
+            "without consulting fixtures or run predictions. Set reviewed_expected to "
+            "an object such as {\"verdict\": \"supported\"}; add other expected fields "
+            "only if you independently checked them. Leave null if unreviewed. "
+            "Use reviewer_notes for uncertainty."
+        ),
+        "cases": [
+            {"case_id": case.case_id, "project": case.project, "input": case.input,
+             "reviewed_expected": None, "reviewer_notes": ""}
+            for case in cases
+        ],
+    }
+    Path(args.out).write_text(json.dumps(packet, indent=2, ensure_ascii=False) + "\n", encoding="utf-8")
+    print(f"exported {len(cases)} blinded cases to {args.out}")
+    return 0

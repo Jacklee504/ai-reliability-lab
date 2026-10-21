@@ -319,3 +319,57 @@ class BaselineRunner:
             parse_failures=failures,
             notes="\n".join(notes),
         )
+
+
+def build_cases() -> list[EvalCase]:
+    """The baseline uses the same cases as the tools it compares against."""
+    from ..core.fixtures import load_project_cases
+
+    cases: list[EvalCase] = []
+    for project in ("claims", "citations"):
+        cases.extend(load_project_cases(project))
+    return cases
+
+
+def build_runner(provider: Any = None, kind: str = "naive_binary") -> BaselineRunner:
+    """Factory used by the project registry."""
+    return BaselineRunner(provider=provider, kind=kind)
+
+
+def build_prompts(fixture_path: str) -> list[tuple[str, str]]:
+    """Build the (purpose, prompt) pairs for a baseline fixture.
+
+    The purpose is namespaced by baseline kind so a recorded cache holds
+    both naive kinds without them colliding. The careful method already
+    has its own prompt builder in the claim and citation projects.
+    """
+    import json
+    from pathlib import Path
+
+    from ..core.fixtures import project_fixture_dir
+
+    target = Path(fixture_path)
+    if not target.exists():
+        target = project_fixture_dir("claims") / fixture_path
+    payload = json.loads(target.read_text(encoding="utf-8"))
+
+    prompts: list[tuple[str, str]] = []
+    for case in payload.get("cases", []):
+        inputs = case.get("input", {})
+        if "citations" in inputs:
+            contexts = [
+                (item.get("claim", ""), list(item.get("passages", [])))
+                for item in inputs["citations"]
+            ]
+        else:
+            contexts = [(claim.text, passages) for claim, passages in _claim_contexts(inputs)]
+        for claim_text, passages in contexts:
+            prompts.append((
+                "naive_binary",
+                build_naive_binary_prompt(claim_text, passages),
+            ))
+            prompts.append((
+                "naive_verdict",
+                build_naive_verdict_prompt(claim_text, passages),
+            ))
+    return prompts

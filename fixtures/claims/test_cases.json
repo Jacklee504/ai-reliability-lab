@@ -1,0 +1,190 @@
+{
+  "cases": [
+    {
+      "case_id": "claim_t01_supported",
+      "input": {
+        "answer": "The annual licence fee is 1,200 EUR.",
+        "sources": [
+          {
+            "identifier": "licence",
+            "text": "The annual licence fee is 1,200 EUR per subscription year. The licence renews automatically unless cancelled."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The source states the fee and the year, so the claim is supported by the supplied text.",
+      "tags": [
+        "positive"
+      ]
+    },
+    {
+      "case_id": "claim_t02_contradicted_amount",
+      "input": {
+        "answer": "The annual licence fee is 1,200 EUR.",
+        "sources": [
+          {
+            "identifier": "licence",
+            "text": "The annual licence fee is 1,450 EUR per subscription year. The licence renews automatically unless cancelled."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The source fixes the fee at a different amount, so it is incompatible with the claim.",
+      "tags": [
+        "negative",
+        "hard_negative"
+      ]
+    },
+    {
+      "case_id": "claim_t03_contradicted_month",
+      "input": {
+        "answer": "The support plan costs 99 EUR per month.",
+        "sources": [
+          {
+            "identifier": "pricing",
+            "text": "The standard support plan costs 99 EUR per month. The premium support plan costs 249 EUR per month."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The plan is a monthly one and the amount matches, but the source prices it per year, not per month. The billing period conflicts.",
+      "tags": [
+        "negative",
+        "hard_negative",
+        "period"
+      ]
+    },
+    {
+      "case_id": "claim_t04_topical_but_silent",
+      "input": {
+        "answer": "The service is available in Ireland and France.",
+        "sources": [
+          {
+            "identifier": "coverage",
+            "text": "The service is operated from data centres in Ireland and Germany."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The passage names two countries but not the two in the claim. It is on the same topic and does not settle the claim, so it must not become a contradiction.",
+      "tags": [
+        "hard_negative",
+        "false_accusation_control"
+      ]
+    },
+    {
+      "case_id": "claim_t05_universal_claim",
+      "input": {
+        "answer": "Every support ticket is answered within 24 hours.",
+        "sources": [
+          {
+            "identifier": "sla",
+            "text": "Priority one support tickets are answered within 24 hours. Lower priority tickets may take up to three business days."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "A passage about one priority class does not settle a claim about every ticket, and it does not refute it either.",
+      "tags": [
+        "hard_negative",
+        "universal"
+      ]
+    },
+    {
+      "case_id": "claim_t06_negation_preserved",
+      "input": {
+        "answer": "The supplier does not charge for data export.",
+        "sources": [
+          {
+            "identifier": "pricing",
+            "text": "The supplier charges 50 EUR for each data export."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The source says a charge applies, which is the opposite of the negated claim.",
+      "tags": [
+        "negative",
+        "negation"
+      ]
+    },
+    {
+      "case_id": "claim_t07_two_claims_two_outcomes",
+      "input": {
+        "answer": "The support plan costs 99 EUR per month and the onboarding fee is 500 EUR.",
+        "sources": [
+          {
+            "identifier": "pricing",
+            "text": "The standard support plan costs 99 EUR per month. There is no onboarding fee."
+          }
+        ]
+      },
+      "expected": {
+        "verdicts": [
+          "supported",
+          "contradicted"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "One sentence carries two claims with opposite outcomes. The auditor must split them and keep the order.",
+      "tags": [
+        "multi_claim"
+      ]
+    },
+    {
+      "case_id": "claim_t08_empty_source",
+      "input": {
+        "answer": "The annual licence fee is 1,200 EUR.",
+        "sources": [
+          {
+            "identifier": "licence",
+            "text": ""
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "An empty source is a failure mode, not a truth claim. It must produce abstention.",
+      "tags": [
+        "failure_mode"
+      ]
+    }
+  ]
+}

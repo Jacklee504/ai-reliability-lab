@@ -1,0 +1,248 @@
+{
+  "project": "code_review",
+  "method": "conservative-lexical-baseline",
+  "model_id": "unavailable",
+  "model_calls": 0,
+  "parse_failures": 0,
+  "total_latency_ms": 0.0,
+  "total_cases": 9,
+  "scored_cases": 9,
+  "correct_cases": 9,
+  "label_origins": {
+    "model_drafted": 9
+  },
+  "splits": {
+    "dev": 9
+  },
+  "metrics": [
+    {
+      "name": "accepted_outcome",
+      "numerator": 9,
+      "denominator": 9,
+      "rate": 1.0,
+      "note": "project case accepted the prediction; some labels allow alternatives"
+    },
+    {
+      "name": "false_accusations_on_supported",
+      "numerator": 0,
+      "denominator": 3,
+      "rate": null,
+      "note": "supported claims wrongly called contradicted"
+    },
+    {
+      "name": "false_alarms_on_benign",
+      "numerator": 0,
+      "denominator": 0,
+      "rate": null,
+      "note": "benign cases wrongly flagged"
+    },
+    {
+      "name": "abstentions",
+      "numerator": 3,
+      "denominator": 9,
+      "rate": 0.3333,
+      "note": "outcomes that declined to assert"
+    }
+  ],
+  "confusion": {
+    "expected=supported,predicted=supported": 3,
+    "expected=contradicted,predicted=contradicted": 3,
+    "expected=['uncertain', 'insufficient_evidence'],predicted=uncertain": 2,
+    "expected=['uncertain', 'insufficient_evidence'],predicted=insufficient_evidence": 1
+  },
+  "notes": [
+    "Labels are not independently human verified; agreement is provisional.",
+    "No held-out test cases were evaluated."
+  ],
+  "results": [
+    {
+      "case_id": "cr_001_valid_null_warning",
+      "project": "code_review",
+      "predicted": {
+        "verdict": "supported",
+        "verdicts": [
+          "supported"
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "There is no null check on user_id before the query runs. -> supported: the code contains no such guard"
+    },
+    {
+      "case_id": "cr_002_false_null_warning",
+      "project": "code_review",
+      "predicted": {
+        "verdict": "contradicted",
+        "verdicts": [
+          "contradicted"
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "There is no null check on user_id before the query runs. -> contradicted: the code contains a guard of the kind the comment says is missing"
+    },
+    {
+      "case_id": "cr_003_missing_guard_valid",
+      "project": "code_review",
+      "predicted": {
+        "verdict": "supported",
+        "verdicts": [
+          "supported"
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "There is no null check on user_id before the query runs. -> supported: the code contains no such guard"
+    },
+    {
+      "case_id": "cr_004_missing_guard_false",
+      "project": "code_review",
+      "predicted": {
+        "verdict": "contradicted",
+        "verdicts": [
+          "contradicted"
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "There is no null check on user_id before the query runs. -> contradicted: the code contains a guard of the kind the comment says is missing"
+    },
+    {
+      "case_id": "cr_005_unbounded_valid",
+      "project": "code_review",
+      "predicted": {
+        "verdict": "supported",
+        "verdicts": [
+          "supported"
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "This loop is unbounded. -> supported: the code has a while True loop without a break"
+    },
+    {
+      "case_id": "cr_006_unbounded_false",
+      "project": "code_review",
+      "predicted": {
+        "verdict": "contradicted",
+        "verdicts": [
+          "contradicted"
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "This loop is unbounded. -> contradicted: the code has an explicit finite iterator"
+    },
+    {
+      "case_id": "cr_007_race_condition_unverified",
+      "project": "code_review",
+      "predicted": {
+        "verdict": "uncertain",
+        "verdicts": [
+          "uncertain"
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "uncertain",
+          "insufficient_evidence"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "This is a race condition between the check and the use. -> uncertain: a concurrency claim cannot be settled by reading this function alone; the caller and the test would be needed"
+    },
+    {
+      "case_id": "cr_008_wrong_file",
+      "project": "code_review",
+      "predicted": {
+        "verdict": "insufficient_evidence",
+        "verdicts": [
+          "insufficient_evidence"
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "uncertain",
+          "insufficient_evidence"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "There is no null check on user_id before the query runs. -> insufficient_evidence: the commented file 'missing.py' is not in the snapshot, so the comment cannot be checked"
+    },
+    {
+      "case_id": "cr_009_style_comment_unverified",
+      "project": "code_review",
+      "predicted": {
+        "verdict": "uncertain",
+        "verdicts": [
+          "uncertain"
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "uncertain",
+          "insufficient_evidence"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "correct": true,
+      "model_calls": 0,
+      "latency_ms": 0.0,
+      "parse_failures": 0,
+      "notes": "Consider using a more descriptive variable name here. -> uncertain: no checker is implemented for this kind of assertion, so the comment is unverified rather than refuted"
+    }
+  ]
+}

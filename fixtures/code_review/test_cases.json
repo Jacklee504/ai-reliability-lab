@@ -1,114 +1,15 @@
 {
   "cases": [
     {
-      "case_id": "cr_t01_missing_guard_valid",
-      "input": {
-        "files": {
-          "repo.py": "def read_config(conn, path):\n    cursor = conn.cursor()\n    cursor.execute(\"SELECT value FROM config WHERE path = ?\", (path,))\n    return cursor.fetchone()\n"
-        },
-        "comments": [
-          {
-            "text": "There is no null check on path before the query runs.",
-            "file": "repo.py",
-            "line": 1
-          }
-        ]
-      },
-      "expected": {
-        "verdict": "supported"
-      },
-      "label_origin": "model_drafted",
-      "split": "test",
-      "rationale": "The function has no guard before the query, so the comment is technically true.",
-      "tags": [
-        "valid_finding",
-        "static_fact"
-      ]
-    },
-    {
-      "case_id": "cr_t02_guard_present_refutes",
-      "input": {
-        "files": {
-          "repo.py": "def read_config(conn, path):\n    if path is None:\n        raise ValueError(\"path is required\")\n    cursor = conn.cursor()\n    cursor.execute(\"SELECT value FROM config WHERE path = ?\", (path,))\n    return cursor.fetchone()\n"
-        },
-        "comments": [
-          {
-            "text": "There is no null check on path before the query runs.",
-            "file": "repo.py",
-            "line": 1
-          }
-        ]
-      },
-      "expected": {
-        "verdict": "contradicted"
-      },
-      "label_origin": "model_drafted",
-      "split": "test",
-      "rationale": "The code has a null guard on the line below the cited line. The verifier must look at the function, not only the cited line.",
-      "tags": [
-        "false_finding",
-        "hard_negative"
-      ]
-    },
-    {
-      "case_id": "cr_t03_unbounded_valid",
-      "input": {
-        "files": {
-          "loop.py": "def drain(values):\n    total = 0\n    while True:\n        total += next(values)\n    return total\n"
-        },
-        "comments": [
-          {
-            "text": "This loop is unbounded.",
-            "file": "loop.py",
-            "line": 1
-          }
-        ]
-      },
-      "expected": {
-        "verdict": "supported"
-      },
-      "label_origin": "model_drafted",
-      "split": "test",
-      "rationale": "A while True loop with no break is statically unbounded.",
-      "tags": [
-        "valid_finding"
-      ]
-    },
-    {
-      "case_id": "cr_t04_bounded_refutes",
-      "input": {
-        "files": {
-          "loop.py": "def drain(values):\n    total = 0\n    for value in range(10):\n        total += value\n    return total\n"
-        },
-        "comments": [
-          {
-            "text": "This loop is unbounded.",
-            "file": "loop.py",
-            "line": 1
-          }
-        ]
-      },
-      "expected": {
-        "verdict": "contradicted"
-      },
-      "label_origin": "model_drafted",
-      "split": "test",
-      "rationale": "The loop iterates over an explicit finite range.",
-      "tags": [
-        "false_finding",
-        "hard_negative"
-      ]
-    },
-    {
-      "case_id": "cr_t05_wrong_file_unverified",
+      "case_id": "cr_t06_style_comment_unverified",
       "input": {
         "files": {
           "repo.py": "def f(x):\n    return x\n"
         },
         "comments": [
           {
-            "text": "There is no null check on x.",
-            "file": "other.py",
+            "text": "This would read better with a docstring.",
+            "file": "repo.py",
             "line": 1
           }
         ]
@@ -121,8 +22,121 @@
       },
       "label_origin": "model_drafted",
       "split": "test",
-      "rationale": "The commented file is not in the snapshot, so the comment cannot be checked in either direction.",
+      "rationale": "A style comment has no technical assertion to check. The verifier must not manufacture a technical verdict from taste.",
       "tags": [
+        "style",
+        "unverified",
+        "abstain"
+      ]
+    },
+    {
+      "case_id": "cr_t07_concurrency_unverified",
+      "input": {
+        "files": {
+          "repo.py": "def check_then_use(path):\n    if os.path.exists(path):\n        return open(path).read()\n    return None\n"
+        },
+        "comments": [
+          {
+            "text": "This has a race condition between the check and the use.",
+            "file": "repo.py",
+            "line": 1
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "uncertain",
+          "insufficient_evidence"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "A concurrency claim cannot be settled by reading the function alone; the caller and the test would be needed.",
+      "tags": [
+        "concurrency",
+        "unverified",
+        "abstain"
+      ]
+    },
+    {
+      "case_id": "cr_t08_malformed_code_unverified",
+      "input": {
+        "files": {
+          "repo.py": "def f(x):\n    if x is None\n"
+        },
+        "comments": [
+          {
+            "text": "There is no null check on x.",
+            "file": "repo.py",
+            "line": 1
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "uncertain",
+          "insufficient_evidence"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "Malformed Python must not support a missing-guard accusation.",
+      "tags": [
+        "malformed",
+        "unverified",
+        "abstain"
+      ]
+    },
+    {
+      "case_id": "cr_t09_guard_in_other_function",
+      "input": {
+        "files": {
+          "repo.py": "def validate(x):\n    if x is None:\n        raise ValueError()\n\ndef use(y):\n    return y\n"
+        },
+        "comments": [
+          {
+            "text": "There is no null check on y.",
+            "file": "repo.py",
+            "line": 5
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "A guard in another function must not refute a comment about this one.",
+      "tags": [
+        "hard_negative",
+        "scope"
+      ]
+    },
+    {
+      "case_id": "cr_t10_runtime_claim_without_harness",
+      "input": {
+        "files": {
+          "repo.py": "def divide(a, b):\n    return a / b\n"
+        },
+        "comments": [
+          {
+            "text": "This will raise an error.",
+            "file": "repo.py",
+            "line": 1
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "uncertain",
+          "insufficient_evidence"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "Without a harness there is no observation, so a runtime claim stays unverified.",
+      "tags": [
+        "runtime",
         "unverified",
         "abstain"
       ]

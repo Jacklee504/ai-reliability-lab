@@ -20,6 +20,12 @@ cannot drift from it. The hand-written `claim-auditor/` directory is
 the earlier extraction of the same project and is kept for reference;
 `releases/claims/` is the canonical one.
 
+The lab's own `fixtures/` directory stays at the top level so the demo
+commands above read naturally. The lab wheel therefore does not carry
+its fixtures, which is fine: the lab is used from a checkout. The
+released packages are the distributable form, and each one carries its
+own cases inside the package.
+
 Every project can now be built as a standalone, installable package:
 
 ```bash

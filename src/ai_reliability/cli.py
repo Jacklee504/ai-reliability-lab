@@ -454,6 +454,96 @@ def cmd_review_compare(args: argparse.Namespace) -> int:
     return 0
 
 
+def cmd_release(args: argparse.Namespace) -> int:
+    """Build the standalone package for a project, or plan them all."""
+    from .release import build_release, list_plans, plan_release
+
+    if args.verify:
+        from .release_verify import release_status
+
+        status = release_status(Path(args.out))
+        if args.json:
+            print(json.dumps(status, indent=2, ensure_ascii=False))
+        else:
+            print("%-20s %-10s %-8s %s" % (
+                "project", "releasable", "verified", "package"))
+            for row in status["projects"]:
+                if not row["releasable"]:
+                    marker = "n/a"
+                elif row["verified"]:
+                    marker = "yes"
+                elif row["built"]:
+                    marker = "no"
+                else:
+                    marker = "-"
+                print("%-20s %-10s %-8s %s" % (
+                    row["project"], row["releasable"], marker, row["package"]))
+            print()
+            print("releasable: %d   built: %d   verified: %d" % (
+                status["releasable"], status["built"], status["verified"]))
+        return 0
+
+    if args.docs:
+        from .release_docs import write_documents
+
+        written = write_documents(Path(args.out))
+        print("wrote %d documents into %s" % (len(written), args.out))
+        for path in written:
+            print("  %s" % path.name)
+        return 0
+
+    if args.all:
+        built = []
+        for plan in list_plans():
+            if not plan.releasable:
+                continue
+            report = build_release(plan.project, Path(args.out))
+            built.append(report)
+            print("%-20s %s" % (
+                plan.project,
+                "independent" if report["independent"] else "NOT INDEPENDENT",
+            ))
+        print()
+        print("built %d releases into %s" % (len(built), args.out))
+        return 0
+
+    if args.list:
+        plans = list_plans()
+        if args.json:
+            print(json.dumps([p.to_dict() for p in plans], indent=2, ensure_ascii=False))
+        else:
+            print("%-20s %-10s %s" % ("project", "releasable", "core modules"))
+            for plan in plans:
+                marker = "yes" if plan.releasable else "no"
+                detail = (
+                    ", ".join(plan.core_modules)
+                    if plan.releasable
+                    else plan.reason
+                )
+                print("%-20s %-10s %s" % (plan.project, marker, detail))
+        return 0
+
+    if not args.project:
+        print("error: a project name is required", file=sys.stderr)
+        return 2
+
+    try:
+        if args.dry_run:
+            plan = plan_release(args.project)
+            print(json.dumps(plan.to_dict(), indent=2, ensure_ascii=False))
+            return 0
+        report = build_release(args.project, Path(args.out))
+    except ValueError as exc:
+        print("error: %s" % exc, file=sys.stderr)
+        return 2
+
+    print(json.dumps(report, indent=2, ensure_ascii=False))
+    if not report.get("independent"):
+        print("the release is not independent; see the problems above", file=sys.stderr)
+        return 1
+    return 0
+
+
 # --------------------------------------------------------------------------
 # parser
 # --------------------------------------------------------------------------
@@ -566,6 +656,49 @@ def build_parser() -> argparse.ArgumentParser:
     compare = sub.add_parser("review-compare", help="compare filled blind labels with draft labels")
     compare.add_argument("packet")
     compare.set_defaults(func=cmd_review_compare)
+
+    release = sub.add_parser(
+        "release",
+        help="build the standalone package for a project",
+    )
+    release.add_argument(
+        "project",
+        nargs="?",
+        default=None,
+        help="the project to release; omit with --list to see the plan for all",
+    )
+    release.add_argument(
+        "--out",
+        default="releases",
+        help="the directory to write the release into",
+    )
+    release.add_argument(
+        "--list",
+        action="store_true",
+        help="show what each project needs in order to be released",
+    )
+    release.add_argument(
+        "--dry-run",
+        action="store_true",
+        help="show the plan for one project without writing anything",
+    )
+    release.add_argument("--json", action="store_true")
+    release.add_argument(
+        "--all",
+        action="store_true",
+        help="build every releasable project",
+    )
+    release.add_argument(
+        "--verify",
+        action="store_true",
+        help="run the demo, the tests, and the import check for every build",
+    )
+    release.add_argument(
+        "--docs",
+        action="store_true",
+        help="write the per project documentation for the lab",
+    )
+    release.set_defaults(func=cmd_release)
 
     return parser
 

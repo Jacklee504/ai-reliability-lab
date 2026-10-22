@@ -39,6 +39,7 @@ from dataclasses import dataclass, field
 from typing import Any, Iterable
 
 from ..core.claims import ExtractionSettings, is_strict_claim, split_answer_into_claims
+from ..core.documents import SourceDocument
 from ..core.providers import (
     ModelResult,
     ParseError,
@@ -47,8 +48,6 @@ from ..core.providers import (
     parse_json_block,
 )
 from ..core.retrieval import EmbeddingProvider, lexical_support_candidate, retrieve, retrieve_semantic, topical_overlap
-from ..core.sources import source_from_text
-from ..core.spans import segment_statements
 from ..core.types import (
     CaseResult,
     Claim,
@@ -65,23 +64,6 @@ PROMPT_VERSION = "claims-v1"
 
 #: The four outcomes the classifier may return.
 VALID_VERDICTS = ("supported", "contradicted", "insufficient_evidence", "uncertain")
-
-
-@dataclass
-class SourceDocument:
-    """A source the answer may be checked against."""
-
-    identifier: str
-    text: str
-    version: str | None = None
-
-    def spans(self) -> list[Span]:
-        """Candidate evidence passages: the source split into statements."""
-        source, text = source_from_text(self.text, self.identifier)
-        statements = segment_statements(text, source)
-        if not statements:
-            return []
-        return [statement.to_span(source) for statement in statements]
 
 
 @dataclass

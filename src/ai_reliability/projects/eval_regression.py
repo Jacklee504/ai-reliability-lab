@@ -197,7 +197,8 @@ class BaselineRunner:
     always: str = "supported"
 
     def evaluate_case(self, case: EvalCase) -> CaseResult:
-        from .claims import SourceDocument, audit_claims
+        from ..core.documents import SourceDocument
+        from .claims import audit_claims
 
         inputs = case.input
         answer = inputs.get("answer", "")

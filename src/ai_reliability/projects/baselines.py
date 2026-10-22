@@ -162,7 +162,7 @@ def _claim_contexts(inputs: dict[str, Any]) -> list[tuple[Any, list[str]]]:
     """
     from ..core.claims import ExtractionSettings, split_answer_into_claims
     from ..core.retrieval import retrieve
-    from .claims import SourceDocument
+    from ..core.documents import SourceDocument
 
     answer = inputs.get("answer", "")
     documents = [

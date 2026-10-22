@@ -318,9 +318,15 @@ def _pyproject(plan: ReleasePlan, summary: str) -> str:
         'readme = "README.md"\n'
         'requires-python = ">=3.11"\n'
         "license = { text = \"MIT\" }\n"
+        'authors = [{ name = "Jack Lee" }]\n'
         'keywords = ["ai-reliability", "llm", "evaluation", "audit"]\n'
         "classifiers = [\n%(classifiers)s\n]\n"
-        "dependencies = []\n"
+        'dependencies = []\n'
+        "\n"
+        "[project.urls]\n"
+        'Homepage = "https://github.com/JackLee504/ai-reliability-lab"\n'
+        'Source = "https://github.com/JackLee504/ai-reliability-lab/tree/main/releases/%(project)s"\n'
+        'Issues = "https://github.com/JackLee504/ai-reliability-lab/issues"\n'
         "\n"
         "[project.optional-dependencies]\n"
         'dev = ["pytest>=7.0"]\n'
@@ -330,6 +336,10 @@ def _pyproject(plan: ReleasePlan, summary: str) -> str:
         "\n"
         "[tool.setuptools.packages.find]\n"
         'where = ["src"]\n'
+        "\n"
+        "[tool.setuptools.package-data]\n"
+        '"%(module)s" = ["fixtures/**/*.json", "fixtures/**/*.txt",\n'
+        '                "fixtures/**/*.pdf", "fixtures/**/*.bin"]\n'
         "\n"
         "[tool.pytest.ini_options]\n"
         'testpaths = ["tests"]\n'
@@ -341,6 +351,7 @@ def _pyproject(plan: ReleasePlan, summary: str) -> str:
         "summary": summary,
         "module": package_dir_name(plan.project),
         "classifiers": classifier_lines,
+        "project": plan.project,
     }
 
 
@@ -926,12 +937,26 @@ def build_release(
             target / "fixtures" / plan.project,
             dirs_exist_ok=True,
         )
+        # The fixtures go inside the package as well, so that an
+        # installed wheel carries its own cases. A package that
+        # installs cleanly and then cannot find its fixtures is not
+        # finished.
+        shutil.copytree(
+            fixtures_dir,
+            source_pkg / "fixtures" / plan.project,
+            dirs_exist_ok=True,
+        )
     for borrowed in plan.borrowed_fixtures:
         source = root.parent / "fixtures" / borrowed
         if source.is_dir():
             shutil.copytree(
                 source,
                 target / "fixtures" / borrowed,
+                dirs_exist_ok=True,
+            )
+            shutil.copytree(
+                source,
+                source_pkg / "fixtures" / borrowed,
                 dirs_exist_ok=True,
             )
 

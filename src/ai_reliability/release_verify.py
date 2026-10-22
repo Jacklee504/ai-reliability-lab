@@ -21,7 +21,7 @@ from dataclasses import dataclass, field
 from pathlib import Path
 from typing import Any
 
-from .release import list_plans, package_dir_name
+from .release import DISTRIBUTION_NAMES, list_plans, package_dir_name
 
 
 @dataclass
@@ -36,11 +36,18 @@ class ReleaseCheck:
     tests_output: str = ""
     imports_ok: bool = False
     imports_output: str = ""
+    install_ok: bool = False
+    install_output: str = ""
     problems: list[str] = field(default_factory=list)
 
     @property
     def ok(self) -> bool:
-        return self.demo_ok and self.tests_ok and self.imports_ok
+        return (
+            self.demo_ok
+            and self.tests_ok
+            and self.imports_ok
+            and self.install_ok
+        )
 
     def to_dict(self) -> dict[str, Any]:
         return {
@@ -50,6 +57,7 @@ class ReleaseCheck:
             "demo_ok": self.demo_ok,
             "tests_ok": self.tests_ok,
             "imports_ok": self.imports_ok,
+            "install_ok": self.install_ok,
             "problems": self.problems,
         }
 
@@ -72,6 +80,7 @@ def check_release(release_dir: Path, python: str | None = None) -> ReleaseCheck:
     release_dir = Path(release_dir).resolve()
     interpreter = python or sys.executable
     package = package_dir_name(release_dir.name)
+    plan_package = DISTRIBUTION_NAMES.get(release_dir.name, release_dir.name)
 
     check = ReleaseCheck(project=release_dir.name, package=package)
 
@@ -115,7 +124,84 @@ def check_release(release_dir: Path, python: str | None = None) -> ReleaseCheck:
     if not check.imports_ok:
         check.problems.append("the package does not import on its own")
 
+    # The install check. A package can import from a checkout and
+    # still fail once it is installed, because the fixtures it needs
+    # were never packaged. This builds a wheel, installs it into a
+    # throwaway directory, and runs the console script from there.
+    check.install_ok, check.install_output = _check_install(
+        release_dir, package, plan_package
+    )
+    if not check.install_ok:
+        check.problems.append("the installed package does not run")
+
     return check
+
+
+def _check_install(
+    release_dir: Path, package: str, plan_package: str
+) -> tuple[bool, str]:
+    """Build, install, and run the package the way a reader would."""
+    import shutil
+    import tempfile
+
+    interpreter = sys.executable
+    with tempfile.TemporaryDirectory(prefix="airl_install_") as workspace:
+        wheelhouse = Path(workspace) / "wheels"
+        target = Path(workspace) / "site"
+        built = _run(
+            [
+                interpreter,
+                "-m",
+                "pip",
+                "wheel",
+                "--quiet",
+                "--no-build-isolation",
+                "--no-deps",
+                "--wheel-dir",
+                str(wheelhouse),
+                ".",
+            ],
+            release_dir,
+            dict(os.environ),
+        )
+        if built.returncode != 0:
+            return False, "the wheel did not build:\n" + (built.stderr or "")[-1500:]
+
+        wheels = sorted(wheelhouse.glob("*.whl"))
+        if not wheels:
+            return False, "no wheel was produced"
+
+        installed = _run(
+            [
+                interpreter,
+                "-m",
+                "pip",
+                "install",
+                "--quiet",
+                "--no-deps",
+                "--target",
+                str(target),
+                str(wheels[0]),
+            ],
+            release_dir,
+            dict(os.environ),
+        )
+        if installed.returncode != 0:
+            return False, "the wheel did not install:\n" + (installed.stderr or "")[-1500:]
+
+        env = dict(os.environ)
+        env["PYTHONPATH"] = str(target)
+        # The console script is named after the distribution, which
+        # uses hyphens, not after the importable package directory.
+        script = target / "bin" / plan_package
+        if not script.exists():
+            return False, "the console script was not installed"
+        run = _run([str(script), "demo"], release_dir, env)
+        if run.returncode != 0:
+            return False, "the installed package did not run:\n" + (
+                (run.stdout or "")[-1000:] + (run.stderr or "")[-1000:]
+            )
+        return True, "the installed package ran"
 
 
 def check_all(out_dir: Path, python: str | None = None) -> list[ReleaseCheck]:

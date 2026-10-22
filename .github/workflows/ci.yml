@@ -60,6 +60,12 @@ jobs:
         run: |
           PYTHONPATH=src python -m ai_reliability.cli release --verify --out releases
 
+      - name: Check the committed packages are up to date
+        run: |
+          # The packages in releases/ are committed so a reader can see
+          # them. This step fails if they have drifted from the lab.
+          git diff --exit-code -- releases/
+
       - name: Upload the built packages
         uses: actions/upload-artifact@v4
         with:

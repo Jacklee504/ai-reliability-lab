@@ -206,3 +206,29 @@ def test_the_release_check_uses_an_absolute_path(tmp_path, monkeypatch):
     check = check_release(Path("releases") / "claims")
     assert check.imports_ok, check.imports_output
     assert check.demo_ok, check.demo_output
+
+
+def test_a_release_carries_no_build_artifacts():
+    """A package must not ship a build directory or an egg-info.
+
+    Both are what a local wheel build leaves behind, and both are
+    artefacts rather than sources. The install check builds in a
+    throwaway copy for exactly this reason.
+    """
+    from ai_reliability.release import list_plans
+
+    # The test file lives in tests/, so the repository root is its
+    # parent's parent.
+    releases = Path(__file__).resolve().parent.parent / "releases"
+    if not releases.is_dir():
+        pytest.skip("the releases have not been built")
+
+    offenders = []
+    for plan in list_plans():
+        directory = releases / plan.project
+        if not directory.is_dir():
+            continue
+        for path in directory.rglob("*"):
+            if path.name in {"build", "dist"} or path.name.endswith(".egg-info"):
+                offenders.append(str(path.relative_to(releases)))
+    assert not offenders, "build artefacts in the releases: %s" % offenders[:5]

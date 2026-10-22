@@ -146,6 +146,18 @@ def _check_install(
 
     interpreter = sys.executable
     with tempfile.TemporaryDirectory(prefix="airl_install_") as workspace:
+        # The build runs against a copy. Building in the release
+        # directory would leave a build directory and an egg-info
+        # directory behind, and those are artefacts rather than
+        # sources.
+        source = Path(workspace) / "src"
+        shutil.copytree(
+            release_dir,
+            source,
+            ignore=shutil.ignore_patterns(
+                "build", "dist", "*.egg-info", "__pycache__", ".pytest_cache"
+            ),
+        )
         wheelhouse = Path(workspace) / "wheels"
         target = Path(workspace) / "site"
         built = _run(
@@ -161,7 +173,7 @@ def _check_install(
                 str(wheelhouse),
                 ".",
             ],
-            release_dir,
+            source,
             dict(os.environ),
         )
         if built.returncode != 0:

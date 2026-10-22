@@ -396,3 +396,22 @@ def test_configured_cache_miss_never_falls_through_to_network(tmp_path, monkeypa
     provider = OllamaProvider(model_id="m")
     with pytest.raises(ProviderError, match="no network call made"):
         provider.generate("not cached", purpose="test")
+
+
+def test_parse_json_block_tolerates_a_fenced_block():
+    """Models wrap JSON in a code fence even when told not to."""
+    from ai_reliability.core.providers import parse_json_block
+
+    assert parse_json_block('```json\n{"verdict": "supported"}\n```') == {
+        "verdict": "supported"
+    }
+    assert parse_json_block('Here you go: {"verdict": "supported"}') == {
+        "verdict": "supported"
+    }
+
+
+def test_parse_json_block_refuses_a_response_with_no_json():
+    from ai_reliability.core.providers import ParseError, parse_json_block
+
+    with pytest.raises(ParseError):
+        parse_json_block("I am not sure what you are asking.")

@@ -10,6 +10,7 @@ that must not be silently turned into a verdict.
 from __future__ import annotations
 
 from ai_reliability.core.providers import FakeProvider, ParseError
+from ai_reliability.core.claims import split_answer_into_claims
 from ai_reliability.projects.claims import (
     SourceDocument,
     audit_claims,
@@ -57,3 +58,38 @@ def test_claim_audit_records_a_model_parse_failure():
     assert report.parse_failures >= 1
     for finding in report.findings:
         assert finding.verdict.verdict.value != "contradicted"
+
+
+def test_a_coordinated_sentence_becomes_two_claims():
+    """One sentence with two coordinated clauses carries two claims."""
+    answer = "The fee is 2,400 EUR and the notice period is 90 days."
+    claims = split_answer_into_claims(answer)
+    assert len(claims) >= 2
+    for claim in claims:
+        assert answer[claim.answer_start : claim.answer_end] == claim.text
+
+
+def test_the_fixture_set_loads_and_scores():
+    """The shipped cases must load and every one must be scored."""
+    from ai_reliability.core.fixtures import load_cases
+    from ai_reliability.projects.claims import build_runner
+
+    cases = load_cases("claims")
+    assert cases
+    runner = build_runner(provider=None)
+    for case in cases:
+        result = runner.evaluate_case(case)
+        assert result.predicted
+        assert result.correct is not None, case.case_id
+
+
+def test_the_report_says_when_the_labels_are_not_human_verified():
+    """A report that does not say this is quoting numbers it should not."""
+    from ai_reliability.core.evaluation import run_evaluation
+    from ai_reliability.core.fixtures import load_cases
+    from ai_reliability.projects.claims import build_runner
+
+    report = run_evaluation(
+        "claims", load_cases("claims"), build_runner(provider=None)
+    )
+    assert any("not independently human verified" in n for n in report.notes)

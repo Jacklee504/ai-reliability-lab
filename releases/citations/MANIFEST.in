@@ -1,0 +1,6 @@
+include LICENSE
+include README.md
+include CHANGELOG.md
+recursive-include src *.json *.txt *.pdf *.bin
+recursive-include fixtures *
+recursive-include tests *.py

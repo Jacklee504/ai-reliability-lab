@@ -378,6 +378,23 @@ def _changelog(plan: ReleasePlan) -> str:
     ) % (RELEASE_VERSION, plan.package)
 
 
+def _manifest() -> str:
+    """The source distribution manifest.
+
+    The package data settings cover a wheel. An sdist needs the same
+    files listed explicitly, or the cases would be missing from the
+    source distribution.
+    """
+    return (
+        "include LICENSE\n"
+        "include README.md\n"
+        "include CHANGELOG.md\n"
+        "recursive-include src *.json *.txt *.pdf *.bin\n"
+        "recursive-include fixtures *\n"
+        "recursive-include tests *.py\n"
+    )
+
+
 def _cli_source(plan: ReleasePlan) -> str:
     """The command line interface for a release.
 
@@ -647,12 +664,15 @@ def _init_module(plan: ReleasePlan) -> str:
         "%(summary)s\n"
         '"""\n'
         "\n"
+        '__version__ = "%(version)s"\n'
+        "\n"
         "from .%(module)s import *  # noqa: F401,F403\n"
         "from . import %(module)s  # noqa: F401\n"
     ) % {
         "package": plan.package,
         "summary": _release_summary(plan),
         "module": module_name(plan.project),
+        "version": RELEASE_VERSION,
     }
 
 
@@ -962,6 +982,7 @@ def build_release(
 
     # The distribution metadata.
     _write(target / "pyproject.toml", _pyproject(plan, _release_summary(plan)))
+    _write(target / "MANIFEST.in", _manifest())
     _write(target / "README.md", _readme(plan))
     _write(target / "CHANGELOG.md", _changelog(plan))
     licence = root.parent / "LICENSE"

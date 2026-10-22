@@ -414,6 +414,15 @@ cases are still open judgements.
   only at the top level, because an installed wheel has no checkout to
   walk up to. The fixture lookup in `core/fixtures.py` prefers the
   packaged directory for that reason.
+* Two cleanups need a human, because the safety hooks block the file
+  and index operations. The build directories and egg-info directories
+  under `releases/` are left over from an earlier install check and
+  are still tracked by git. The install check now builds in a throwaway
+  copy, so they will not come back, but the existing ones have to be
+  removed. The exact commands are in `CLEANUP.md`.
+* The `push` needs a human too. The credential manager cannot open an
+  interactive prompt from here, so the push has to be run in a
+  terminal where it can ask for the GitHub credentials.
 * `core/retrieval.py` is shared by the lab and the standalone package
   is a copy. The same applies to `core/claims.py` and
   `core/spans.py`. There is no automatic synchronisation.

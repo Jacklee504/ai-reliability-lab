@@ -1,0 +1,9 @@
+{
+  "cases": [
+    {"case_id":"sc_001_direct_mention","input":{"topics":[{"id":"arrays","label":"arrays"}],"material":"Arrays store ordered values."},"expected":{"mentioned_ids":["arrays"]},"label_origin":"synthetic_transform","split":"dev","rationale":"Exact topic phrase is present."},
+    {"case_id":"sc_002_alias","input":{"topics":[{"id":"pcr","label":"polymerase chain reaction","aliases":["PCR"]}],"material":"PCR amplifies a DNA sequence."},"expected":{"mentioned_ids":["pcr"]},"label_origin":"synthetic_transform","split":"dev","rationale":"A supplied alias counts as an explicit mention."},
+    {"case_id":"sc_003_missing","input":{"topics":[{"id":"sorting","label":"sorting"}],"material":"Arrays store ordered values."},"expected":{"mentioned_ids":[]},"label_origin":"synthetic_transform","split":"dev","rationale":"No explicit mention of the syllabus topic."},
+    {"case_id":"sc_004_repetition","input":{"topics":[{"id":"loops","label":"loops"}],"material":"Loops repeat. Loops can be nested."},"expected":{"mentioned_ids":["loops"]},"label_origin":"synthetic_transform","split":"dev","rationale":"Repeated mentions are counted without claiming adequate study coverage."},
+    {"case_id":"sc_005_paraphrase_unverified","input":{"topics":[{"id":"recursion","label":"recursion"}],"material":"A function calls itself to solve smaller instances."},"expected":{"mentioned_ids":[]},"label_origin":"synthetic_transform","split":"dev","rationale":"A paraphrase may cover the topic, so the tool reports unverified rather than an omission."}
+  ]
+}

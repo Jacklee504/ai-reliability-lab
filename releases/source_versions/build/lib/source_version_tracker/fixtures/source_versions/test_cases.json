@@ -1,0 +1,167 @@
+{
+  "cases": [
+    {
+      "case_id": "sv_t01_multipage_change_queues_affected_claim",
+      "input": {
+        "before": "SERVICE AGREEMENT\n\n1. Fees\nThe monthly fee is 2,400 EUR.\n\n2. Support\nSupport is available on business days.\n\n3. Term\nThe term is 24 months.\n",
+        "after": "SERVICE AGREEMENT\n\n1. Fees\nThe monthly fee is 2,800 EUR.\n\n2. Support\nSupport is available on business days.\n\n3. Term\nThe term is 24 months.\n",
+        "evidence": [
+          {
+            "claim_id": "fee",
+            "start": 27,
+            "end": 57
+          },
+          {
+            "claim_id": "support",
+            "start": 69,
+            "end": 108
+          },
+          {
+            "claim_id": "term",
+            "start": 117,
+            "end": 140
+          }
+        ]
+      },
+      "expected": {
+        "revisit_claim_ids": [
+          "fee"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "Only the fee changed on a multi-section document, so only the fee claim is queued. A tracker that queued everything would be as useless as one that queued nothing.",
+      "tags": [
+        "multi_section",
+        "selective"
+      ]
+    },
+    {
+      "case_id": "sv_t02_unchanged_document_queues_nothing",
+      "input": {
+        "before": "SERVICE AGREEMENT\n\n1. Fees\nThe monthly fee is 2,400 EUR.\n",
+        "after": "SERVICE AGREEMENT\n\n1. Fees\nThe monthly fee is 2,400 EUR.\n",
+        "evidence": [
+          {
+            "claim_id": "fee",
+            "start": 27,
+            "end": 57
+          }
+        ]
+      },
+      "expected": {
+        "revisit_claim_ids": []
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "Nothing changed, so nothing is queued.",
+      "tags": [
+        "control"
+      ]
+    },
+    {
+      "case_id": "sv_t03_deleted_evidence_is_queued",
+      "input": {
+        "before": "SERVICE AGREEMENT\n\n1. Fees\nThe monthly fee is 2,400 EUR.\n\n2. Support\nSupport is available on business days.\n",
+        "after": "SERVICE AGREEMENT\n\n1. Fees\nThe monthly fee is 2,400 EUR.\n",
+        "evidence": [
+          {
+            "claim_id": "support",
+            "start": 69,
+            "end": 108
+          }
+        ]
+      },
+      "expected": {
+        "revisit_claim_ids": [
+          "support"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The evidence the claim was based on is gone, so the claim must be revisited.",
+      "tags": [
+        "deletion"
+      ]
+    },
+    {
+      "case_id": "sv_t04_insert_before_evidence_queues_it",
+      "input": {
+        "before": "SERVICE AGREEMENT\n\n1. Fees\nThe monthly fee is 2,400 EUR.\n",
+        "after": "SERVICE AGREEMENT\n\n0. Preamble\nThis agreement is made on 1 January.\n\n1. Fees\nThe monthly fee is 2,400 EUR.\n",
+        "evidence": [
+          {
+            "claim_id": "fee",
+            "start": 27,
+            "end": 57
+          }
+        ]
+      },
+      "expected": {
+        "revisit_claim_ids": [
+          "fee"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "An insertion above the evidence shifts the offsets, so the old span no longer points at the same text and the claim is queued.",
+      "tags": [
+        "insertion",
+        "offset_shift"
+      ]
+    },
+    {
+      "case_id": "sv_t05_wrong_source_hash_is_queued",
+      "input": {
+        "before": "SERVICE AGREEMENT\n\n1. Fees\nThe monthly fee is 2,400 EUR.\n",
+        "after": "SERVICE AGREEMENT\n\n1. Fees\nThe monthly fee is 2,400 EUR.\n",
+        "evidence": [
+          {
+            "claim_id": "fee",
+            "start": 27,
+            "end": 57,
+            "source_hash": "0000000000000000000000000000000000000000000000000000000000000000"
+          }
+        ]
+      },
+      "expected": {
+        "revisit_claim_ids": [
+          "fee"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The evidence records a hash that does not match the source it was taken from, so the claim cannot be trusted even though the text is unchanged.",
+      "tags": [
+        "hash_mismatch",
+        "fail_closed"
+      ]
+    },
+    {
+      "case_id": "sv_t06_evidence_outside_the_source_is_queued",
+      "input": {
+        "before": "SERVICE AGREEMENT\n\n1. Fees\nThe monthly fee is 2,400 EUR.\n",
+        "after": "SERVICE AGREEMENT\n\n1. Fees\nThe monthly fee is 2,400 EUR.\n",
+        "evidence": [
+          {
+            "claim_id": "fee",
+            "start": 500,
+            "end": 600
+          }
+        ]
+      },
+      "expected": {
+        "revisit_claim_ids": [
+          "fee"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "Evidence offsets that point outside the source cannot be checked, so the claim is queued rather than silently trusted.",
+      "tags": [
+        "invalid_offsets",
+        "fail_closed"
+      ]
+    }
+  ]
+}

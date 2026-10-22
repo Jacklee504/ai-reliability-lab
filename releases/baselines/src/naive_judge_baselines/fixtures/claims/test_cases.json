@@ -1,0 +1,360 @@
+{
+  "cases": [
+    {
+      "case_id": "claim_t01_supported",
+      "input": {
+        "answer": "The annual licence fee is 1,200 EUR.",
+        "sources": [
+          {
+            "identifier": "licence",
+            "text": "The annual licence fee is 1,200 EUR per subscription year. The licence renews automatically unless cancelled."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The source states the fee and the year, so the claim is supported by the supplied text.",
+      "tags": [
+        "positive"
+      ]
+    },
+    {
+      "case_id": "claim_t02_contradicted_amount",
+      "input": {
+        "answer": "The annual licence fee is 1,200 EUR.",
+        "sources": [
+          {
+            "identifier": "licence",
+            "text": "The annual licence fee is 1,450 EUR per subscription year. The licence renews automatically unless cancelled."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The source fixes the fee at a different amount, so it is incompatible with the claim.",
+      "tags": [
+        "negative",
+        "hard_negative"
+      ]
+    },
+    {
+      "case_id": "claim_t03_contradicted_month",
+      "input": {
+        "answer": "The support plan costs 99 EUR per month.",
+        "sources": [
+          {
+            "identifier": "pricing",
+            "text": "The standard support plan costs 99 EUR per month. The premium support plan costs 249 EUR per month."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The plan is a monthly one and the amount matches, but the source prices it per year, not per month. The billing period conflicts.",
+      "tags": [
+        "negative",
+        "hard_negative",
+        "period"
+      ]
+    },
+    {
+      "case_id": "claim_t04_topical_but_silent",
+      "input": {
+        "answer": "The service is available in Ireland and France.",
+        "sources": [
+          {
+            "identifier": "coverage",
+            "text": "The service is operated from data centres in Ireland and Germany."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The passage names two countries but not the two in the claim. It is on the same topic and does not settle the claim, so it must not become a contradiction.",
+      "tags": [
+        "hard_negative",
+        "false_accusation_control"
+      ]
+    },
+    {
+      "case_id": "claim_t05_universal_claim",
+      "input": {
+        "answer": "Every support ticket is answered within 24 hours.",
+        "sources": [
+          {
+            "identifier": "sla",
+            "text": "Priority one support tickets are answered within 24 hours. Lower priority tickets may take up to three business days."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "A passage about one priority class does not settle a claim about every ticket, and it does not refute it either.",
+      "tags": [
+        "hard_negative",
+        "universal"
+      ]
+    },
+    {
+      "case_id": "claim_t06_negation_preserved",
+      "input": {
+        "answer": "The supplier does not charge for data export.",
+        "sources": [
+          {
+            "identifier": "pricing",
+            "text": "The supplier charges 50 EUR for each data export."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The source says a charge applies, which is the opposite of the negated claim.",
+      "tags": [
+        "negative",
+        "negation"
+      ]
+    },
+    {
+      "case_id": "claim_t07_two_claims_two_outcomes",
+      "input": {
+        "answer": "The support plan costs 99 EUR per month and the onboarding fee is 500 EUR.",
+        "sources": [
+          {
+            "identifier": "pricing",
+            "text": "The standard support plan costs 99 EUR per month. There is no onboarding fee."
+          }
+        ]
+      },
+      "expected": {
+        "verdicts": [
+          "supported",
+          "contradicted"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "One sentence carries two claims with opposite outcomes. The auditor must split them and keep the order.",
+      "tags": [
+        "multi_claim"
+      ]
+    },
+    {
+      "case_id": "claim_t08_empty_source",
+      "input": {
+        "answer": "The annual licence fee is 1,200 EUR.",
+        "sources": [
+          {
+            "identifier": "licence",
+            "text": ""
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "An empty source is a failure mode, not a truth claim. It must produce abstention.",
+      "tags": [
+        "failure_mode"
+      ]
+    },
+    {
+      "case_id": "claim_t09_year_mismatch",
+      "input": {
+        "answer": "The warranty expires in 2027.",
+        "sources": [
+          {
+            "identifier": "warranty",
+            "text": "The warranty expires in 2025. Coverage does not extend to consequential loss."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "Both statements fix a single year and the years differ, so the source is incompatible with the claim.",
+      "tags": [
+        "negative",
+        "hard_negative",
+        "year"
+      ]
+    },
+    {
+      "case_id": "claim_t10_compatible_deadline",
+      "input": {
+        "answer": "The refund request must be made before 2024.",
+        "sources": [
+          {
+            "identifier": "policy",
+            "text": "The refund request must be made before 2026."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "A 2026 deadline is compatible with a stricter 2024 deadline, so the source does not contradict the claim. This is the same logical trap as the revised development case, in new clothing.",
+      "tags": [
+        "hard_negative",
+        "qualifier",
+        "date"
+      ]
+    },
+    {
+      "case_id": "claim_t11_entity_mismatch",
+      "input": {
+        "answer": "Initech signed the agreement on 3 March 2024.",
+        "sources": [
+          {
+            "identifier": "register",
+            "text": "Globex signed the agreement on 3 March 2024. Umbrella signed the agreement on 11 June 2024."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The date matches exactly but the entity does not. A number-and-keyword matcher would call this supported.",
+      "tags": [
+        "hard_negative",
+        "entity"
+      ]
+    },
+    {
+      "case_id": "claim_t12_metric_mismatch",
+      "input": {
+        "answer": "The number of active users in 2024 was 12,000.",
+        "sources": [
+          {
+            "identifier": "metrics",
+            "text": "The number of paying customers in 2024 was 12,000. The number of active users in 2024 was 48,000."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The passage states the number of active users in 2024 was 48,000, which is incompatible with the claim of 12,000. The first label for this case was insufficient_evidence, written on the assumption that the number 12,000 belonging to a different metric made the claim unsupported rather than refuted. The passage states the claimed metric directly and states a different value, so the label was wrong and the model was right.",
+      "tags": [
+        "negative",
+        "metric",
+        "label_corrected"
+      ],
+      "notes": "Label corrected after the first observed model run."
+    },
+    {
+      "case_id": "claim_t13_two_sources_one_silent",
+      "input": {
+        "answer": "The office is located in Dublin.",
+        "sources": [
+          {
+            "identifier": "contract",
+            "text": "The monthly service fee is 2,400 EUR per calendar month."
+          },
+          {
+            "identifier": "register",
+            "text": "The registered office is located at 12 Bridge Street, Dublin."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "One of two sources answers the claim. Retrieval has to find the right one among distractors.",
+      "tags": [
+        "multi_source"
+      ]
+    },
+    {
+      "case_id": "claim_t14_conditional_claim",
+      "input": {
+        "answer": "If the customer cancels early, the deposit is forfeited.",
+        "sources": [
+          {
+            "identifier": "terms",
+            "text": "If the customer cancels early, the deposit is forfeited. If the customer completes the full term, the deposit is returned."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The condition and its consequence are both stated, so the conditional claim is supported.",
+      "tags": [
+        "positive",
+        "conditional"
+      ]
+    },
+    {
+      "case_id": "claim_t15_scope_claim_partially_covered",
+      "input": {
+        "answer": "Support is available in English and Irish.",
+        "sources": [
+          {
+            "identifier": "support",
+            "text": "Support is available in English, Irish, and French."
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The source covers a superset of the claim. That is compatible with it, but a partial-support reading of a list claim is exactly the trap the citation project exists to catch, so the safe answer is to abstain rather than assert.",
+      "tags": [
+        "hard_negative",
+        "partial"
+      ]
+    }
+  ]
+}

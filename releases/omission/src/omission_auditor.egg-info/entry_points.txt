@@ -1,0 +1,2 @@
+[console_scripts]
+omission-auditor = omission_auditor.cli:main

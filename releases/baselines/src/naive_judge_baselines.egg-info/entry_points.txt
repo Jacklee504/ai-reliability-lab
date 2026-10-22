@@ -1,0 +1,2 @@
+[console_scripts]
+naive-judge-baselines = naive_judge_baselines.cli:main

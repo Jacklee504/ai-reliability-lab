@@ -1,0 +1,244 @@
+{
+  "cases": [
+    {
+      "case_id": "cit_t01_direct_support",
+      "input": {
+        "citations": [
+          {
+            "claim": "The early-career programme runs for 12 months.",
+            "passages": [
+              "The early-career programme runs for 12 months and includes two mentoring sessions per month."
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The cited passage states the duration directly.",
+      "tags": [
+        "positive"
+      ]
+    },
+    {
+      "case_id": "cit_t02_wrong_duration",
+      "input": {
+        "citations": [
+          {
+            "claim": "The early-career programme runs for 12 months.",
+            "passages": [
+              "The early-career programme runs for 18 months and includes two mentoring sessions per month."
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "Every keyword matches and the number is the only difference. This is the case the project exists for.",
+      "tags": [
+        "negative",
+        "hard_negative"
+      ]
+    },
+    {
+      "case_id": "cit_t03_topical_but_no_answer",
+      "input": {
+        "citations": [
+          {
+            "claim": "The early-career programme runs for 12 months.",
+            "passages": [
+              "The early-career programme is open to people in their first two years of employment."
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The passage is on the right subject and does not state the duration.",
+      "tags": [
+        "hard_negative",
+        "false_accusation_control"
+      ]
+    },
+    {
+      "case_id": "cit_t04_two_passages_together",
+      "input": {
+        "citations": [
+          {
+            "claim": "The early-career programme runs for 12 months and includes two mentoring sessions per month.",
+            "passages": [
+              "The early-career programme runs for 12 months.",
+              "The programme includes two mentoring sessions per month."
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "Neither passage supports the claim alone. Both together do.",
+      "tags": [
+        "multi_passage"
+      ]
+    },
+    {
+      "case_id": "cit_t05_wrong_entity",
+      "input": {
+        "citations": [
+          {
+            "claim": "The early-career programme runs for 12 months.",
+            "passages": [
+              "The graduate programme runs for 12 months."
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The number matches but the programme is a different one.",
+      "tags": [
+        "hard_negative",
+        "entity"
+      ]
+    },
+    {
+      "case_id": "cit_t06_no_citation",
+      "input": {
+        "citations": [
+          {
+            "claim": "The early-career programme runs for 12 months.",
+            "passages": []
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "A missing citation is a failure mode, not a truth claim.",
+      "tags": [
+        "failure_mode"
+      ]
+    },
+    {
+      "case_id": "cit_t07_partial_support",
+      "input": {
+        "citations": [
+          {
+            "claim": "The early-career programme runs for 12 months and starts in September.",
+            "passages": [
+              "The early-career programme runs for 12 months."
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "insufficient_evidence",
+          "uncertain"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The citation supports only the first half of the claim. Partial support must not be reported as full support.",
+      "tags": [
+        "hard_negative",
+        "partial"
+      ]
+    },
+    {
+      "case_id": "cit_t08_wrong_metric",
+      "input": {
+        "citations": [
+          {
+            "claim": "The programme has 40 participants.",
+            "passages": [
+              "The programme has 40 mentors. The programme has 120 participants."
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The passage states the programme has 120 participants, so the claim of 40 participants is incompatible with it. The first label for this case was insufficient_evidence, written on the assumption that the wrong metric makes the citation silent. The passage does state the participant count, and it states a different one, so the label was wrong and the model was right.",
+      "tags": [
+        "negative",
+        "metric",
+        "label_corrected"
+      ],
+      "notes": "Label corrected after the first observed model run."
+    },
+    {
+      "case_id": "cit_t09_negated_support",
+      "input": {
+        "citations": [
+          {
+            "claim": "The programme does not charge a participation fee.",
+            "passages": [
+              "The programme charges a 50 EUR participation fee."
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The passage states the opposite of the negated claim.",
+      "tags": [
+        "negative",
+        "negation"
+      ]
+    },
+    {
+      "case_id": "cit_t10_year_mismatch",
+      "input": {
+        "citations": [
+          {
+            "claim": "The programme launched in 2021.",
+            "passages": [
+              "The programme launched in 2019 and was expanded in 2022."
+            ]
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The launch year is fixed at a different year in the passage.",
+      "tags": [
+        "negative",
+        "year"
+      ]
+    }
+  ]
+}

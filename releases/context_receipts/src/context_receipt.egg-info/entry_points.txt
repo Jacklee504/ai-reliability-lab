@@ -1,0 +1,2 @@
+[console_scripts]
+context-receipt = context_receipt.cli:main

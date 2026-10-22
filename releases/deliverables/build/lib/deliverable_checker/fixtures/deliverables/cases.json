@@ -1,0 +1,136 @@
+{
+  "cases": [
+    {
+      "case_id": "deliv_001_complete_quiz",
+      "project": "deliverables",
+      "input": {
+        "request": "Write 50 questions across six chapters, four options each, with an answer key and an explanation for every answer.",
+        "deliverable": "CHAPTER 1\nQ1) What is 2+2?\nA) 3\nB) 4\nC) 5\nD) 6\n\nCHAPTER 2\nQ2) Capital of France?\nA) Rome\nB) Paris\nC) Madrid\nD) Berlin\n\nANSWER KEY\n1. B\n2. B\n\nEXPLANATIONS\n1. 2+2 is 4, so B is correct.\n2. The capital of France is Paris, so B is correct."
+      },
+      "expected": {
+        "verdict": "failed",
+        "requirement_count_gte": 4,
+        "failed_gte": 1,
+        "must_detect_failure_containing": "question"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The request asks for 50 questions across six chapters. The deliverable has 2 questions and 2 chapters. The checker must catch the count shortfall and must not invent a requirement the user never gave.",
+      "tags": ["wrong_count", "missing_chapters"]
+    },
+    {
+      "case_id": "deliv_002_correct_counts",
+      "project": "deliverables",
+      "input": {
+        "request": "Write 2 questions across 2 chapters, four options each, with an answer key.",
+        "deliverable": "CHAPTER 1\nQ1) What is 2+2?\nA) 3\nB) 4\nC) 5\nD) 6\n\nCHAPTER 2\nQ2) Capital of France?\nA) Rome\nB) Paris\nC) Madrid\nD) Berlin\n\nANSWER KEY\n1. B\n2. B"
+      },
+      "expected": {
+        "verdict": "passed",
+        "requirement_count_gte": 3,
+        "failed": 0
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "A deliverable that meets every deterministic requirement passes. This is the control case: a checker that fails everything is useless.",
+      "tags": ["happy_path", "control"]
+    },
+    {
+      "case_id": "deliv_003_missing_answer_key",
+      "project": "deliverables",
+      "input": {
+        "request": "Write 2 questions across 2 chapters, four options each, with an answer key.",
+        "deliverable": "CHAPTER 1\nQ1) What is 2+2?\nA) 3\nB) 4\nC) 5\nD) 6\n\nCHAPTER 2\nQ2) Capital of France?\nA) Rome\nB) Paris\nC) Madrid\nD) Berlin"
+      },
+      "expected": {
+        "verdict": "failed",
+        "failed_gte": 1,
+        "must_detect_failure_containing": "answer key"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "A missing answer key is a missing required section even though the counts are right.",
+      "tags": ["missing_section"]
+    },
+    {
+      "case_id": "deliv_004_missing_named_section",
+      "project": "deliverables",
+      "input": {
+        "request": "Write 2 questions across 2 chapters, four options each, and include a section titled Glossary.",
+        "deliverable": "CHAPTER 1\nQ1) What is 2+2?\nA) 3\nB) 4\nC) 5\nD) 6\n\nCHAPTER 2\nQ2) Capital of France?\nA) Rome\nB) Paris\nC) Madrid\nD) Berlin"
+      },
+      "expected": {
+        "verdict": "failed",
+        "failed_gte": 1
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "A named section that the user asked for is absent.",
+      "tags": ["missing_section", "named"]
+    },
+    {
+      "case_id": "deliv_005_wrong_format",
+      "project": "deliverables",
+      "input": {
+        "request": "Write 2 questions across 2 chapters, four options each, with an answer key, in markdown.",
+        "deliverable": "CHAPTER 1\nQ1) What is 2+2?\nA) 3\nB) 4\nC) 5\nD) 6\n\nCHAPTER 2\nQ2) Capital of France?\nA) Rome\nB) Paris\nC) Madrid\nD) Berlin\n\nANSWER KEY\n1. B\n2. B"
+      },
+      "expected": {
+        "verdict": "failed",
+        "failed_gte": 1
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The request asked for markdown and the deliverable has no markdown headings.",
+      "tags": ["wrong_format"]
+    },
+    {
+      "case_id": "deliv_006_semantic_only_requirement",
+      "project": "deliverables",
+      "input": {
+        "request": "Explain how compound interest works.",
+        "deliverable": "Compound interest is interest calculated on the principal and on accumulated interest from previous periods."
+      },
+      "expected": {
+        "verdict": "cannot_verify",
+        "failed": 0
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "A purely semantic request yields no deterministic requirement. The checker must say cannot_verify rather than silently pass.",
+      "tags": ["semantic", "abstain"]
+    },
+    {
+      "case_id": "deliverable_007_no_requirements",
+      "project": "deliverables",
+      "input": {
+        "request": "Make it good.",
+        "deliverable": "It is good now."
+      },
+      "expected": {
+        "verdict": "cannot_verify",
+        "requirement_count": 0
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "A vague request yields no requirements. Inventing some would be the failure mode this project exists to avoid.",
+      "tags": ["vague_request", "no_invention"]
+    },
+    {
+      "case_id": "deliverable_008_explanation_requirement",
+      "project": "deliverables",
+      "input": {
+        "request": "Write 2 questions across 2 chapters, four options each, with an answer key and an explanation for every answer.",
+        "deliverable": "CHAPTER 1\nQ1) What is 2+2?\nA) 3\nB) 4\nC) 5\nD) 6\n\nCHAPTER 2\nQ2) Capital of France?\nA) Rome\nB) Paris\nC) Madrid\nD) Berlin\n\nANSWER KEY\n1. B\n2. B"
+      },
+      "expected": {
+        "verdict": "cannot_verify",
+        "failed": 0
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The per-answer explanation requirement needs semantic judgement. It must be reported as cannot_verify, not as passed, and must not be silently dropped.",
+      "tags": ["semantic", "abstain"]
+    }
+  ]
+}

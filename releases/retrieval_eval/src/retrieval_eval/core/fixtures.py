@@ -22,15 +22,23 @@ FIXTURES_DIRNAME = "fixtures"
 def fixtures_root() -> Path:
     """Locate the fixtures directory.
 
-    Resolution order: the ``AIRL_FIXTURES`` environment variable, then a
-    fixtures directory found by walking up from this file, then the
-    current working directory.
+    Resolution order: the ``AIRL_FIXTURES`` environment variable, then
+    the fixtures directory shipped inside the package, then a fixtures
+    directory found by walking up from this file, then the current
+    working directory.
+
+    The packaged directory comes first because an installed package
+    has no checkout to walk up to. Without it, a wheel would install
+    cleanly and then fail to find its own cases.
     """
     env = os.environ.get("AIRL_FIXTURES")
     if env:
         return Path(env).expanduser()
 
     here = Path(__file__).resolve()
+    packaged = here.parent.parent / FIXTURES_DIRNAME
+    if packaged.is_dir():
+        return packaged
     for parent in here.parents:
         candidate = parent / FIXTURES_DIRNAME
         if candidate.is_dir():

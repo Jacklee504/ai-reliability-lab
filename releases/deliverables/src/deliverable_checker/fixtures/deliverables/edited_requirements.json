@@ -1,0 +1,15 @@
+{
+  "requirements": [
+    {
+      "requirement_id": "req_01",
+      "text": "must contain 2 question",
+      "kind": "count",
+      "check": "deterministic",
+      "target": "",
+      "count": 2,
+      "unit": "question",
+      "source_quote": "Write two questions.",
+      "note": "Reviewed requirement list for the CLI example."
+    }
+  ]
+}

@@ -1,0 +1,142 @@
+{
+  "cases": [
+    {
+      "case_id": "om_t01_material_omission_retention",
+      "input": {
+        "source": "SERVICE ADDENDUM\n\n1. Retention\nCustomer records are retained for 24 months after the end of the subscription.\nBackups are deleted within 90 days.\n\n2. Termination\nThe customer may terminate with 60 days notice.\nTermination for convenience does not trigger a refund.\n\n3. Support\nSupport is available on business days only.\nEmergency support is available for 24 hours a day.",
+        "summary": "This addendum governs the subscription service.\nThe customer may terminate with 60 days notice.\nTermination for convenience does not trigger a refund.",
+        "purpose": "Summarize the data retention obligations."
+      },
+      "expected": {
+        "must_report": [
+          "retained for 24 months"
+        ],
+        "verdict": "potential_omission"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The brief asks about retention. The 24-month retention obligation is exactly on point and the summary drops it.",
+      "tags": [
+        "positive",
+        "purpose_relative"
+      ]
+    },
+    {
+      "case_id": "om_t02_purpose_relative_same_source",
+      "input": {
+        "source": "SERVICE ADDENDUM\n\n1. Retention\nCustomer records are retained for 24 months after the end of the subscription.\nBackups are deleted within 90 days.\n\n2. Termination\nThe customer may terminate with 60 days notice.\nTermination for convenience does not trigger a refund.\n\n3. Support\nSupport is available on business days only.\nEmergency support is available for 24 hours a day.",
+        "summary": "This addendum governs the subscription service.\nThe customer may terminate with 60 days notice.\nTermination for convenience does not trigger a refund.",
+        "purpose": "Summarize the support arrangements."
+      },
+      "expected": {
+        "must_not_report": [
+          "retained for 24 months"
+        ],
+        "verdict": "no_finding"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The same source and the same summary, but the brief asks about support. The retention obligation is not material to this brief, so reporting it is a false alarm. The summary also omits the support facts, so a detector that finds nothing is not demonstrating purpose-relative behaviour, only that it did not accuse.",
+      "tags": [
+        "purpose_relative",
+        "false_alarm_control"
+      ]
+    },
+    {
+      "case_id": "om_t03_empty_source",
+      "input": {
+        "source": "",
+        "summary": "The addendum governs the service.",
+        "purpose": "Summarize the data retention obligations."
+      },
+      "expected": {
+        "max_potential_omissions": 0,
+        "verdict": "no_finding"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "An empty source is a failure mode. The auditor must not invent candidates.",
+      "tags": [
+        "failure_mode"
+      ]
+    },
+    {
+      "case_id": "om_t04_empty_summary",
+      "input": {
+        "source": "SERVICE ADDENDUM\n\n1. Retention\nCustomer records are retained for 24 months after the end of the subscription.",
+        "summary": "",
+        "purpose": "Summarize the data retention obligations."
+      },
+      "expected": {
+        "min_potential_omissions": 1,
+        "verdict": "potential_omission"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "An empty summary omits everything, so the source statement must be reported.",
+      "tags": [
+        "positive"
+      ]
+    },
+    {
+      "case_id": "om_t05_harmless_omission",
+      "input": {
+        "source": "SERVICE ADDENDUM\n\n1. Definitions\nService means the subscription service described in the order form.\n\n2. Retention\nCustomer records are retained for 24 months after the end of the subscription.\n\n3. Support\nSupport is available on business days only.\nEmergency support is available for 24 hours a day.",
+        "summary": "The addendum governs the subscription service.\nCustomer records are retained for 24 months after the end of the subscription.\nSupport is available on business days only.\nEmergency support is available for 24 hours a day.",
+        "purpose": "Summarize the support arrangements."
+      },
+      "expected": {
+        "must_not_report": [
+          "Service means"
+        ],
+        "verdict": "no_finding"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The definition is dropped, but it is not part of the support brief. A detector that flags every dropped sentence is useless.",
+      "tags": [
+        "false_alarm_control",
+        "harmless_omission"
+      ]
+    },
+    {
+      "case_id": "om_t06_material_omission_emergency_support",
+      "input": {
+        "source": "SERVICE ADDENDUM\n\n1. Support\nSupport is available on business days only.\nEmergency support is available for 24 hours a day.\nEmergency support carries a 4 percent surcharge.",
+        "summary": "This addendum governs the subscription service.\nSupport is available on business days only.",
+        "purpose": "Summarize the costs the customer may incur."
+      },
+      "expected": {
+        "must_report": [
+          "4 percent surcharge"
+        ],
+        "verdict": "potential_omission"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "The brief asks about costs. The emergency support surcharge is the only cost in the source and the summary omits it.",
+      "tags": [
+        "positive",
+        "purpose_relative"
+      ]
+    },
+    {
+      "case_id": "om_t07_no_omission",
+      "input": {
+        "source": "SERVICE ADDENDUM\n\n1. Support\nSupport is available on business days only.\nEmergency support is available for 24 hours a day.",
+        "summary": "This addendum governs the subscription service.\nSupport is available on business days only.\nEmergency support is available for 24 hours a day.",
+        "purpose": "Summarize the support arrangements."
+      },
+      "expected": {
+        "max_potential_omissions": 0,
+        "verdict": "no_finding"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "A summary that covers the brief completely should produce no candidates. This is the control that a detector which flags everything fails.",
+      "tags": [
+        "control"
+      ]
+    }
+  ]
+}

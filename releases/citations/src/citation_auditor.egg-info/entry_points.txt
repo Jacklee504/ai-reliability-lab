@@ -1,0 +1,2 @@
+[console_scripts]
+citation-auditor = citation_auditor.cli:main

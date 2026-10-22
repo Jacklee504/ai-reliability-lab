@@ -1,0 +1,2 @@
+[console_scripts]
+source-version-tracker = source_version_tracker.cli:main

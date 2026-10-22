@@ -1,0 +1,25 @@
+SERVICE AGREEMENT SUMMARY
+Version: 2.0
+Effective date: 2024-03-01
+
+1. Fees and Payment
+The monthly service fee is 2,400 EUR per calendar month.
+Invoices are issued on the first working day of each month.
+Payment is due within 30 days of the invoice date.
+A late payment interest of 1.5 percent per month applies to overdue amounts.
+
+2. Term and Termination
+The agreement runs for an initial term of 24 months.
+Either party may terminate the agreement for convenience with 90 days written notice.
+Termination for cause requires 30 days written notice and an opportunity to cure.
+After termination the customer must return or destroy all copies of the software.
+
+3. Data Protection
+Personal data is processed solely for the purpose of delivering the service.
+The processor must notify the controller of any personal data breach within 48 hours.
+Data is stored within the European Economic Area.
+
+4. Liability
+Total liability is capped at the fees paid in the 12 months preceding the claim.
+The cap does not apply to intentional misconduct or breach of confidentiality.
+Neither party is liable for indirect or consequential loss.

@@ -1,0 +1,2 @@
+[console_scripts]
+study-coverage = study_coverage.cli:main

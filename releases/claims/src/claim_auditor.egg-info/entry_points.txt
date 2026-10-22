@@ -1,0 +1,2 @@
+[console_scripts]
+claim-auditor = claim_auditor.cli:main

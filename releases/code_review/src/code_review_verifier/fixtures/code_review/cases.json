@@ -1,0 +1,238 @@
+{
+  "cases": [
+    {
+      "case_id": "cr_001_valid_null_warning",
+      "input": {
+        "files": {
+          "db.py": "def get_user(conn, user_id):\n    cursor = conn.cursor()\n    cursor.execute(\"SELECT * FROM users WHERE id = ?\", (user_id,))\n    return cursor.fetchone()"
+        },
+        "comments": [
+          {
+            "text": "There is no null check on user_id before the query runs.",
+            "file": "db.py",
+            "line": 1
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The function has no null guard before the query. This is a static structural claim; no database behavior is assumed.",
+      "tags": [
+        "valid_finding",
+        "static_fact"
+      ]
+    },
+    {
+      "case_id": "cr_002_false_null_warning",
+      "input": {
+        "files": {
+          "db.py": "def get_user(conn, user_id):\n    if user_id is None:\n        raise ValueError(\"user_id is required\")\n    cursor = conn.cursor()\n    cursor.execute(\"SELECT * FROM users WHERE id = ?\", (user_id,))\n    return cursor.fetchone()"
+        },
+        "comments": [
+          {
+            "text": "There is no null check on user_id before the query runs.",
+            "file": "db.py",
+            "line": 1
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The comment cites the function line, but the code has a null guard on line 2 before the query.",
+      "tags": [
+        "false_finding",
+        "hard_negative"
+      ]
+    },
+    {
+      "case_id": "cr_003_missing_guard_valid",
+      "input": {
+        "files": {
+          "db.py": "def get_user(conn, user_id):\n    cursor = conn.cursor()\n    cursor.execute(\"SELECT * FROM users WHERE id = ?\", (user_id,))\n    return cursor.fetchone()"
+        },
+        "comments": [
+          {
+            "text": "There is no null check on user_id before the query runs.",
+            "file": "db.py",
+            "line": 1
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The comment correctly identifies a missing guard, and the code confirms it.",
+      "tags": [
+        "valid_finding"
+      ]
+    },
+    {
+      "case_id": "cr_004_missing_guard_false",
+      "input": {
+        "files": {
+          "db.py": "def get_user(conn, user_id):\n    if user_id is None:\n        raise ValueError(\"user_id is required\")\n    cursor = conn.cursor()\n    cursor.execute(\"SELECT * FROM users WHERE id = ?\", (user_id,))\n    return cursor.fetchone()"
+        },
+        "comments": [
+          {
+            "text": "There is no null check on user_id before the query runs.",
+            "file": "db.py",
+            "line": 1
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The guard is on line 2, just below the cited line. A verifier that only looks at the cited line would miss it.",
+      "tags": [
+        "false_finding",
+        "hard_negative",
+        "guard_elsewhere"
+      ]
+    },
+    {
+      "case_id": "cr_005_unbounded_valid",
+      "input": {
+        "files": {
+          "calc.py": "def total(values):\n    running = 0\n    while True:\n        running += next(values)\n    return running"
+        },
+        "comments": [
+          {
+            "text": "This loop is unbounded.",
+            "file": "calc.py",
+            "line": 1
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "supported"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The code has a while True loop with no break. This asserts the loop structure, not guaranteed runtime nontermination.",
+      "tags": [
+        "valid_finding"
+      ]
+    },
+    {
+      "case_id": "cr_006_unbounded_false",
+      "input": {
+        "files": {
+          "calc.py": "def total():\n    running = 0\n    for value in [1, 2, 3]:\n        running += value\n    return running"
+        },
+        "comments": [
+          {
+            "text": "This loop is unbounded.",
+            "file": "calc.py",
+            "line": 1
+          }
+        ]
+      },
+      "expected": {
+        "verdict": "contradicted"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The loop iterates over an explicit three-item list, so the structural unbounded claim is false.",
+      "tags": [
+        "false_finding",
+        "hard_negative"
+      ]
+    },
+    {
+      "case_id": "cr_007_race_condition_unverified",
+      "input": {
+        "files": {
+          "fs.py": "def delete_if_exists(path):\n    if path.exists():\n        path.unlink()"
+        },
+        "comments": [
+          {
+            "text": "This is a race condition between the check and the use.",
+            "file": "fs.py",
+            "line": 1
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "uncertain",
+          "insufficient_evidence"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "A concurrency claim cannot be settled by reading the function alone. The verifier must report unverified rather than guessing in either direction.",
+      "tags": [
+        "unverified",
+        "abstain",
+        "hard_negative"
+      ]
+    },
+    {
+      "case_id": "cr_008_wrong_file",
+      "input": {
+        "files": {
+          "db.py": "def get_user(conn, user_id):\n    cursor = conn.cursor()\n    cursor.execute(\"SELECT * FROM users WHERE id = ?\", (user_id,))\n    return cursor.fetchone()"
+        },
+        "comments": [
+          {
+            "text": "There is no null check on user_id before the query runs.",
+            "file": "missing.py",
+            "line": 1
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "uncertain",
+          "insufficient_evidence"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The comment points at a file that is not in the snapshot. The verifier must say it cannot check, not assume the comment is right or wrong.",
+      "tags": [
+        "failure_mode",
+        "missing_file"
+      ]
+    },
+    {
+      "case_id": "cr_009_style_comment_unverified",
+      "input": {
+        "files": {
+          "db.py": "def get_user(conn, user_id):\n    cursor = conn.cursor()\n    cursor.execute(\"SELECT * FROM users WHERE id = ?\", (user_id,))\n    return cursor.fetchone()"
+        },
+        "comments": [
+          {
+            "text": "Consider using a more descriptive variable name here.",
+            "file": "db.py",
+            "line": 3
+          }
+        ]
+      },
+      "expected": {
+        "verdict": [
+          "uncertain",
+          "insufficient_evidence"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "A style comment has no technical assertion to check. The verifier must not manufacture a technical verdict from taste.",
+      "tags": [
+        "style",
+        "abstain"
+      ]
+    }
+  ]
+}

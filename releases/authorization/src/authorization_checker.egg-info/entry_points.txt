@@ -1,0 +1,2 @@
+[console_scripts]
+authorization-checker = authorization_checker.cli:main

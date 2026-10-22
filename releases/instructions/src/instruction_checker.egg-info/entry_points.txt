@@ -1,0 +1,2 @@
+[console_scripts]
+instruction-checker = instruction_checker.cli:main

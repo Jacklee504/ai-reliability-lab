@@ -1,0 +1,151 @@
+{
+  "cases": [
+    {
+      "case_id": "om_001_material_omission_breach_notice",
+      "input": {
+        "source": "DATA PROCESSING ADDENDUM\n\n1. Scope and Definitions\nPersonal data means any information relating to an identified or identifiable natural person.\nThe controller is the entity that determines the purposes of processing.\nThe processor processes personal data solely on the controller documented instructions.\n\n2. Processing Purposes\nPersonal data is processed for the purpose of delivering the service.\nPersonal data is processed for the purpose of improving the service.\nThe processor shall not sell personal data to third parties.\nData is retained for 24 months after the end of the contract.\n\n3. Security Measures\nThe processor shall implement appropriate technical and organisational measures.\nPersonal data shall be encrypted in transit and at rest.\nThe processor shall notify the controller of any personal data breach within 48 hours.\nAccess to personal data shall be limited to authorised personnel.\n\n4. Subprocessors\nThe controller gives general written authorisation for the use of subprocessors.\nThe processor shall inform the controller of any intended change of subprocessor.\nThe processor remains fully liable for the acts and omissions of its subprocessors.\n\n5. International Transfers\nPersonal data shall not be transferred outside the European Economic Area.\nTransfers outside the European Economic Area require appropriate safeguards.\nThe processor shall keep a record of all international transfers.\n",
+        "summary": "This addendum governs the processing of personal data by the processor.\nThe processor processes personal data only on the controller documented instructions.\nThe processor must not sell personal data to third parties.\nThe processor must implement appropriate technical and organisational measures.\nPersonal data must be encrypted in transit and at rest.\nAccess to personal data is limited to authorised personnel.\nThe controller gives general written authorisation for subprocessors.\nThe processor remains liable for the acts of its subprocessors.\nPersonal data may not be transferred outside the European Economic Area.",
+        "purpose": "Summarize the security obligations the processor has."
+      },
+      "expected": {
+        "must_report": [
+          "breach within 48 hours"
+        ],
+        "verdict": "potential_omission"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The summary drops the 48 hour breach notification obligation, which is exactly what a security-obligations brief needs. This is the positive case.",
+      "tags": [
+        "material_omission",
+        "positive"
+      ]
+    },
+    {
+      "case_id": "om_002_material_omission_technical_measures",
+      "input": {
+        "source": "DATA PROCESSING ADDENDUM\n\n1. Scope and Definitions\nPersonal data means any information relating to an identified or identifiable natural person.\nThe controller is the entity that determines the purposes of processing.\nThe processor processes personal data solely on the controller documented instructions.\n\n2. Processing Purposes\nPersonal data is processed for the purpose of delivering the service.\nPersonal data is processed for the purpose of improving the service.\nThe processor shall not sell personal data to third parties.\nData is retained for 24 months after the end of the contract.\n\n3. Security Measures\nThe processor shall implement appropriate technical and organisational measures.\nPersonal data shall be encrypted in transit and at rest.\nThe processor shall notify the controller of any personal data breach within 48 hours.\nAccess to personal data shall be limited to authorised personnel.\n\n4. Subprocessors\nThe controller gives general written authorisation for the use of subprocessors.\nThe processor shall inform the controller of any intended change of subprocessor.\nThe processor remains fully liable for the acts and omissions of its subprocessors.\n\n5. International Transfers\nPersonal data shall not be transferred outside the European Economic Area.\nTransfers outside the European Economic Area require appropriate safeguards.\nThe processor shall keep a record of all international transfers.\n",
+        "summary": "This addendum governs the processing of personal data by the processor.\nThe processor processes personal data only on the controller documented instructions.\nThe processor must not sell personal data to third parties.\nPersonal data must be encrypted in transit and at rest.\nAccess to personal data is limited to authorised personnel.\nThe controller gives general written authorisation for subprocessors.\nThe processor remains liable for the acts of its subprocessors.\nPersonal data may not be transferred outside the European Economic Area.",
+        "purpose": "Summarize the security obligations the processor has."
+      },
+      "expected": {
+        "must_report": [
+          "technical and organisational measures"
+        ],
+        "verdict": "potential_omission"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "A second deletion of a security obligation, this time the measures requirement.",
+      "tags": [
+        "material_omission",
+        "positive"
+      ]
+    },
+    {
+      "case_id": "om_003_harmless_omission_control",
+      "input": {
+        "source": "DATA PROCESSING ADDENDUM\n\n1. Scope and Definitions\nPersonal data means any information relating to an identified or identifiable natural person.\nThe controller is the entity that determines the purposes of processing.\nThe processor processes personal data solely on the controller documented instructions.\n\n2. Processing Purposes\nPersonal data is processed for the purpose of delivering the service.\nPersonal data is processed for the purpose of improving the service.\nThe processor shall not sell personal data to third parties.\nData is retained for 24 months after the end of the contract.\n\n3. Security Measures\nThe processor shall implement appropriate technical and organisational measures.\nPersonal data shall be encrypted in transit and at rest.\nThe processor shall notify the controller of any personal data breach within 48 hours.\nAccess to personal data shall be limited to authorised personnel.\n\n4. Subprocessors\nThe controller gives general written authorisation for the use of subprocessors.\nThe processor shall inform the controller of any intended change of subprocessor.\nThe processor remains fully liable for the acts and omissions of its subprocessors.\n\n5. International Transfers\nPersonal data shall not be transferred outside the European Economic Area.\nTransfers outside the European Economic Area require appropriate safeguards.\nThe processor shall keep a record of all international transfers.\n",
+        "summary": "This addendum governs the processing of personal data by the processor.\nThe processor processes personal data only on the controller documented instructions.\nThe processor must not sell personal data to third parties.\nThe processor must implement appropriate technical and organisational measures.\nPersonal data must be encrypted in transit and at rest.\nThe processor must notify the controller of any personal data breach within 48 hours.\nAccess to personal data is limited to authorised personnel.\nThe controller gives general written authorisation for subprocessors.\nThe processor remains liable for the acts of its subprocessors.\nPersonal data may not be transferred outside the European Economic Area.",
+        "purpose": "Summarize the security obligations the processor has."
+      },
+      "expected": {
+        "max_potential_omissions": 1,
+        "verdict": [
+          "no_finding",
+          "potential_omission"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The summary drops only the definition of personal data and the purpose clauses, which do not matter for a security-obligations brief. A detector that flags these is useless. This is the false-alarm control. The expected value accepts either outcome: the subprocessor-change notification duty is a governance obligation, and whether it counts as a security obligation for this brief is a judgement call. The case is retained as a recorded disagreement rather than being scored as a pass or a failure.",
+      "tags": [
+        "false_alarm_control",
+        "harmless_omission",
+        "judgement_disagreement"
+      ]
+    },
+    {
+      "case_id": "om_004_purpose_relative",
+      "input": {
+        "source": "DATA PROCESSING ADDENDUM\n\n1. Scope and Definitions\nPersonal data means any information relating to an identified or identifiable natural person.\nThe controller is the entity that determines the purposes of processing.\nThe processor processes personal data solely on the controller documented instructions.\n\n2. Processing Purposes\nPersonal data is processed for the purpose of delivering the service.\nPersonal data is processed for the purpose of improving the service.\nThe processor shall not sell personal data to third parties.\nData is retained for 24 months after the end of the contract.\n\n3. Security Measures\nThe processor shall implement appropriate technical and organisational measures.\nPersonal data shall be encrypted in transit and at rest.\nThe processor shall notify the controller of any personal data breach within 48 hours.\nAccess to personal data shall be limited to authorised personnel.\n\n4. Subprocessors\nThe controller gives general written authorisation for the use of subprocessors.\nThe processor shall inform the controller of any intended change of subprocessor.\nThe processor remains fully liable for the acts and omissions of its subprocessors.\n\n5. International Transfers\nPersonal data shall not be transferred outside the European Economic Area.\nTransfers outside the European Economic Area require appropriate safeguards.\nThe processor shall keep a record of all international transfers.\n",
+        "summary": "This addendum governs the processing of personal data by the processor.\nThe processor processes personal data only on the controller documented instructions.\nThe processor must not sell personal data to third parties.\nThe processor must implement appropriate technical and organisational measures.\nPersonal data must be encrypted in transit and at rest.\nAccess to personal data is limited to authorised personnel.\nThe controller gives general written authorisation for subprocessors.\nThe processor remains liable for the acts of its subprocessors.\nPersonal data may not be transferred outside the European Economic Area.",
+        "purpose": "Summarize the definitions used in the addendum."
+      },
+      "expected": {
+        "must_report": [
+          "Personal data means"
+        ],
+        "max_potential_omissions": 1,
+        "verdict": "potential_omission"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The same source and summary, but the purpose asks for the definitions. The breach-notification obligation is not a definition and is not material here, but the \"personal data\" definition is, and the summary leaves it out. The label was revised after the first observed run: the previous expectation of no finding was wrong for this purpose.",
+      "tags": [
+        "purpose_relative",
+        "label_revised"
+      ],
+      "notes": "Label revised after the first observed run. Needs a second human pass."
+    },
+    {
+      "case_id": "om_005_no_omission",
+      "input": {
+        "source": "DATA PROCESSING ADDENDUM\n\n1. Scope and Definitions\nPersonal data means any information relating to an identified or identifiable natural person.\nThe controller is the entity that determines the purposes of processing.\nThe processor processes personal data solely on the controller documented instructions.\n\n2. Processing Purposes\nPersonal data is processed for the purpose of delivering the service.\nPersonal data is processed for the purpose of improving the service.\nThe processor shall not sell personal data to third parties.\nData is retained for 24 months after the end of the contract.\n\n3. Security Measures\nThe processor shall implement appropriate technical and organisational measures.\nPersonal data shall be encrypted in transit and at rest.\nThe processor shall notify the controller of any personal data breach within 48 hours.\nAccess to personal data shall be limited to authorised personnel.\n\n4. Subprocessors\nThe controller gives general written authorisation for the use of subprocessors.\nThe processor shall inform the controller of any intended change of subprocessor.\nThe processor remains fully liable for the acts and omissions of its subprocessors.\n\n5. International Transfers\nPersonal data shall not be transferred outside the European Economic Area.\nTransfers outside the European Economic Area require appropriate safeguards.\nThe processor shall keep a record of all international transfers.\n",
+        "summary": "This addendum governs the processing of personal data by the processor.\nThe processor processes personal data only on the controller documented instructions.\nThe processor must not sell personal data to third parties.\nThe processor must implement appropriate technical and organisational measures.\nPersonal data must be encrypted in transit and at rest.\nThe processor must notify the controller of any personal data breach within 48 hours.\nAccess to personal data is limited to authorised personnel.\nThe controller gives general written authorisation for subprocessors.\nThe processor remains liable for the acts of its subprocessors.\nPersonal data may not be transferred outside the European Economic Area.",
+        "purpose": "Summarize the security obligations the processor has."
+      },
+      "expected": {
+        "max_potential_omissions": 1,
+        "verdict": [
+          "no_finding",
+          "potential_omission"
+        ]
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "A summary that covers the security obligations should produce no candidates. The expected value accepts either outcome: the subprocessor-change notification duty is a governance obligation, and whether it counts as a security obligation for this brief is a judgement call. The case is retained as a recorded disagreement rather than being scored as a pass or a failure.",
+      "tags": [
+        "control",
+        "judgement_disagreement"
+      ]
+    },
+    {
+      "case_id": "om_006_empty_source",
+      "input": {
+        "source": "",
+        "summary": "Some summary.",
+        "purpose": "Summarize the security obligations the processor has."
+      },
+      "expected": {
+        "max_potential_omissions": 0
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "An empty source is a failure mode. The auditor must not crash or invent candidates.",
+      "tags": [
+        "failure_mode",
+        "empty_source"
+      ]
+    },
+    {
+      "case_id": "om_007_empty_summary",
+      "input": {
+        "source": "DATA PROCESSING ADDENDUM\n\n1. Scope and Definitions\nPersonal data means any information relating to an identified or identifiable natural person.\nThe controller is the entity that determines the purposes of processing.\nThe processor processes personal data solely on the controller documented instructions.\n\n2. Processing Purposes\nPersonal data is processed for the purpose of delivering the service.\nPersonal data is processed for the purpose of improving the service.\nThe processor shall not sell personal data to third parties.\nData is retained for 24 months after the end of the contract.\n\n3. Security Measures\nThe processor shall implement appropriate technical and organisational measures.\nPersonal data shall be encrypted in transit and at rest.\nThe processor shall notify the controller of any personal data breach within 48 hours.\nAccess to personal data shall be limited to authorised personnel.\n\n4. Subprocessors\nThe controller gives general written authorisation for the use of subprocessors.\nThe processor shall inform the controller of any intended change of subprocessor.\nThe processor remains fully liable for the acts and omissions of its subprocessors.\n\n5. International Transfers\nPersonal data shall not be transferred outside the European Economic Area.\nTransfers outside the European Economic Area require appropriate safeguards.\nThe processor shall keep a record of all international transfers.\n",
+        "summary": "",
+        "purpose": "Summarize the security obligations the processor has."
+      },
+      "expected": {
+        "min_potential_omissions": 1,
+        "verdict": "potential_omission"
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "An empty summary omits everything. The auditor should report candidates rather than claim the summary is fine.",
+      "tags": [
+        "failure_mode",
+        "empty_summary"
+      ]
+    }
+  ]
+}

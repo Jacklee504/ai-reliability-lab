@@ -1,0 +1,139 @@
+{
+  "cases": [
+    {
+      "case_id": "receipt_t01_text_extracted",
+      "input": {
+        "files": [
+          "t1/policy.txt"
+        ]
+      },
+      "expected": {
+        "extraction_status": "ok",
+        "submitted_char_count_gt": 100,
+        "section_count_gte": 3
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "A plain text document is extracted and chunked, and the receipt reports the sections it found.",
+      "tags": [
+        "positive"
+      ]
+    },
+    {
+      "case_id": "receipt_t02_stale_version_detectable",
+      "input": {
+        "files": [
+          "t2/policy.txt"
+        ],
+        "diff_against": [
+          "t1/policy.txt"
+        ]
+      },
+      "expected": {
+        "extraction_status": "ok",
+        "content_hash_prefix": null
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "A user must be able to see that the file changed from the receipt alone. The diff reports the content hash change and the changed character count.",
+      "tags": [
+        "stale_version",
+        "positive"
+      ]
+    },
+    {
+      "case_id": "receipt_t03_missing_file",
+      "input": {
+        "files": [
+          "t1/does_not_exist.txt"
+        ]
+      },
+      "expected": {
+        "extraction_status": "failed",
+        "submitted_char_count_eq": 0,
+        "warning_containing": "not found"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "A file that could not be read still produces a receipt, and that receipt says the extraction failed rather than reporting an empty document.",
+      "tags": [
+        "failure_mode"
+      ]
+    },
+    {
+      "case_id": "receipt_t04_unsupported_media",
+      "input": {
+        "files": [
+          "unreadable.bin"
+        ]
+      },
+      "expected": {
+        "warning_containing": "unknown media type"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "An unknown media type is reported as a warning so the user knows the text was a guess.",
+      "tags": [
+        "warning"
+      ]
+    },
+    {
+      "case_id": "receipt_t05_empty_file",
+      "input": {
+        "files": [
+          "empty_page.txt"
+        ]
+      },
+      "expected": {
+        "extraction_status": "empty",
+        "submitted_char_count_eq": 0
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "An empty file is reported as empty, not as a successful extraction of nothing.",
+      "tags": [
+        "failure_mode"
+      ]
+    },
+    {
+      "case_id": "receipt_t06_same_version_not_flagged",
+      "input": {
+        "files": [
+          "t1/policy.txt"
+        ],
+        "diff_against": [
+          "t1/policy.txt"
+        ]
+      },
+      "expected": {
+        "extraction_status": "ok"
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "Comparing a file with itself produces no change, so a stale-version check does not cry wolf.",
+      "tags": [
+        "control"
+      ]
+    },
+    {
+      "case_id": "receipt_t07_pdf_extracted",
+      "input": {
+        "files": [
+          "sample_policy.pdf"
+        ]
+      },
+      "expected": {
+        "extraction_status": "ok",
+        "submitted_char_count_gt": 100,
+        "section_count_gte": 3
+      },
+      "label_origin": "model_drafted",
+      "split": "test",
+      "rationale": "A generated PDF is extracted and its page count is recorded, so a user can see what was actually read.",
+      "tags": [
+        "pdf",
+        "positive"
+      ]
+    }
+  ]
+}

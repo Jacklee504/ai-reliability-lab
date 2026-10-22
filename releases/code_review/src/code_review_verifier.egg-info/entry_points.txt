@@ -1,0 +1,2 @@
+[console_scripts]
+code-review-verifier = code_review_verifier.cli:main

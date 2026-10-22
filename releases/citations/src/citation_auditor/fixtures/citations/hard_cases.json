@@ -1,0 +1,7 @@
+{
+  "cases": [
+    {"case_id":"cit_hard_001_missing_amount","input":{"citations":[{"claim":"The monthly fee is 900 EUR.","passages":["The monthly fee is specified in the contract."]}]},"expected":{"verdict":["insufficient_evidence","uncertain"]},"label_origin":"model_drafted","split":"dev","rationale":"The cited passage is on-topic but omits the amount."},
+    {"case_id":"cit_hard_002_two_passages","input":{"citations":[{"claim":"The contract starts in June and ends in December.","passages":["The contract starts in June.","The contract ends in December."]}]},"expected":{"verdict":"supported"},"label_origin":"model_drafted","split":"dev","rationale":"Support requires joining two cited passages."},
+    {"case_id":"cit_hard_003_wrong_metric","input":{"citations":[{"claim":"Acme's profit was 12 million EUR in 2024.","passages":["Acme's revenue was 12 million EUR in 2024."]}]},"expected":{"verdict":["insufficient_evidence","uncertain"]},"label_origin":"model_drafted","split":"dev","rationale":"The entity, amount and year match but the metric differs."}
+  ]
+}

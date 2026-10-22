@@ -9,6 +9,7 @@ description = "Check whether a cited passage actually supports the sentence it i
 readme = "README.md"
 requires-python = ">=3.11"
 license = { text = "MIT" }
+authors = [{ name = "Jack Lee" }]
 keywords = ["ai-reliability", "llm", "evaluation", "audit"]
 classifiers = [
     "Development Status :: 4 - Beta",
@@ -22,6 +23,11 @@ classifiers = [
 ]
 dependencies = []
 
+[project.urls]
+Homepage = "https://github.com/JackLee504/ai-reliability-lab"
+Source = "https://github.com/JackLee504/ai-reliability-lab/tree/main/releases/citations"
+Issues = "https://github.com/JackLee504/ai-reliability-lab/issues"
+
 [project.optional-dependencies]
 dev = ["pytest>=7.0"]
 
@@ -30,6 +36,10 @@ citation-auditor = "citation_auditor.cli:main"
 
 [tool.setuptools.packages.find]
 where = ["src"]
+
+[tool.setuptools.package-data]
+"citation_auditor" = ["fixtures/**/*.json", "fixtures/**/*.txt",
+                "fixtures/**/*.pdf", "fixtures/**/*.bin"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]

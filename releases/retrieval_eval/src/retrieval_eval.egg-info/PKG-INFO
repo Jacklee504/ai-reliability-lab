@@ -1,0 +1,114 @@
+Metadata-Version: 2.4
+Name: retrieval-eval
+Version: 0.1.0
+Summary: Measure whether a ranker retrieves the passage that actually answers the query.
+Author: Jack Lee
+License: MIT
+Project-URL: Homepage, https://github.com/JackLee504/ai-reliability-lab
+Project-URL: Source, https://github.com/JackLee504/ai-reliability-lab/tree/main/releases/retrieval_eval
+Project-URL: Issues, https://github.com/JackLee504/ai-reliability-lab/issues
+Keywords: ai-reliability,llm,evaluation,audit
+Classifier: Development Status :: 4 - Beta
+Classifier: Intended Audience :: Developers
+Classifier: License :: OSI Approved :: MIT License
+Classifier: Programming Language :: Python :: 3
+Classifier: Programming Language :: Python :: 3.11
+Classifier: Programming Language :: Python :: 3.12
+Classifier: Topic :: Scientific/Engineering :: Artificial Intelligence
+Classifier: Topic :: Software Development :: Quality Assurance
+Requires-Python: >=3.11
+Description-Content-Type: text/markdown
+License-File: LICENSE
+Provides-Extra: dev
+Requires-Dist: pytest>=7.0; extra == "dev"
+Dynamic: license-file
+
+# retrieval-eval
+
+Measure whether a ranker retrieves the passage that actually answers the query.
+
+## Why this exists
+
+A tool can retrieve the right passage and still judge it wrongly, and it can judge correctly while having retrieved the wrong passage. The two failures look the same from the outside unless retrieval is measured on its own.
+
+This project isolates the ranking stage. Each case supplies a query, a set of candidate passages, and the span that actually answers it, so the two rankers can be compared on the same question: did the right passage make the cut, and how high did it rank?
+
+## Install
+
+Python 3.11 or newer. There are no runtime dependencies.
+
+```bash
+pip install .
+```
+
+Or run it straight from the source tree:
+
+```bash
+export PYTHONPATH=src
+```
+
+## Use
+
+```bash
+retrieval-eval demo
+```
+
+The demo runs the project on one of its own evaluation cases and
+prints the input, the verdict, and the reasoning. It uses the
+deterministic path, so it needs no model and no network access.
+
+To run the project's own evaluation cases:
+
+```bash
+retrieval-eval eval
+```
+
+## How it works
+
+1. **Candidate selection** takes the labelled candidate set and the span that answers the query.
+2. **Ranking** runs each method over the same candidates.
+3. **Scoring** reports recall at k and mean reciprocal rank for each method.
+
+## The rules that keep it honest
+
+These are the rules that stop the tool producing false
+accusations, which is the failure mode that matters most for a
+reliability tool.
+
+* A retrieval score is topical relevance, never evidence of entailment.
+* The candidate set is supplied, so the measurement isolates ranking and says nothing about chunking or source selection.
+
+## What the results mean
+
+No run file ships with this package. Run the `eval` command to produce one, and read the caveats below before quoting any number it produces.
+
+Every label in this package is model drafted and on the development
+split. The numbers are agreement counts over a small tuned case
+set, not accuracy estimates, and no independent human review has
+been done. Read them as a check that the code does what it says,
+not as a claim about how well it works in the world.
+
+## Known limitations
+
+* The embedding provider here is a deterministic hashed embedder, not a trained model. It has no synonymy, so it measures the mechanism rather than semantic retrieval.
+* The candidate set is given, so the measurement does not cover the whole retrieval pipeline.
+
+## Layout
+
+```
+retrieval-eval/
+  README.md
+  CHANGELOG.md
+  pyproject.toml
+  src/retrieval_eval/
+    retrieval_eval.py    the project itself
+    cli.py           the demo and eval commands
+    demo.py          the worked example
+    core/            the shared types, retrieval, and providers
+  fixtures/retrieval_eval/   the evaluation cases
+  tests/            the project's own test suite
+```
+
+## Licence
+
+MIT. All fixtures are synthetic.

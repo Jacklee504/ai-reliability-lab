@@ -1,0 +1,15 @@
+HOSTING SERVICE SUMMARY
+Version: 2.0
+Effective date: 2024-09-01
+
+1. Storage and Backup
+Customer data is stored in Ireland and Germany.
+Nightly backups are kept for 60 days.
+
+2. Availability
+The service targets 99.9 percent monthly availability.
+Maintenance windows are announced 14 days in advance.
+
+3. Support
+Support is available on business days only.
+Critical incidents receive a response within 30 minutes.

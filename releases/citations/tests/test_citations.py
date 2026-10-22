@@ -58,3 +58,24 @@ def test_a_citation_that_mentions_the_claimed_entity_is_not_downgraded():
         provider=provider,
     )
     assert report.findings[0].verdict.verdict.value == "supported"
+
+
+def test_the_entity_guard_does_not_over_fire():
+    """The subject guard has to be narrow, or it abstains on everything."""
+    from citation_auditor.citations import _entity_mismatch
+
+    # Different subjects: the guard applies.
+    assert _entity_mismatch(
+        "The early-career programme runs for 12 months.",
+        ["The graduate programme runs for 12 months."],
+    )
+    # The same subject: the guard stays out of the way.
+    assert not _entity_mismatch(
+        "The early-career programme runs for 12 months.",
+        ["The early-career programme runs for 12 months."],
+    )
+    # No subject to compare: the guard stays out of the way.
+    assert not _entity_mismatch(
+        "The fee is 2,400 EUR.",
+        ["The fee is described here."],
+    )

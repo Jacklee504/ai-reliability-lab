@@ -1,0 +1,251 @@
+{
+  "cases": [
+    {
+      "case_id": "ret_001_exact_terms",
+      "input": {
+        "query": "What is the notice period?",
+        "passages": [
+          "The monthly service fee is 2,400 EUR per calendar month.",
+          "Either party may terminate the agreement with 90 days written notice.",
+          "Personal data is processed solely to deliver the service.",
+          "Total liability is capped at the fees paid in the preceding 12 months."
+        ],
+        "answering_passages": [
+          2
+        ]
+      },
+      "expected": {
+        "hit_lexical": true,
+        "hit_embedding": false
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The answering passage contains 'written notice' while the query says 'notice period'. The lexical ranker matches on the shared token and finds it at rank 1. The hashed embedder scores the passage low because the two texts share only 'notice', and the other candidates share more tokens with the query. The label was written expecting both to hit; the first measured run showed the embedding path misses it, and the label was changed to the observed behaviour. This case is the clearest measured difference between the two rankers.",
+      "tags": [
+        "token_order",
+        "measured_difference",
+        "label_corrected"
+      ],
+      "notes": "Label changed after the first measured run."
+    },
+    {
+      "case_id": "ret_002_number_disambiguation",
+      "input": {
+        "query": "What was revenue in 2024?",
+        "passages": [
+          "Acme Corp revenue was 4,200,000 in 2023.",
+          "Globex Inc revenue was 3,800,000 in 2023.",
+          "Acme Corp revenue was 5,100,000 in 2024.",
+          "Acme Corp headcount was 1,350 in 2024."
+        ],
+        "answering_passages": [
+          3
+        ]
+      },
+      "expected": {
+        "hit_lexical": true,
+        "hit_embedding": true
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The year and the metric together pick out one passage. The number bonus in the lexical ranker is what makes this work.",
+      "tags": [
+        "numbers"
+      ]
+    },
+    {
+      "case_id": "ret_003_wrong_year_does_not_beat_right_year",
+      "input": {
+        "query": "What was the notice period for termination in 2024?",
+        "passages": [
+          "Either party may terminate the agreement with 60 days written notice in 2023.",
+          "Either party may terminate the agreement with 90 days written notice in 2024.",
+          "Termination for cause requires 30 days written notice.",
+          "The agreement runs for an initial term of 24 months."
+        ],
+        "answering_passages": [
+          2
+        ]
+      },
+      "expected": {
+        "hit_lexical": true,
+        "hit_embedding": true
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "Two passages share every term. The year is what separates them, and the right one has to win.",
+      "tags": [
+        "year",
+        "hard_negative"
+      ]
+    },
+    {
+      "case_id": "ret_004_paraphrase_only",
+      "input": {
+        "query": "How long do I have to cancel?",
+        "passages": [
+          "The monthly service fee is 2,400 EUR per calendar month.",
+          "The customer may end the contract by giving 60 days notice.",
+          "Invoices are issued on the first working day of each month.",
+          "Data is stored within the European Economic Area."
+        ],
+        "answering_passages": [
+          2
+        ]
+      },
+      "expected": {
+        "hit_lexical": false,
+        "hit_embedding": false
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The answering passage says 'end the contract by giving 60 days notice' and the query says 'cancel'. The hashed embedder has no synonymy, so neither ranker can find it. This is the recorded limit of the local embedder, stated as a case rather than a claim.",
+      "tags": [
+        "paraphrase",
+        "known_limit"
+      ]
+    },
+    {
+      "case_id": "ret_005_two_passages_needed",
+      "input": {
+        "query": "What is the fee and how long is the term?",
+        "passages": [
+          "The monthly service fee is 2,400 EUR per calendar month.",
+          "The agreement runs for an initial term of 24 months.",
+          "Personal data is processed solely to deliver the service.",
+          "Total liability is capped at the fees paid in the preceding 12 months."
+        ],
+        "answering_passages": [
+          1,
+          2
+        ]
+      },
+      "expected": {
+        "hit_lexical": true,
+        "hit_embedding": true
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "Two passages answer the query. A hit means at least one of them is retrieved.",
+      "tags": [
+        "multi_answer"
+      ]
+    },
+    {
+      "case_id": "ret_006_no_answering_passage",
+      "input": {
+        "query": "What is the annual licence fee?",
+        "passages": [
+          "The monthly service fee is 2,400 EUR per calendar month.",
+          "Either party may terminate the agreement with 90 days written notice.",
+          "Personal data is processed solely to deliver the service.",
+          "Total liability is capped at the fees paid in the preceding 12 months."
+        ],
+        "answering_passages": []
+      },
+      "expected": {
+        "hit_lexical": false,
+        "hit_embedding": false
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "Nothing in the candidate set answers the query. A good ranker must not pretend otherwise, and this is the case that separates retrieval from hallucination.",
+      "tags": [
+        "no_answer",
+        "false_accusation_control"
+      ]
+    },
+    {
+      "case_id": "ret_007_distractor_with_every_keyword",
+      "input": {
+        "query": "What is the notice period?",
+        "passages": [
+          "The notice period is set out in the termination clause of the master agreement.",
+          "The notice period is 90 days written notice for termination for convenience.",
+          "Notice periods do not apply to the support plan.",
+          "The support plan renews automatically."
+        ],
+        "answering_passages": [
+          2
+        ]
+      },
+      "expected": {
+        "hit_lexical": true,
+        "hit_embedding": true
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "Three passages share the keyword 'notice'. The one that answers the question has to be in the top three.",
+      "tags": [
+        "hard_negative",
+        "keyword_collision"
+      ]
+    },
+    {
+      "case_id": "ret_008_metric_swap",
+      "input": {
+        "query": "How many active users were there in 2024?",
+        "passages": [
+          "There were 12,000 paying customers in 2024.",
+          "There were 48,000 active users in 2024.",
+          "There were 1,350 employees in 2024.",
+          "Revenue in 2024 was 5,100,000 EUR."
+        ],
+        "answering_passages": [
+          2
+        ]
+      },
+      "expected": {
+        "hit_lexical": true,
+        "hit_embedding": true
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The metric is what separates two passages that both mention 2024 and a number.",
+      "tags": [
+        "metric",
+        "hard_negative"
+      ]
+    },
+    {
+      "case_id": "ret_009_single_candidate",
+      "input": {
+        "query": "What is the fee?",
+        "passages": [
+          "The monthly service fee is 2,400 EUR per calendar month."
+        ],
+        "answering_passages": [
+          1
+        ]
+      },
+      "expected": {
+        "hit_lexical": true,
+        "hit_embedding": true
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "The degenerate case. A ranker that cannot return the only candidate is broken.",
+      "tags": [
+        "easy"
+      ]
+    },
+    {
+      "case_id": "ret_010_empty_candidate_set",
+      "input": {
+        "query": "What is the fee?",
+        "passages": [],
+        "answering_passages": []
+      },
+      "expected": {
+        "hit_lexical": false,
+        "hit_embedding": false
+      },
+      "label_origin": "model_drafted",
+      "split": "dev",
+      "rationale": "An empty candidate set must return nothing, not crash and not invent a passage.",
+      "tags": [
+        "failure_mode"
+      ]
+    }
+  ]
+}

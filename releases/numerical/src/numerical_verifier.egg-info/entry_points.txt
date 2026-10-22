@@ -1,0 +1,2 @@
+[console_scripts]
+numerical-verifier = numerical_verifier.cli:main

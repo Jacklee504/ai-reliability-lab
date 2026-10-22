@@ -1,0 +1,2 @@
+[console_scripts]
+deliverable-checker = deliverable_checker.cli:main

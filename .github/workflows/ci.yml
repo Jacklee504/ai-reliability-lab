@@ -1,0 +1,67 @@
+name: CI
+
+on:
+  push:
+    branches: [main]
+  pull_request:
+    branches: [main]
+
+permissions:
+  contents: read
+
+jobs:
+  test:
+    name: Test
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        python-version: ["3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest pypdf
+
+      - name: Run the test suite
+        run: python -m pytest -q
+
+      - name: Check the packages build
+        run: |
+          python -m pip install build
+          python -m build --wheel --outdir /tmp/dist
+
+  releases:
+    name: Release check
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: actions/setup-python@v5
+        with:
+          python-version: "3.12"
+
+      - name: Install
+        run: |
+          python -m pip install --upgrade pip
+          python -m pip install pytest pypdf
+
+      - name: Build every release
+        run: |
+          PYTHONPATH=src python -m ai_reliability.cli release --all --out releases
+
+      - name: Verify every release stands alone
+        run: |
+          PYTHONPATH=src python -m ai_reliability.cli release --verify --out releases
+
+      - name: Upload the built packages
+        uses: actions/upload-artifact@v4
+        with:
+          name: release-packages
+          path: releases/

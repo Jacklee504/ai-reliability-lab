@@ -1,0 +1,101 @@
+# source-version-tracker
+
+Find the claims that need rechecking because the source they cited has changed.
+
+## Why this exists
+
+An answer grounded in a document stays grounded only as long as the document is unchanged. Edit a clause and every claim that quoted that clause is now unverified, but nothing in the answer says so.
+
+The tracker finds the claims whose evidence overlaps a changed region and queues them for review. It does not reverse a verdict, because a changed source means the evidence has to be looked at again, not that the old answer was right or wrong.
+
+## Install
+
+Python 3.11 or newer. There are no runtime dependencies.
+
+```bash
+pip install .
+```
+
+Or run it straight from the source tree:
+
+```bash
+export PYTHONPATH=src
+```
+
+## Use
+
+```bash
+source-version-tracker demo
+```
+
+The demo runs the project on one of its own evaluation cases and
+prints the input, the verdict, and the reasoning. It uses the
+deterministic path, so it needs no model and no network access.
+
+To run the project's own evaluation cases:
+
+```bash
+source-version-tracker eval
+```
+
+## How it works
+
+1. **Diffing** finds the changed character ranges between the two versions of a source.
+2. **Overlap** tests each recorded evidence span against those ranges.
+3. **Queueing** lists the claims to revisit, and records why each one was queued.
+
+## The rules that keep it honest
+
+These are the rules that stop the tool producing false
+accusations, which is the failure mode that matters most for a
+reliability tool.
+
+* A changed source queues a claim for review. It never reverses the verdict.
+* An insertion above an evidence span queues the claim, because the same offsets now cover different words.
+* Evidence offsets that point outside the source, or a hash that does not match the source, fail closed into the queue.
+
+## What the results mean
+
+| Metric | Value |
+|--------|-------|
+| Cases | 6 |
+| Scored | 6 |
+| Accepted by the fixture scorer | 6 |
+| Splits | dev 6 |
+| Label origins | synthetic_transform 6 |
+| accepted_outcome | 6 of 6 |
+| false_accusations_on_supported | 0 of 0 |
+| false_alarms_on_benign | 0 of 0 |
+| abstentions | 0 of 6 |
+
+Every label in this package is model drafted and on the development
+split. The numbers are agreement counts over a small tuned case
+set, not accuracy estimates, and no independent human review has
+been done. Read them as a check that the code does what it says,
+not as a claim about how well it works in the world.
+
+## Known limitations
+
+* The tracker needs the recorded evidence offsets, so it only works for claims that were audited with this tool.
+* It compares versions of the same document. It does not detect that the document itself was superseded by a different one.
+* The queue is a work list, not a verdict.
+
+## Layout
+
+```
+source-version-tracker/
+  README.md
+  CHANGELOG.md
+  pyproject.toml
+  src/source_versions/
+    source_versions.py    the project itself
+    cli.py           the demo and eval commands
+    demo.py          the worked example
+    core/            the shared types, retrieval, and providers
+  fixtures/source_versions/   the evaluation cases
+  tests/            the project's own test suite
+```
+
+## Licence
+
+MIT. All fixtures are synthetic.

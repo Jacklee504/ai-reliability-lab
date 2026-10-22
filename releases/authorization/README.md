@@ -1,0 +1,102 @@
+# authorization-checker
+
+Check whether an agent was authorised to take the action it proposed to take.
+
+## Why this exists
+
+An agent reading a web page can be told what to do by that page. A ticket that says email the report to this address, or a document that quotes the user giving permission, is untrusted content wearing the user's clothes.
+
+The checker evaluates a proposed action against what the user actually authorised, and it fails closed. It never acts on the action. It only answers whether the action was permitted, so the decision stays with the caller.
+
+## Install
+
+Python 3.11 or newer. There are no runtime dependencies.
+
+```bash
+pip install .
+```
+
+Or run it straight from the source tree:
+
+```bash
+export PYTHONPATH=src
+```
+
+## Use
+
+```bash
+authorization-checker demo
+```
+
+The demo runs the project on one of its own evaluation cases and
+prints the input, the verdict, and the reasoning. It uses the
+deterministic path, so it needs no model and no network access.
+
+To run the project's own evaluation cases:
+
+```bash
+authorization-checker eval
+```
+
+## How it works
+
+1. **Provenance** records where the instruction came from: the user, a trusted application policy, or untrusted content.
+2. **Scope** checks the action type, the target, and the data class against what was authorised.
+3. **Decision** returns allowed, denied, or needs clarification, with the rule that fired recorded in the trace.
+
+## The rules that keep it honest
+
+These are the rules that stop the tool producing false
+accusations, which is the failure mode that matters most for a
+reliability tool.
+
+* Untrusted content can never authorise an action, whatever it quotes or claims.
+* Reading untrusted content is allowed. Only acting on it needs authority.
+* An action in scope for the action type but out of scope for the target or the data class returns needs clarification, not a silent allow and not a blunt deny.
+* An instruction whose provenance is unknown returns needs clarification rather than being assumed safe.
+
+## What the results mean
+
+| Metric | Value |
+|--------|-------|
+| Cases | 11 |
+| Scored | 11 |
+| Accepted by the fixture scorer | 11 |
+| Splits | dev 11 |
+| Label origins | model_drafted 11 |
+| accepted_outcome | 11 of 11 |
+| false_accusations_on_supported | 0 of 0 |
+| false_alarms_on_benign | 0 of 0 |
+| abstentions | 0 of 11 |
+
+Every label in this package is model drafted and on the development
+split. The numbers are agreement counts over a small tuned case
+set, not accuracy estimates, and no independent human review has
+been done. Read them as a check that the code does what it says,
+not as a claim about how well it works in the world.
+
+## Known limitations
+
+* The checker evaluates a proposed action. It does not observe what the agent actually did.
+* The policy is a small fixed rule set. A real deployment needs its own organisation's rules.
+* It judges the scope of an action, not whether the action was wise.
+
+## Layout
+
+```
+authorization-checker/
+  README.md
+  CHANGELOG.md
+  pyproject.toml
+  src/authorization/
+    authorization.py    the project itself
+    cli.py           the demo and eval commands
+    demo.py          the worked example
+    core/            the shared types, retrieval, and providers
+  fixtures/authorization/   the evaluation cases
+  tests/            the project's own test suite
+```
+
+## Licence
+
+MIT. All fixtures are synthetic.

@@ -1,0 +1,101 @@
+# omission-auditor
+
+Find what a summary left out that the reader's stated brief cared about.
+
+## Why this exists
+
+A summary can contain only true statements and still be wrong, because what it left out may be the thing the reader needed. The problem is that an omission has no positive evidence: there is no sentence in the summary to point at.
+
+The tool needs a stated purpose to work from. What was left out is meaningless without one, and it is a different answer for every brief. The same summary against the same source produces different findings depending on what the summary was for, and that is the point rather than a limitation of the method.
+
+## Install
+
+Python 3.11 or newer. There are no runtime dependencies.
+
+```bash
+pip install .
+```
+
+Or run it straight from the source tree:
+
+```bash
+export PYTHONPATH=src
+```
+
+## Use
+
+```bash
+omission-auditor demo
+```
+
+The demo runs the project on one of its own evaluation cases and
+prints the input, the verdict, and the reasoning. It uses the
+deterministic path, so it needs no model and no network access.
+
+To run the project's own evaluation cases:
+
+```bash
+omission-auditor eval
+```
+
+## How it works
+
+1. **Segmentation** splits the source into candidate statements, each with the exact span it came from.
+2. **Alignment** matches source statements against the summary.
+3. **Relevance ranking** scores the unmatched statements against the stated purpose, so what is reported is what the brief cared about, not everything that was left out.
+
+## The rules that keep it honest
+
+These are the rules that stop the tool producing false
+accusations, which is the failure mode that matters most for a
+reliability tool.
+
+* The purpose is required. Without one the tool reports nothing rather than guessing what mattered.
+* A finding carries the exact source text and its location, so a reader can check it.
+* Benign omissions are not findings. A summary that leaves out irrelevant detail is not an error, and a detector that flags every dropped sentence is useless.
+
+## What the results mean
+
+| Metric | Value |
+|--------|-------|
+| Cases | 7 |
+| Scored | 7 |
+| Accepted by the fixture scorer | 7 |
+| Splits | dev 7 |
+| Label origins | model_drafted 7 |
+| accepted_outcome | 7 of 7 |
+| false_accusations_on_supported | 0 of 0 |
+| false_alarms_on_benign | 0 of 0 |
+| abstentions | 0 of 7 |
+
+Every label in this package is model drafted and on the development
+split. The numbers are agreement counts over a small tuned case
+set, not accuracy estimates, and no independent human review has
+been done. Read them as a check that the code does what it says,
+not as a claim about how well it works in the world.
+
+## Known limitations
+
+* Importance is judged against a stated purpose. A summary with no stated purpose cannot be audited for omissions.
+* The tool finds omissions in the *source*. It does not know what the reader already knew.
+* Two omission cases in the evaluation accept either outcome, because whether a governance duty counts as a security duty is a judgement the tool does not make for you.
+
+## Layout
+
+```
+omission-auditor/
+  README.md
+  CHANGELOG.md
+  pyproject.toml
+  src/omission/
+    omission.py    the project itself
+    cli.py           the demo and eval commands
+    demo.py          the worked example
+    core/            the shared types, retrieval, and providers
+  fixtures/omission/   the evaluation cases
+  tests/            the project's own test suite
+```
+
+## Licence
+
+MIT. All fixtures are synthetic.

@@ -14,6 +14,12 @@ The corpus is 192 cases across twelve project suites, with a 98-case
 `claims`, has also been extracted into a standalone package at
 [`../claim-auditor`](../claim-auditor).
 
+Every project, `claims` included, is also built as a standalone
+package under `releases/`. Those are generated from the lab, so they
+cannot drift from it. The hand-written `claim-auditor/` directory is
+the earlier extraction of the same project and is kept for reference;
+`releases/claims/` is the canonical one.
+
 Every project can now be built as a standalone, installable package:
 
 ```bash
@@ -22,8 +28,10 @@ PYTHONPATH=src python -m ai_reliability.cli release --verify --out releases
 ```
 
 The verify step runs each package's demo, its own test suite, and an
-import check with the lab off the path. All thirteen releasable
-projects pass it.
+import check with the lab off the path. It then builds a wheel,
+installs it into a throwaway directory, and runs the console script
+from there, because a package can import from a checkout and still
+fail once it is installed. All thirteen releasable projects pass it.
 
 ## Quick start
 

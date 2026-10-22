@@ -406,6 +406,14 @@ cases are still open judgements.
 * The per project test files under `tests/projects/` are the ones the
   releases ship. A test added to `tests/test_projects.py` does not
   travel with a release.
+* `claim-auditor/` is the earlier hand-written extraction of the
+  claims project. `releases/claims/` is generated from the lab and is
+  the canonical one. The two will drift, because only one of them is
+  rebuilt. The hand-written directory can be removed.
+* The released packages carry their fixtures inside the package, not
+  only at the top level, because an installed wheel has no checkout to
+  walk up to. The fixture lookup in `core/fixtures.py` prefers the
+  packaged directory for that reason.
 * `core/retrieval.py` is shared by the lab and the standalone package
   is a copy. The same applies to `core/claims.py` and
   `core/spans.py`. There is no automatic synchronisation.

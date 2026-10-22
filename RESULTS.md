@@ -247,25 +247,28 @@ a standalone, installable package. The build copies the shared core
 modules the project needs, rewrites the relative imports, and carries
 the project's own fixtures and its own test file.
 
-The check that matters is the import one. Each package is imported in a
-process whose path holds only that package, so a release that reached
-back into the lab would fail to import rather than quietly work.
+The checks that matter are the import one and the install one. Each
+package is imported in a process whose path holds only that package,
+so a release that reached back into the lab would fail to import
+rather than quietly work. Then a wheel is built, installed into a
+throwaway directory, and the console script is run from there, which
+is how a reader would use it.
 
-| Project | Package | Demo | Own tests | Imports alone |
-|---------|---------|------|-----------|---------------|
-| `authorization` | `authorization-checker` | runs | passes | yes |
-| `baselines` | `naive-judge-baselines` | runs | passes | yes |
-| `citations` | `citation-auditor` | runs | passes | yes |
-| `claims` | `claim-auditor` | runs | passes | yes |
-| `code_review` | `code-review-verifier` | runs | passes | yes |
-| `context_receipts` | `context-receipt` | runs | passes | yes |
-| `deliverables` | `deliverable-checker` | runs | passes | yes |
-| `instructions` | `instruction-checker` | runs | passes | yes |
-| `numerical` | `numerical-verifier` | runs | passes | yes |
-| `omission` | `omission-auditor` | runs | passes | yes |
-| `retrieval_eval` | `retrieval-eval` | runs | passes | yes |
-| `source_versions` | `source-version-tracker` | runs | passes | yes |
-| `study_coverage` | `study-coverage` | runs | passes | yes |
+| Project | Package | Demo | Own tests | Imports alone | Installs and runs |
+|---------|---------|------|-----------|---------------|--------------------|
+| `authorization` | `authorization-checker` | runs | passes | yes | yes |
+| `baselines` | `naive-judge-baselines` | runs | passes | yes | yes |
+| `citations` | `citation-auditor` | runs | passes | yes | yes |
+| `claims` | `claim-auditor` | runs | passes | yes | yes |
+| `code_review` | `code-review-verifier` | runs | passes | yes | yes |
+| `context_receipts` | `context-receipt` | runs | passes | yes | yes |
+| `deliverables` | `deliverable-checker` | runs | passes | yes | yes |
+| `instructions` | `instruction-checker` | runs | passes | yes | yes |
+| `numerical` | `numerical-verifier` | runs | passes | yes | yes |
+| `omission` | `omission-auditor` | runs | passes | yes | yes |
+| `retrieval_eval` | `retrieval-eval` | runs | passes | yes | yes |
+| `source_versions` | `source-version-tracker` | runs | passes | yes | yes |
+| `study_coverage` | `study-coverage` | runs | passes | yes | yes |
 
 `eval_regression` is not released. Its purpose is to measure the other
 projects against each other, so it needs the projects it measures.

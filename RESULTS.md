@@ -240,6 +240,51 @@ fixtures, its own tests, and its own CLI.
 The deterministic figure is the same weakness the lab shows: no
 contradiction detection without a model.
 
+## The released packages
+
+Every project except the cross project regression suite can be built as
+a standalone, installable package. The build copies the shared core
+modules the project needs, rewrites the relative imports, and carries
+the project's own fixtures and its own test file.
+
+The check that matters is the import one. Each package is imported in a
+process whose path holds only that package, so a release that reached
+back into the lab would fail to import rather than quietly work.
+
+| Project | Package | Demo | Own tests | Imports alone |
+|---------|---------|------|-----------|---------------|
+| `authorization` | `authorization-checker` | runs | passes | yes |
+| `baselines` | `naive-judge-baselines` | runs | passes | yes |
+| `citations` | `citation-auditor` | runs | passes | yes |
+| `claims` | `claim-auditor` | runs | passes | yes |
+| `code_review` | `code-review-verifier` | runs | passes | yes |
+| `context_receipts` | `context-receipt` | runs | passes | yes |
+| `deliverables` | `deliverable-checker` | runs | passes | yes |
+| `instructions` | `instruction-checker` | runs | passes | yes |
+| `numerical` | `numerical-verifier` | runs | passes | yes |
+| `omission` | `omission-auditor` | runs | passes | yes |
+| `retrieval_eval` | `retrieval-eval` | runs | passes | yes |
+| `source_versions` | `source-version-tracker` | runs | passes | yes |
+| `study_coverage` | `study-coverage` | runs | passes | yes |
+
+`eval_regression` is not released. Its purpose is to measure the other
+projects against each other, so it needs the projects it measures.
+
+The command that produced this table:
+
+```bash
+PYTHONPATH=src python -m ai_reliability.cli release --all --out releases
+PYTHONPATH=src python -m ai_reliability.cli release --verify --out releases
+```
+
+**What this supports.** That each project can be taken out of the lab
+and used on its own, with its own demo, its own tests, and no
+dependency on the lab.
+
+**What this does not support.** Anything about the quality of the
+projects. A package that builds and passes its own tests is a
+well-formed package, not a good one.
+
 ## Fixture labels that were corrected
 
 Three labels were wrong and were corrected after a run. They are

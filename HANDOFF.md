@@ -18,16 +18,28 @@ own fixtures, its own evaluation runner, and its own held-out test
 split where it has one.
 
 The corpus is 192 cases: 98 on the `dev` split and 94 on the held-out
-`test` split. A CLI, a pytest suite (99 tests, all passing), a README,
+`test` split. A CLI, a pytest suite (112 tests, all passing), a README,
 and this handoff are in place. `RESULTS.md` holds only numbers produced
 by actual runs.
 
-`claim-auditor/` is the `claims` project extracted into a standalone
-package with no imports from `ai_reliability`, its own fixtures, its own
-seventeen tests, its own CLI, and its own README.
+Every project except the cross project regression suite can be built as
+a standalone, installable package. The builder is in the product, not
+in a helper script:
 
-The directory has not been initialized as a Git repository. No commits,
-deployments, or publications were made.
+```bash
+PYTHONPATH=src python -m ai_reliability.cli release --list
+PYTHONPATH=src python -m ai_reliability.cli release --all --out releases
+PYTHONPATH=src python -m ai_reliability.cli release --verify --out releases
+PYTHONPATH=src python -m ai_reliability.cli release --docs --out docs
+```
+
+The built packages are in `releases/`. The verification runs each
+package's demo, its own test suite, and an import check with the lab
+off the path. All thirteen pass it. The per project documents are in
+`docs/`, generated from the same prose the package READMEs use.
+
+The repository is a Git repository and is published at
+`github.com/JackLee504/ai-reliability-lab`.
 
 ## 2. Status of every project
 
@@ -383,6 +395,17 @@ cases are still open judgements.
   in `claim-auditor/src/claim_auditor/auditor.py` must stay in step.
   The standalone package has its own copy of the code, so a fix in one
   place has to be copied into the other.
+* The released packages in `releases/` are a snapshot of the lab's
+  core, not a live link. A change to `core/` has to be rebuilt into
+  them with `airl release --all`, and the README numbers have to be
+  re-read from the run files.
+* `SourceDocument` moved from `projects/claims.py` to
+  `core/documents.py`, because four projects needed it and a project
+  that imports another project cannot be released. The released
+  packages carry their own copy under `core/`.
+* The per project test files under `tests/projects/` are the ones the
+  releases ship. A test added to `tests/test_projects.py` does not
+  travel with a release.
 * `core/retrieval.py` is shared by the lab and the standalone package
   is a copy. The same applies to `core/claims.py` and
   `core/spans.py`. There is no automatic synchronisation.

@@ -14,6 +14,17 @@ The corpus is 192 cases across twelve project suites, with a 98-case
 `claims`, has also been extracted into a standalone package at
 [`../claim-auditor`](../claim-auditor).
 
+Every project can now be built as a standalone, installable package:
+
+```bash
+PYTHONPATH=src python -m ai_reliability.cli release --all --out releases
+PYTHONPATH=src python -m ai_reliability.cli release --verify --out releases
+```
+
+The verify step runs each package's demo, its own test suite, and an
+import check with the lab off the path. All thirteen releasable
+projects pass it.
+
 ## Quick start
 
 Requires Python 3.11 or newer. There are no runtime dependencies.
@@ -69,7 +80,7 @@ Setting `AIRL_MODEL_CACHE` makes replay cache only. A missing cache file,
 wrong model ID, or uncached prompt fails without contacting the endpoint.
 Unset the variable before intentionally recording new responses.
 
-## The ten projects
+## The projects
 
 | # | Project | Question it answers | Method |
 |---|---------|---------------------|--------|
@@ -93,6 +104,15 @@ can be tested against a naive alternative.
 
 `source_versions` and `study_coverage` began as optional spikes and
 are now part of the shared corpus.
+
+`eval_regression` is the cross project suite. It is not released on
+its own, because its purpose is to measure the other projects against
+each other.
+
+Each project has its own document in [`docs/`](docs), saying what it
+answers, how it works, the rules that keep it honest, and what it
+cannot do. The same prose appears in the released package README, so
+the two cannot drift apart.
 
 Each project lives in `src/ai_reliability/projects/<name>.py` and has its
 own fixtures in `fixtures/<name>/cases.json`. Each one is a separate
@@ -161,6 +181,14 @@ python -m ai_reliability.cli audit requirements "Write two questions" \
 
 # Check the model endpoint
 python -m ai_reliability.cli doctor
+
+# Build the standalone packages, and check they stand alone
+python -m ai_reliability.cli release --list
+python -m ai_reliability.cli release --all --out releases
+python -m ai_reliability.cli release --verify --out releases
+
+# Write the per project documentation
+python -m ai_reliability.cli release --docs --out docs
 ```
 
 ## The design rules that hold everywhere
@@ -222,8 +250,12 @@ ai-reliability-lab/
     test_cases.json      the held-out cases, where they exist
   runs/                  stored runs and recorded model responses
   tests/                 pytest suite
+    projects/             one test file per project
   scripts/               legacy build helpers; use the CLI recorder instead
   claim-auditor/         the extracted standalone package
+  releases/              the built standalone packages
+  docs/                  one document per project
+  .github/workflows/     the CI that tests the lab and the releases
 ```
 
 ## What the results mean
